@@ -29,7 +29,7 @@ html = f"""<!DOCTYPE html>
 <title>SuperAnki Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Lora:wght@400;600;700&family=Nunito:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Lora:wght@400;600;700&family=Nunito:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&family=Playfair+Display:wght@600;700;800&family=Patrick+Hand&family=Press+Start+2P&family=VT323&display=swap">
 <style>
 {read("styles.css")}
 </style>
@@ -41,6 +41,8 @@ html = f"""<!DOCTYPE html>
 </script>
 <script>
 {read("app.js")}
+{read("stats.js")}
+{read("boot.js")}
 </script>
 </body>
 </html>

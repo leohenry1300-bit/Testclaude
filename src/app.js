@@ -48,7 +48,9 @@ const ICONS = {
     clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     alert: '<path d="m10.3 3.9-8.1 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3.1l-8-14a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
     refresh: '<path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/>',
-    card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'
+    card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+    pause: '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+    check2: '<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>'
 };
 const ic = (name, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 function injectSprite() {
@@ -107,6 +109,14 @@ function fmtRelativeFuture(t, now = Date.now()) {
     if (days === 1) return 'demain';
     return `dans ${fmtDays(days)}`;
 }
+function fmtAgo(t) {
+    const s = Math.max(0, (Date.now() - t) / 1000);
+    if (s < 45) return "à l'instant";
+    if (s < 3600) return `il y a ${Math.round(s / 60)} min`;
+    if (s < 86400) return `il y a ${Math.round(s / 3600)} h`;
+    return `il y a ${plural(Math.round(s / 86400), 'jour')}`;
+}
+const longDate = t => new Date(t).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 function fmtDuration(sec) {
     sec = Math.round(sec);
     if (sec < 60) return `${sec} s`;
@@ -205,19 +215,31 @@ const isBlank = html => !stripHtml(html).trim() && !hasImage(html);
    Themes & defaults
    ============================================================ */
 const THEMES = [
-    { id: 'auto', name: 'Automatique', desc: 'Suit ton appareil', p: { bg: 'linear-gradient(90deg,#f5f6fb 50%,#0b1020 50%)', surface: '#ffffff', primary: '#4f46e5', text: '#151a2d', line: '#c7cbe0' } },
-    { id: 'clair', name: 'Clair', desc: 'Net et lumineux', p: { bg: '#f5f6fb', surface: '#ffffff', primary: '#4f46e5', text: '#151a2d', line: '#d7dbe8' } },
-    { id: 'nuit', name: 'Nuit', desc: 'Sombre et doux', p: { bg: '#0b1020', surface: '#131a2e', primary: '#818cf8', text: '#e8ebf5', line: '#2b3553' } },
-    { id: 'oled', name: 'Noir OLED', desc: 'Noir pur, économe', p: { bg: '#000', surface: '#0b0b0c', primary: '#f4f4f5', text: '#f4f4f5', line: '#27272a' } },
-    { id: 'papier', name: 'Papier', desc: 'Sépia, typo livre', p: { bg: '#efe6d2', surface: '#fbf6ea', primary: '#9a3412', text: '#33271b', line: '#dccdab' } },
-    { id: 'ocean', name: 'Océan', desc: 'Bleu frais', p: { bg: '#e9f4fb', surface: '#ffffff', primary: '#0284c7', text: '#0b2a3f', line: '#cfe3f1' } },
-    { id: 'foret', name: 'Forêt', desc: 'Vert profond', p: { bg: '#0d1712', surface: '#14231b', primary: '#4ade80', text: '#e3f1e8', line: '#2a4636' } },
-    { id: 'sakura', name: 'Sakura', desc: 'Rose tout doux', p: { bg: '#fff4f6', surface: '#ffffff', primary: '#db2777', text: '#4a1d2c', line: '#fbd5de' } },
-    { id: 'lavande', name: 'Lavande', desc: 'Violet pastel', p: { bg: '#f4f1fd', surface: '#ffffff', primary: '#7c3aed', text: '#251a45', line: '#e3dbfa' } },
-    { id: 'neon', name: 'Néon', desc: 'Cyberpunk lumineux', p: { bg: '#07000f', surface: '#120823', primary: '#ff2bd6', text: '#f5e9ff', line: '#3a1a5c' } },
-    { id: 'terminal', name: 'Terminal', desc: 'Rétro, vert sur noir', p: { bg: '#020a03', surface: '#031205', primary: '#4dff7a', text: '#4dff7a', line: '#0f4a18' } },
-    { id: 'brutal', name: 'Brutaliste', desc: 'Contrasté, audacieux', p: { bg: '#fff8e7', surface: '#ffffff', primary: '#ffd400', text: '#111', line: '#111' } }
+    { id: 'auto', group: 'clair', name: 'Automatique', desc: 'Suit ton appareil', font: 'Inter', p: { bg: 'linear-gradient(90deg,#f5f6fb 50%,#0b1020 50%)', surface: '#ffffff', primary: '#4f46e5', text: '#151a2d', line: '#c7cbe0', hero: 'linear-gradient(135deg,#4f46e5,#7c3aed)' } },
+    { id: 'clair', group: 'clair', name: 'Clair', desc: 'Net et lumineux', font: 'Inter', p: { bg: '#f5f6fb', surface: '#ffffff', primary: '#4f46e5', text: '#151a2d', line: '#d7dbe8', hero: 'linear-gradient(135deg,#4f46e5,#7c3aed)' } },
+    { id: 'aurore', group: 'clair', name: 'Aurore', desc: 'Verre dépoli, dégradés', font: 'Inter', p: { bg: 'radial-gradient(circle at 20% 20%,#f9a8d4,transparent 50%),radial-gradient(circle at 80% 30%,#a5b4fc,transparent 50%),radial-gradient(circle at 50% 90%,#67e8f9,transparent 55%),#f5f3ff', surface: 'rgba(255,255,255,.6)', primary: '#7c3aed', text: '#1e1b4b', line: 'rgba(255,255,255,.9)', hero: 'linear-gradient(120deg,#7c3aed,#ec4899,#f59e0b)' } },
+    { id: 'ocean', group: 'clair', name: 'Océan', desc: 'Bleu frais', font: 'Inter', p: { bg: '#e9f4fb', surface: '#ffffff', primary: '#0284c7', text: '#0b2a3f', line: '#cfe3f1', hero: 'linear-gradient(135deg,#0369a1,#14b8a6)' } },
+    { id: 'sakura', group: 'clair', name: 'Sakura', desc: 'Rose tout doux', font: 'Nunito', p: { bg: '#fff4f6', surface: '#ffffff', primary: '#db2777', text: '#4a1d2c', line: '#fbd5de', hero: 'linear-gradient(135deg,#f472b6,#fda4af)' } },
+    { id: 'lavande', group: 'clair', name: 'Lavande', desc: 'Violet pastel', font: 'Nunito', p: { bg: '#f4f1fd', surface: '#ffffff', primary: '#7c3aed', text: '#251a45', line: '#e3dbfa', hero: 'linear-gradient(135deg,#7c3aed,#a78bfa)' } },
+    { id: 'solaire', group: 'clair', name: 'Solarisé', desc: 'Doux pour les yeux', font: 'Inter', p: { bg: '#fdf6e3', surface: '#fffbef', primary: '#268bd2', text: '#073642', line: '#e6dfc6', hero: 'linear-gradient(135deg,#268bd2,#2aa198)' } },
+    { id: 'papier', group: 'clair', name: 'Papier', desc: 'Sépia, typo livre', font: 'Lora', p: { bg: '#efe6d2', surface: '#fbf6ea', primary: '#9a3412', text: '#33271b', line: '#dccdab', hero: '#3b2c1c' } },
+    { id: 'cahier', group: 'clair', name: 'Cahier', desc: 'Lignes et écriture', font: 'Patrick Hand', p: { bg: 'repeating-linear-gradient(#fdfdf8 0 9px,#c9dcf3 9px 10px)', surface: '#fffef9', primary: '#2f5bd3', text: '#1f2a44', line: '#d8e3f0', hero: '#fff3a8' } },
+    { id: 'nuit', group: 'sombre', name: 'Nuit', desc: 'Sombre et doux', font: 'Inter', p: { bg: '#0b1020', surface: '#131a2e', primary: '#818cf8', text: '#e8ebf5', line: '#2b3553', hero: 'linear-gradient(135deg,#4f46e5,#7c3aed)' } },
+    { id: 'oled', group: 'sombre', name: 'Noir OLED', desc: 'Noir pur, économe', font: 'Inter', p: { bg: '#000', surface: '#0b0b0c', primary: '#f4f4f5', text: '#f4f4f5', line: '#27272a', hero: '#0b0b0c' } },
+    { id: 'nord', group: 'sombre', name: 'Nordique', desc: 'Bleu glacier apaisant', font: 'Inter', p: { bg: '#2e3440', surface: '#3b4252', primary: '#88c0d0', text: '#eceff4', line: '#4c566a', hero: 'linear-gradient(135deg,#5e81ac,#88c0d0)' } },
+    { id: 'dracula', group: 'sombre', name: 'Dracula', desc: 'Le classique des devs', font: 'Inter', p: { bg: '#282a36', surface: '#303241', primary: '#bd93f9', text: '#f8f8f2', line: '#44475a', hero: 'linear-gradient(135deg,#6272a4,#bd93f9,#ff79c6)' } },
+    { id: 'foret', group: 'sombre', name: 'Forêt', desc: 'Vert profond', font: 'Nunito', p: { bg: '#0d1712', surface: '#14231b', primary: '#4ade80', text: '#e3f1e8', line: '#2a4636', hero: 'linear-gradient(135deg,#166534,#3f6212)' } },
+    { id: 'cafe', group: 'sombre', name: 'Café', desc: 'Brun chaleureux', font: 'Lora', p: { bg: '#1c1512', surface: '#261d18', primary: '#d4a373', text: '#f3e7dc', line: '#3b2e26', hero: 'linear-gradient(135deg,#7f5539,#b08968)' } },
+    { id: 'luxe', group: 'sombre', name: 'Luxe', desc: 'Noir et or', font: 'Playfair Display', p: { bg: '#0c0b09', surface: '#15130f', primary: '#d4af37', text: '#f4ecd8', line: '#4a3f2a', hero: 'linear-gradient(135deg,#1d1a15,#2c2416)' } },
+    { id: 'neon', group: 'fun', name: 'Néon', desc: 'Cyberpunk lumineux', font: 'Space Grotesk', p: { bg: '#07000f', surface: '#120823', primary: '#ff2bd6', text: '#f5e9ff', line: '#3a1a5c', hero: 'linear-gradient(120deg,#ff2bd6,#7b2bff,#00e5ff)' } },
+    { id: 'synthwave', group: 'fun', name: 'Synthwave', desc: 'Coucher de soleil rétro', font: 'Space Grotesk', p: { bg: 'linear-gradient(180deg,#1a0b2e,#53196b)', surface: '#2a1147', primary: '#ff3cac', text: '#fdf0ff', line: '#4b2380', hero: 'linear-gradient(180deg,#ffb800,#ff3cac 55%,#784ba0)' } },
+    { id: 'terminal', group: 'fun', name: 'Terminal', desc: 'Rétro, vert sur noir', font: 'JetBrains Mono', p: { bg: '#020a03', surface: '#031205', primary: '#4dff7a', text: '#4dff7a', line: '#0f4a18', hero: '#031205' } },
+    { id: 'gameboy', group: 'fun', name: 'Game Boy', desc: '8 bits, 4 couleurs', font: 'VT323', p: { bg: '#9bbc0f', surface: '#8bac0f', primary: '#0f380f', text: '#0f380f', line: '#306230', hero: '#306230' } },
+    { id: 'craie', group: 'fun', name: 'Tableau noir', desc: 'Craie sur ardoise', font: 'Patrick Hand', p: { bg: '#1f3a2e', surface: '#25453a', primary: '#f7f3d6', text: '#f1f5ef', line: '#5d8576', hero: '#2b4f42' } },
+    { id: 'brutal', group: 'fun', name: 'Brutaliste', desc: 'Contrasté, audacieux', font: 'Space Grotesk', p: { bg: '#fff8e7', surface: '#ffffff', primary: '#ffd400', text: '#111', line: '#111', hero: '#ff5c8a' } },
+    { id: 'contraste', group: 'fun', name: 'Contraste élevé', desc: 'Lisibilité maximale', font: 'Inter', p: { bg: '#000', surface: '#000', primary: '#ffff00', text: '#fff', line: '#fff', hero: '#000' } }
 ];
+const THEME_GROUPS = [['clair', 'Clairs'], ['sombre', 'Sombres'], ['fun', 'Originaux']];
 const CARD_SIZES = { s: '1.1rem', m: '1.35rem', l: '1.6rem', xl: '1.9rem' };
 const DEFAULT_SETTINGS = {
     theme: 'auto', cardSize: 'm', newPerDay: 20, newOrder: 'random', showIntervals: true,
@@ -235,9 +257,11 @@ const STATUS = {
     new: { label: 'Nouvelles', one: 'Nouvelle', color: 'var(--new)', icon: 'sparkle' },
     learn: { label: 'En cours', one: 'En cours', color: 'var(--learn)', icon: 'sprout' },
     due: { label: 'À revoir', one: 'À revoir', color: 'var(--due)', icon: 'repeat' },
-    mature: { label: 'Maîtrisées', one: 'Maîtrisée', color: 'var(--mature)', icon: 'award' }
+    mature: { label: 'Maîtrisées', one: 'Maîtrisée', color: 'var(--mature)', icon: 'award' },
+    susp: { label: 'Suspendues', one: 'Suspendue', color: '#eab308', icon: 'pause' }
 };
 const MATURE_IVL = 21;
+const REVLOG_MAX = 40000;
 
 /* ============================================================
    Data normalization: survives corrupted / legacy saves
@@ -272,7 +296,8 @@ function normalizeCard(c) {
         created: num(c.created, 0), state, step: Math.max(0, num(c.step, 0)), interval,
         ease: clamp(num(c.ease ?? c.easeFactor, 2.5), 1.3, 5), due, reps, lapses,
         lastReview: c.lastReview ? num(c.lastReview, null) : null,
-        errors: Math.max(0, num(c.errors, lapses >= 2 ? 1 : 0)), wrong: num(c.wrong, 0), right: num(c.right, 0)
+        errors: Math.max(0, num(c.errors, lapses >= 2 ? 1 : 0)), wrong: num(c.wrong, 0), right: num(c.right, 0),
+        suspended: !!c.suspended
     };
 }
 function normalizeStats(s) {
@@ -325,7 +350,8 @@ function normalizeState(raw) {
     if (!THEMES.some(t => t.id === settings.theme)) settings.theme = 'auto';
     if (!CARD_SIZES[settings.cardSize]) settings.cardSize = 'm';
     settings.newPerDay = clamp(num(settings.newPerDay, 20), 0, 9999);
-    return { version: 4, decks, cards, stats: normalizeStats(raw.stats), settings, updatedAt: num(raw.updatedAt, 0) };
+    const revlog = toArray(raw.revlog).filter(r => Array.isArray(r) && r.length >= 4 && Number.isFinite(r[0])).slice(-REVLOG_MAX);
+    return { version: 4, decks, cards, stats: normalizeStats(raw.stats), settings, revlog, updatedAt: num(raw.updatedAt, 0) };
 }
 function seedState() {
     const now = Date.now();
@@ -437,6 +463,7 @@ function previewLabel(card, grade, now) {
     return r.state === 'review' ? fmtDays(r.interval) : fmtDelay(r.due - now);
 }
 function cardStatus(c, now, eod) {
+    if (c.suspended) return 'susp';
     if (c.state === 'new') return 'new';
     if (c.state === 'review' ? c.due <= eod : c.due <= now) return 'due';
     if (c.state === 'review' && c.interval >= MATURE_IVL) return 'mature';
@@ -480,7 +507,7 @@ const Cloud = {
             return true;
         } catch { return false; }
     },
-    setStatus(s) { this.status = s; app && app.renderSyncIndicator(); },
+    setStatus(s) { this.status = s; app && app.renderSyncIndicator(); if (app && app.popover && app.popover.dataset.kind === 'sync') app.refreshPopover(); },
     async pull() {
         if (!(await this.ensure())) { this.setStatus('err'); return null; }
         const res = await this.client.from('game_state').select('data, updated_at').eq('id', 'main').maybeSingle();
@@ -502,6 +529,7 @@ const Cloud = {
             const payload = JSON.parse(app.serialize());
             const res = await this.client.from('game_state').upsert({ id: 'main', data: payload, updated_at: new Date(app.data.updatedAt || Date.now()).toISOString() });
             if (res.error) throw new Error(res.error.message);
+            this.lastSync = Date.now();
             this.setStatus('ok');
         } catch (e) {
             console.warn('Sync cloud:', e.message);
@@ -526,11 +554,13 @@ const Cloud = {
                     app.replaceData(remote, false);
                     app.toast('Progression synchronisée depuis le cloud', 'success', ic('cloud'));
                 }
+                this.lastSync = Date.now();
                 this.setStatus('ok');
             } else if ((app.data.updatedAt || 0) > remoteAt + 1000) {
                 await this.push();
                 if (manual) app.toast('Cloud mis à jour', 'success');
             } else {
+                this.lastSync = Date.now();
                 this.setStatus('ok');
                 if (manual) app.toast('Déjà à jour', 'success');
             }
@@ -543,45 +573,13 @@ const Cloud = {
 };
 
 /* ============================================================
-   Charts (tiny SVG helpers, no library)
-   ============================================================ */
-function barChartSVG(values, labels, opts = {}) {
-    const W = 340, H = opts.height || 170, top = 18, bottom = 22;
-    const n = values.length, max = Math.max(1, ...values), bw = W / n;
-    const colors = opts.colors || [];
-    const every = Math.ceil(n / (opts.maxLabels || 12));
-    let bars = '';
-    values.forEach((v, i) => {
-        const h = Math.max(v > 0 ? 2 : 0, (v / max) * (H - top - bottom));
-        const x = i * bw + bw * 0.16, w = bw * 0.68, y = H - bottom - h;
-        bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(4, w / 3).toFixed(1)}" fill="${colors[i] || opts.color || 'var(--primary)'}"><title>${esc(labels[i])} : ${v}</title></rect>`;
-        if (v > 0 && n <= 16) bars += `<text class="val" x="${(x + w / 2).toFixed(1)}" y="${(y - 5).toFixed(1)}" text-anchor="middle">${v}</text>`;
-        if (i % every === 0) bars += `<text x="${(x + w / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle">${esc(labels[i])}</text>`;
-    });
-    return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img">${`<line x1="0" x2="${W}" y1="${H - bottom + .5}" y2="${H - bottom + .5}" stroke="var(--border)"/>`}${bars}</svg></div>`;
-}
-function donutSVG(segments) {
-    const total = segments.reduce((a, s) => a + s.value, 0);
-    const R = 60, C = 2 * Math.PI * R;
-    let offset = 0, arcs = '';
-    if (total === 0) arcs = `<circle cx="80" cy="80" r="${R}" fill="none" stroke="var(--surface-3)" stroke-width="22"/>`;
-    segments.forEach(s => {
-        if (!s.value) return;
-        const len = (s.value / total) * C;
-        arcs += `<circle cx="80" cy="80" r="${R}" fill="none" stroke="${s.color}" stroke-width="22" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 80 80)"><title>${esc(s.label)} : ${s.value}</title></circle>`;
-        offset += len;
-    });
-    return `<svg viewBox="0 0 160 160">${arcs}<text x="80" y="78" text-anchor="middle" style="font-size:26px;font-weight:800;fill:var(--text)">${total}</text><text x="80" y="98" text-anchor="middle" style="font-size:11px;fill:var(--text-muted)">cartes</text></svg>`;
-}
-
-/* ============================================================
    Application
    ============================================================ */
 class SuperAnki {
     constructor() {
         this.data = null;
         this.view = 'dashboard';
-        this.ui = { deck: 'all', filter: 'all', search: '', sort: 'recent', limit: 60 };
+        this.ui = { deck: 'all', filter: 'all', search: '', sort: 'auto', limit: 60 };
         this.session = null;
         this.modals = [];
         this.saveTimer = null;
@@ -589,6 +587,8 @@ class SuperAnki {
         this.imageTarget = null;
         this.saveErrorShown = false;
         this.searchCache = new Map();
+        this.chartDefs = {};
+        this.statsUi = { deck: 'all', fcRange: 31, fcCumul: true, rvRange: 30, rvTime: false, ivRange: '1m', hrRange: 30, btRange: 30, adRange: 30, calYear: new Date().getFullYear(), hidden: {} };
     }
 
     /* ---------- boot ---------- */
@@ -618,8 +618,8 @@ class SuperAnki {
     }
 
     serialize() {
-        const { version, decks, cards, stats, settings, updatedAt } = this.data;
-        return JSON.stringify({ version, decks, cards, stats, settings, updatedAt });
+        const { version, decks, cards, stats, settings, revlog, updatedAt } = this.data;
+        return JSON.stringify({ version, decks, cards, stats, settings, revlog, updatedAt });
     }
     save(sync = true) {
         this.data.updatedAt = Date.now();
@@ -714,10 +714,15 @@ class SuperAnki {
     deck(id) { return this.data.decks.find(d => d.id === id); }
     sortedDecks() { return [...this.data.decks].sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' })); }
     cardsOf(deckId) { return deckId ? this.data.cards.filter(c => c.deckId === deckId) : this.data.cards; }
-    errorCards() { return this.data.cards.filter(c => c.errors > 0); }
+    errorCards() { return this.data.cards.filter(c => c.errors > 0 && !c.suspended); }
+    logReview(card, grade, type, prevIvl, ms) {
+        const log = this.data.revlog;
+        log.push([Date.now(), card.id, grade, type, card.state === 'review' ? card.interval : 0, prevIvl || 0, Math.round(ms)]);
+        if (log.length > REVLOG_MAX + 2000) log.splice(0, log.length - REVLOG_MAX);
+    }
     countStatuses(cards) {
         const now = Date.now(), eod = endOfDay(now);
-        const out = { new: 0, learn: 0, due: 0, mature: 0, total: cards.length };
+        const out = { new: 0, learn: 0, due: 0, mature: 0, susp: 0, total: cards.length };
         cards.forEach(c => { out[cardStatus(c, now, eod)]++; });
         return out;
     }
@@ -729,7 +734,7 @@ class SuperAnki {
     studyPlan(deckIds, extraNew = 0) {
         const now = Date.now(), eod = endOfDay(now);
         const set = deckIds ? new Set(deckIds) : null;
-        const pool = this.data.cards.filter(c => !set || set.has(c.deckId));
+        const pool = this.data.cards.filter(c => !c.suspended && (!set || set.has(c.deckId)));
         const learning = pool.filter(c => c.state === 'learning' || c.state === 'relearning').map(c => ({ id: c.id, due: c.due }));
         const reviews = pool.filter(c => c.state === 'review' && c.due <= eod).sort((a, b) => a.due - b.due);
         let fresh = pool.filter(c => c.state === 'new');
@@ -740,7 +745,7 @@ class SuperAnki {
     }
     nextDueTime() {
         let min = Infinity;
-        this.data.cards.forEach(c => { if (c.state !== 'new' && c.due < min) min = c.due; });
+        this.data.cards.forEach(c => { if (c.state !== 'new' && !c.suspended && c.due < min) min = c.due; });
         return min;
     }
 
@@ -907,7 +912,6 @@ class SuperAnki {
     renderDecks() {
         const ui = this.ui;
         if (ui.deck !== 'all' && ui.deck !== 'errors' && !this.deck(ui.deck)) ui.deck = 'all';
-        const errCount = this.errorCards().length;
         $('#view-decks').innerHTML = `
         <div class="stack">
             <div>
@@ -920,65 +924,161 @@ class SuperAnki {
                 <button class="btn btn-soft" data-action="import">${ic('import')}<span>Importer</span></button>
             </div>
             <div class="panel search-bar">
-                <label class="input-icon">${ic('search')}<span class="sr-only">Rechercher</span>
-                    <input class="input" type="search" id="card-search" placeholder="Rechercher une carte (question, réponse, tag)..." value="${esc(ui.search)}" data-input="search" autocomplete="off">
-                </label>
+                <div class="search-field ${ui.search ? 'has-value' : ''}">
+                    <label class="input-icon">${ic('search')}<span class="sr-only">Rechercher</span>
+                        <input class="input" type="search" id="card-search" placeholder="Rechercher une carte..." value="${esc(ui.search)}" data-input="search" autocomplete="off" spellcheck="false" enterkeyhint="search">
+                    </label>
+                    <button class="search-clear" data-action="clear-search" aria-label="Effacer la recherche" title="Effacer (Échap)">${ic('x')}</button>
+                </div>
                 <label><span class="sr-only">Trier</span>
                     <select class="select" data-input="sort">
-                        ${[['recent', 'Plus récentes'], ['alpha', 'Alphabétique (A → Z)'], ['alpha-rev', 'Alphabétique (Z → A)'], ['due', 'Prochaine révision'], ['hard', 'Plus difficiles d\'abord']]
+                        ${[['auto', 'Pertinence / récentes'], ['recent', 'Plus récentes'], ['alpha', 'Alphabétique (A → Z)'], ['alpha-rev', 'Alphabétique (Z → A)'], ['due', 'Prochaine révision'], ['hard', 'Plus difficiles d\'abord']]
                             .map(([v, l]) => `<option value="${v}" ${ui.sort === v ? 'selected' : ''}>${l}</option>`).join('')}
                     </select>
                 </label>
+                <p class="search-help">Astuces : plusieurs mots = toutes les cartes qui les contiennent · <code>"mot exact"</code> · <code>-exclure</code> · les accents et petites fautes de frappe sont tolérés.</p>
             </div>
             <div class="manager">
-                <aside class="panel deck-list" aria-label="Paquets">
-                    <div class="dl-title">Paquets</div>
-                    <button class="dl-item ${ui.deck === 'all' ? 'active' : ''}" data-action="select-deck" data-deck="all"><span class="em">📂</span><span class="nm">Toutes les cartes</span><span class="ct">${this.data.cards.length}</span></button>
-                    <button class="dl-item errors ${ui.deck === 'errors' ? 'active' : ''}" data-action="select-deck" data-deck="errors"><span class="em">${ic('target')}</span><span class="nm">Mes erreurs</span><span class="ct">${errCount}</span></button>
-                    <div class="dl-sep"></div>
-                    ${this.sortedDecks().map(dk => `<button class="dl-item ${ui.deck === dk.id ? 'active' : ''}" data-action="select-deck" data-deck="${esc(dk.id)}"><span class="em">${esc(dk.emoji)}</span><span class="nm">${esc(dk.name)}</span><span class="ct">${this.cardsOf(dk.id).length}</span></button>`).join('')}
-                </aside>
+                <aside class="panel deck-list" id="deck-sidebar" aria-label="Paquets"></aside>
                 <div class="panel" id="deck-panel" style="overflow:hidden"></div>
             </div>
         </div>`;
+        this.renderDeckSidebar();
         this.renderDeckPanel();
+    }
+    renderDeckSidebar() {
+        const ui = this.ui, box = $('#deck-sidebar');
+        if (!box) return;
+        const q = this.searchMatches();
+        const count = list => (q ? list.filter(c => q.has(c.id)).length : list.length);
+        const item = (id, em, name, n, cls = '') => `<button class="dl-item ${cls} ${ui.deck === id ? 'active' : ''} ${q && !n ? 'dim' : ''}" data-action="select-deck" data-deck="${esc(id)}"><span class="em">${em}</span><span class="nm">${esc(name)}</span><span class="ct">${n}</span></button>`;
+        box.innerHTML = `
+            <div class="dl-title">${q ? 'Résultats par paquet' : 'Paquets'}</div>
+            ${item('all', '📂', 'Toutes les cartes', count(this.data.cards))}
+            ${item('errors', ic('target'), 'Mes erreurs', count(this.errorCards()), 'errors')}
+            <div class="dl-sep"></div>
+            ${this.sortedDecks().map(dk => item(dk.id, esc(dk.emoji), dk.name, count(this.cardsOf(dk.id)))).join('')}`;
+    }
+    /* Search: accent-insensitive, AND between words, "exact phrase", -exclude, typo tolerant */
+    parseQuery(q) {
+        const out = { terms: [], phrases: [], excludes: [] };
+        const re = /(-?)"([^"]*)"?|(-?)(\S+)/g;
+        let m;
+        while ((m = re.exec(q))) {
+            if (m[2] !== undefined) { const p = fold(m[2]).trim(); if (p) (m[1] ? out.excludes : out.phrases).push(p); continue; }
+            const t = fold(m[4]).replace(/^[^\p{L}\p{N}#]+|[^\p{L}\p{N}]+$/gu, '');
+            if (!t) continue;
+            (m[3] && t.length > 0 ? out.excludes : out.terms).push(t.replace(/^#/, ''));
+        }
+        out.empty = !out.terms.length && !out.phrases.length && !out.excludes.length;
+        return out;
+    }
+    searchIndex(c) {
+        const deck = this.deck(c.deckId);
+        const key = `${c.front}\u0001${c.back}\u0001${c.hint}\u0001${c.detail}\u0001${c.tags.join(',')}\u0001${deck ? deck.name : ''}`;
+        const hit = this.searchCache.get(c.id);
+        if (hit && hit.key === key) return hit;
+        const front = fold(stripHtml(c.front)), back = fold(stripHtml(c.back));
+        const extra = fold(`${stripHtml(c.hint)} ${stripHtml(c.detail)} ${c.tags.join(' ')} ${deck ? deck.name : ''}`);
+        const words = [...new Set(`${front} ${back} ${extra}`.split(/[^\p{L}\p{N}]+/u).filter(w => w.length >= 3))];
+        const idx = { key, front, back, extra, all: `${front} \u0001 ${back} \u0001 ${extra}`, words };
+        this.searchCache.set(c.id, idx);
+        return idx;
+    }
+    matchCard(c, q) {
+        const x = this.searchIndex(c);
+        if (q.excludes.some(t => x.all.includes(t))) return null;
+        if (q.phrases.some(p => !x.all.includes(p))) return null;
+        let score = q.phrases.length * 4;
+        const fuzzy = [];
+        for (const t of q.terms) {
+            const wordStart = new RegExp(`(^|[^\\p{L}\\p{N}])${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'u');
+            if (x.front.includes(t)) score += 3 + (wordStart.test(x.front) ? 1 : 0);
+            else if (x.back.includes(t)) score += 2 + (wordStart.test(x.back) ? 1 : 0);
+            else if (x.extra.includes(t)) score += 1;
+            else if (t.length >= 4) {
+                const tol = t.length >= 7 ? 2 : 1;
+                const w = x.words.find(w => (Math.abs(w.length - t.length) <= tol && levenshtein(w, t) <= tol)
+                    || (t.length >= 5 && w.length > t.length && levenshtein(w.slice(0, t.length), t) <= 1));
+                if (!w) return null;
+                fuzzy.push(w);
+                score += 0.5;
+            } else return null;
+        }
+        return { score, fuzzy };
+    }
+    /* Returns Map(cardId -> match) for the current query over ALL cards, or null when no query */
+    searchMatches() {
+        const raw = this.ui.search.trim();
+        if (!raw) return null;
+        if (this._sm && this._sm.raw === raw && this._sm.n === this.data.cards.length && this._sm.at === this.data.updatedAt) return this._sm.map;
+        const q = this.parseQuery(raw);
+        const map = new Map();
+        if (!q.empty) this.data.cards.forEach(c => { const m = this.matchCard(c, q); if (m) map.set(c.id, m); });
+        else this.data.cards.forEach(c => map.set(c.id, { score: 0, fuzzy: [] }));
+        this._sm = { raw, n: this.data.cards.length, at: this.data.updatedAt, map, q };
+        return map;
     }
     filteredCards() {
         const ui = this.ui, now = Date.now(), eod = endOfDay(now);
         let list = ui.deck === 'all' ? this.data.cards : ui.deck === 'errors' ? this.errorCards() : this.cardsOf(ui.deck);
-        const q = fold(ui.search.trim());
-        if (q) {
-            const terms = q.split(/\s+/);
-            list = list.filter(c => { const hay = this.searchText(c); return terms.every(t => hay.includes(t)); });
-        }
-        const statusCounts = { all: list.length, new: 0, learn: 0, due: 0, mature: 0 };
+        const matches = this.searchMatches();
+        const globalHits = matches ? matches.size : 0;
+        if (matches) list = list.filter(c => matches.has(c.id));
+        const statusCounts = { all: list.length, new: 0, learn: 0, due: 0, mature: 0, susp: 0 };
         const withStatus = list.map(c => { const s = cardStatus(c, now, eod); statusCounts[s]++; return { c, s }; });
         let rows = ui.filter === 'all' ? withStatus : withStatus.filter(r => r.s === ui.filter);
-        const txt = c => this.searchText(c).replace(/^[^a-z0-9]+/, '');
-        const cmp = (x, y) => x.localeCompare(y, 'fr', { ignorePunctuation: true });
+        const txt = c => { const x = this.searchIndex(c); return x.front.replace(/^[^\p{L}\p{N}]+/u, ''); };
+        const cmp = (a, b) => a.localeCompare(b, 'fr', { ignorePunctuation: true });
+        const sortKey = ui.sort === 'auto' ? (matches ? 'relevance' : 'recent') : ui.sort;
         const sorters = {
+            relevance: (a, b) => matches.get(b.c.id).score - matches.get(a.c.id).score || cmp(txt(a.c), txt(b.c)),
             recent: (a, b) => b.c.created - a.c.created,
             alpha: (a, b) => cmp(txt(a.c), txt(b.c)),
             'alpha-rev': (a, b) => cmp(txt(b.c), txt(a.c)),
             due: (a, b) => (a.c.state === 'new') - (b.c.state === 'new') || a.c.due - b.c.due,
             hard: (a, b) => b.c.errors - a.c.errors || b.c.lapses - a.c.lapses || a.c.ease - b.c.ease
         };
-        rows = [...rows].sort(sorters[ui.sort] || sorters.recent);
-        return { rows, statusCounts };
+        rows = [...rows].sort(sorters[sortKey] || sorters.recent);
+        return { rows, statusCounts, globalHits, searching: !!matches };
     }
-    searchText(c) {
-        const key = c.front + '\u0001' + c.back + '\u0001' + c.hint + '\u0001' + c.tags.join(',');
-        const hit = this.searchCache.get(c.id);
-        if (hit && hit.key === key) return hit.text;
-        const text = fold(`${stripHtml(c.front)} ${stripHtml(c.back)} ${stripHtml(c.hint)} ${c.tags.join(' ')}`);
-        this.searchCache.set(c.id, { key, text });
-        return text;
+    highlightResults() {
+        const sm = this._sm;
+        if (!this.ui.search.trim() || !sm) return;
+        const tokens = [...sm.q.terms, ...sm.q.phrases];
+        sm.map.forEach(m => m.fuzzy.forEach(w => tokens.push(w)));
+        const uniq = [...new Set(tokens.filter(t => t.length >= 1))].sort((a, b) => b.length - a.length);
+        if (!uniq.length) return;
+        const ACC = { a: 'aàâäáãå', e: 'eéèêë', i: 'iîïíì', o: 'oôöóòõ', u: 'uùûüú', c: 'cç', y: 'yÿ', n: 'nñ', "'": "'’" };
+        const rx = new RegExp(uniq.map(t => [...t].map(ch => (ACC[ch] ? `[${ACC[ch]}]` : ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))).join('')).join('|'), 'giu');
+        $$('#card-list .q, #card-list .a').forEach(root => {
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+            const nodes = [];
+            while (walker.nextNode()) nodes.push(walker.currentNode);
+            nodes.forEach(node => {
+                const text = node.nodeValue;
+                rx.lastIndex = 0;
+                if (!rx.test(text)) return;
+                rx.lastIndex = 0;
+                const frag = document.createDocumentFragment();
+                let last = 0, m;
+                while ((m = rx.exec(text))) {
+                    if (!m[0]) { rx.lastIndex++; continue; }
+                    frag.append(text.slice(last, m.index));
+                    const mk = document.createElement('mark'); mk.className = 'hl'; mk.textContent = m[0];
+                    frag.append(mk);
+                    last = m.index + m[0].length;
+                }
+                frag.append(text.slice(last));
+                node.replaceWith(frag);
+            });
+        });
     }
     renderDeckPanel() {
         const ui = this.ui, panel = $('#deck-panel');
         if (!panel) return;
         const deck = this.deck(ui.deck);
-        const { rows, statusCounts } = this.filteredCards();
+        const { rows, statusCounts, globalHits, searching } = this.filteredCards();
         const now = Date.now();
         let title, actions = '';
         if (ui.deck === 'all') title = `📂 Toutes les cartes`;
@@ -993,15 +1093,16 @@ class SuperAnki {
                 <button class="icon-btn" title="Modifier le paquet" data-action="edit-deck" data-deck="${esc(deck.id)}">${ic('pencil')}</button>
                 <button class="icon-btn danger" title="Supprimer le paquet" data-action="delete-deck" data-deck="${esc(deck.id)}">${ic('trash')}</button>`;
         }
-        const chips = [['all', 'Toutes'], ['new', 'Nouvelles'], ['learn', 'En cours'], ['due', 'À revoir'], ['mature', 'Maîtrisées']]
-            .map(([k, l]) => `<button class="chip ${ui.filter === k ? 'active' : ''}" data-action="filter" data-filter="${k}">${k !== 'all' ? `<span class="dot" style="background:${STATUS[k].color}"></span>` : ''}${l} <span class="count">${statusCounts[k]}</span></button>`).join('');
+        const chipDefs = [['all', 'Toutes'], ['new', 'Nouvelles'], ['learn', 'En cours'], ['due', 'À revoir'], ['mature', 'Maîtrisées']];
+        if (statusCounts.susp || ui.filter === 'susp') chipDefs.push(['susp', 'Suspendues']);
+        const chips = chipDefs.map(([k, l]) => `<button class="chip ${ui.filter === k ? 'active' : ''}" data-action="filter" data-filter="${k}">${k !== 'all' ? `<span class="dot" style="background:${STATUS[k].color}"></span>` : ''}${l} <span class="count">${statusCounts[k]}</span></button>`).join('');
         const shown = rows.slice(0, ui.limit);
         const showDeck = ui.deck === 'all' || ui.deck === 'errors';
         const list = shown.map(({ c, s }) => {
             const dk = showDeck ? this.deck(c.deckId) : null;
-            const when = c.state === 'new' ? 'Jamais vue' : s === 'due' ? 'À revoir maintenant' : `Révision ${fmtRelativeFuture(c.due, now)}`;
+            const when = s === 'susp' ? 'Suspendue' : c.state === 'new' ? 'Jamais vue' : s === 'due' ? 'À revoir maintenant' : `Révision ${fmtRelativeFuture(c.due, now)}`;
             return `
-            <div class="card-row" data-action="edit-card" data-card="${esc(c.id)}">
+            <div class="card-row ${s === 'susp' ? 'is-susp' : ''}" data-action="edit-card" data-card="${esc(c.id)}">
                 <span class="dot" style="background:${STATUS[s].color}" title="${STATUS[s].one}"></span>
                 <div class="body">
                     <div class="q rich">${c.front}</div>
@@ -1019,112 +1120,21 @@ class SuperAnki {
                 </div>
             </div>`;
         }).join('');
-        const emptyMsg = ui.search ? 'Aucune carte ne correspond à ta recherche.'
-            : ui.deck === 'errors' ? 'Aucune erreur à retravailler. Les cartes que tu rates apparaîtront ici. 🎉'
-            : 'Aucune carte ici pour le moment.';
+        let emptyMsg;
+        if (searching) {
+            emptyMsg = globalHits && ui.deck !== 'all'
+                ? `Aucun résultat dans ce paquet pour « ${esc(ui.search.trim())} ».<br><button class="btn btn-primary btn-sm" style="margin-top:12px" data-action="select-deck" data-deck="all">${ic('search')}Voir les ${plural(globalHits, 'résultat')} dans tous les paquets</button>`
+                : `Aucune carte ne correspond à « ${esc(ui.search.trim())} ».<br><span class="small">Essaie un mot plus court, ou vérifie l'orthographe.</span>`;
+            if (!globalHits || ui.deck === 'all') emptyMsg += `<br><button class="btn btn-soft btn-sm" style="margin-top:12px" data-action="new-card-from-search">${ic('plus')}Créer une carte « ${esc(truncate(ui.search.trim(), 30))} »</button>`;
+        } else emptyMsg = ui.deck === 'errors' ? 'Aucune erreur à retravailler. Les cartes que tu rates apparaîtront ici. 🎉' : 'Aucune carte ici pour le moment.';
+        const resultLine = searching && statusCounts.all ? `<div class="result-line">${ic('search')}<span><b>${plural(statusCounts.all, 'résultat')}</b>${ui.deck !== 'all' ? ' dans ce paquet' : ''}${ui.deck !== 'all' && globalHits > statusCounts.all ? ` · <button class="link" data-action="select-deck" data-deck="all">${globalHits} dans tous les paquets</button>` : ''}</span></div>` : '';
         panel.innerHTML = `
             <div class="deck-panel-head"><h3>${title} <span class="tag">${plural(statusCounts.all, 'carte')}</span></h3><div class="deck-panel-actions">${actions}</div></div>
             <div class="filter-row"><div class="chip-row">${chips}</div></div>
+            ${resultLine}
             <div id="card-list">${list || `<div class="empty">${ic('search')}<p>${emptyMsg}</p></div>`}</div>
             ${rows.length > ui.limit ? `<div class="load-more"><button class="btn btn-soft" data-action="more">Afficher plus (${rows.length - ui.limit} restantes)</button></div>` : ''}`;
-    }
-
-    /* ---------- Stats ---------- */
-    renderStats() {
-        const d = this.data, st = d.stats, now = Date.now();
-        const counts = this.countStatuses(d.cards);
-        const today = dayKey();
-        const gc = st.gradeCounts, totalGrades = gc[1] + gc[2] + gc[3] + gc[4];
-        const retention = totalGrades ? Math.round((gc[3] + gc[4] + gc[2]) / totalGrades * 100) : null;
-        const histKeys = Object.keys(st.history).filter(k => st.history[k] > 0).sort();
-        const activeDays = histKeys.length;
-        const span = activeDays ? daysBetweenKeys(histKeys[0], today) + 1 : 0;
-        const totalReviews = Object.values(st.history).reduce((a, b) => a + b, 0);
-
-        const fc = new Array(14).fill(0);
-        d.cards.forEach(c => {
-            if (c.state === 'new') return;
-            const diff = daysBetweenKeys(today, dayKey(c.due));
-            if (diff < 0) fc[0]++; else if (diff < 14) fc[diff]++;
-        });
-        const fcLabels = fc.map((_, i) => (i === 0 ? 'Auj.' : i === 1 ? 'Dem.' : new Date(addDays(now, i)).toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '')));
-
-        const weeks = 26, start = new Date(addDays(now, -(weeks * 7 - 1)));
-        const dow = (start.getDay() + 6) % 7;
-        const heatStart = addDays(start.getTime(), -dow);
-        const maxDay = Math.max(1, ...Object.values(st.history));
-        let cells = '';
-        for (let t = heatStart, i = 0; i < 400; i++, t = addDays(heatStart, i)) {
-            const k = dayKey(t);
-            if (k > today) break;
-            const v = st.history[k] || 0, r = v / maxDay;
-            const lvl = v === 0 ? '' : r > 0.75 ? 'l4' : r > 0.5 ? 'l3' : r > 0.25 ? 'l2' : 'l1';
-            cells += `<i class="${lvl} ${k === today ? 'today' : ''}" title="${new Date(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} : ${plural(v, 'révision')}"></i>`;
-        }
-        const errCount = this.errorCards().length;
-        const deckRows = this.sortedDecks().map(dk => {
-            const cs = this.cardsOf(dk.id), c = this.countStatuses(cs);
-            const pct = cs.length ? Math.round(c.mature / cs.length * 100) : 0;
-            return { dk, pct, c, n: cs.length };
-        }).sort((a, b) => b.pct - a.pct);
-
-        $('#view-stats').innerHTML = `
-        <div class="stack">
-            <div><h2 class="page-title">Statistiques</h2><p class="page-sub">Ta progression, jour après jour.</p></div>
-            <div class="kpi-grid">
-                <div class="panel kpi"><span>Série actuelle</span><b>🔥 ${st.streak} j</b><em>${ic('snow')} ${plural(st.freezes, 'gel')} de série</em></div>
-                <div class="panel kpi"><span>Record de série</span><b>${st.longestStreak} j</b><em>&nbsp;</em></div>
-                <div class="panel kpi"><span>Aujourd'hui</span><b>${st.history[today] || 0}</b><em>${fmtDuration(st.timeByDay[today] || 0)} d'étude</em></div>
-                <div class="panel kpi"><span>Réussite</span><b>${retention === null ? '-' : retention + '%'}</b><em>${plural(totalGrades, 'réponse')}</em></div>
-                <div class="panel kpi"><span>Temps total</span><b>${fmtDuration(st.studySeconds)}</b><em>${plural(totalReviews, 'révision')}</em></div>
-                <div class="panel kpi"><span>Régularité</span><b>${span ? Math.round(activeDays / span * 100) : 0}%</b><em>${plural(activeDays, 'jour actif', 'jours actifs')}</em></div>
-            </div>
-
-            <div class="panel panel-pad chart-card">
-                <h4>Calendrier de révision (6 derniers mois)</h4>
-                <div class="heatmap-scroll"><div class="heatmap">${cells}</div></div>
-            </div>
-
-            <div class="chart-grid">
-                <div class="panel panel-pad chart-card">
-                    <h4>Répartition des cartes</h4>
-                    <div class="donut-wrap">
-                        ${donutSVG(['new', 'learn', 'due', 'mature'].map(k => ({ label: STATUS[k].label, value: counts[k], color: STATUS[k].color })))}
-                        <div class="legend">${['new', 'learn', 'due', 'mature'].map(k => `<div><span class="dot" style="background:${STATUS[k].color}"></span>${STATUS[k].label}<b>${counts[k]}</b></div>`).join('')}</div>
-                    </div>
-                </div>
-                <div class="panel panel-pad chart-card">
-                    <h4>Révisions prévues (14 jours)</h4>
-                    ${barChartSVG(fc, fcLabels, { color: 'var(--due)', maxLabels: 7 })}
-                </div>
-                <div class="panel panel-pad chart-card">
-                    <h4>Tes réponses</h4>
-                    ${barChartSVG([gc[1], gc[2], gc[3], gc[4]], ['Raté', 'Difficile', 'Bien', 'Facile'], { colors: ['var(--again)', 'var(--hard)', 'var(--good)', 'var(--easy)'] })}
-                </div>
-                <div class="panel panel-pad chart-card">
-                    <h4>Heures de révision</h4>
-                    ${barChartSVG(st.hourly, st.hourly.map((_, i) => `${i}h`), { maxLabels: 8 })}
-                </div>
-            </div>
-
-            <div class="panel panel-pad">
-                <div class="section-head" style="margin-bottom:6px">
-                    <h4 style="font-size:.95rem;font-weight:800">${ic('target')} Mes erreurs</h4>
-                    ${errCount ? `<button class="btn btn-primary btn-sm" data-action="practice-errors">${ic('play')}Retravailler (${errCount})</button>` : ''}
-                </div>
-                <p class="small muted">${errCount ? `${plural(errCount, 'carte')} ratée${errCount > 1 ? 's' : ''} récemment. Elles sortent de la liste dès que tu les réussis.` : 'Aucune erreur en attente. Les cartes ratées en révision, en quiz ou au chrono apparaîtront ici.'}</p>
-            </div>
-
-            <div class="panel panel-pad">
-                <h4 style="font-size:.95rem;font-weight:800;margin-bottom:8px">Maîtrise par paquet</h4>
-                ${deckRows.map(r => `
-                <div class="deck-progress-row">
-                    <span class="nm">${esc(r.dk.emoji)} ${esc(r.dk.name)}</span>
-                    <div class="progress"><i style="width:${r.n ? r.c.mature / r.n * 100 : 0}%;background:var(--mature)"></i><i style="width:${r.n ? r.c.learn / r.n * 100 : 0}%;background:var(--learn)"></i><i style="width:${r.n ? r.c.due / r.n * 100 : 0}%;background:var(--due)"></i></div>
-                    <b>${r.pct}%</b>
-                </div>`).join('') || '<p class="small muted">Aucun paquet.</p>'}
-            </div>
-        </div>`;
+        this.highlightResults();
     }
 
     /* ---------- Settings ---------- */
@@ -1139,19 +1149,22 @@ class SuperAnki {
             <div class="panel panel-pad set-section">
                 <h3>${ic('palette')} Thème</h3>
                 <p class="small muted">Chaque thème change tout le design : couleurs, typographie, formes.</p>
+                ${THEME_GROUPS.map(([g, gl]) => `
+                <div class="theme-group"><h5>${gl}</h5>
                 <div class="theme-grid">
-                    ${THEMES.map(t => `
-                    <button class="theme-opt ${s.theme === t.id ? 'active' : ''}" data-action="set" data-key="theme" data-value="${t.id}">
+                    ${THEMES.filter(t => t.group === g).map(t => `
+                    <button class="theme-opt ${s.theme === t.id ? 'active' : ''}" data-action="set" data-key="theme" data-value="${t.id}" aria-pressed="${s.theme === t.id}">
                         <div class="theme-prev" style="background:${t.p.bg}">
-                            <div class="tp-bar" style="background:${t.p.surface};border:1px solid ${t.p.line}"></div>
+                            <div class="tp-bar" style="background:${t.p.surface};border:1px solid ${t.p.line}"><span style="background:${t.p.primary}"></span></div>
+                            <div class="tp-hero" style="background:${t.p.hero}"></div>
                             <div class="tp-row">
-                                <div class="tp-card" style="background:${t.p.primary}"><div class="tp-line" style="background:${t.p.surface};width:60%"></div></div>
                                 <div class="tp-card" style="background:${t.p.surface};border:1px solid ${t.p.line}"><div class="tp-line" style="background:${t.p.text};width:80%"></div><div class="tp-line" style="background:${t.p.line};width:50%"></div></div>
+                                <div class="tp-card" style="background:${t.p.surface};border:1px solid ${t.p.line}"><div class="tp-btn" style="background:${t.p.primary}"></div></div>
                             </div>
                         </div>
-                        <div class="theme-name">${t.name} <small>${t.desc}</small></div>
+                        <div class="theme-name"><span style="font-family:'${t.font}',system-ui">${t.name}</span><small>${t.desc}</small>${s.theme === t.id ? `<span class="theme-check">${ic('check')}</span>` : ''}</div>
                     </button>`).join('')}
-                </div>
+                </div></div>`).join('')}
                 <div class="set-row">
                     <div class="txt"><b>Taille du texte des cartes</b><span>Pour la question et la réponse pendant les révisions.</span></div>
                     ${seg('cardSize', [['s', 'S'], ['m', 'M'], ['l', 'L'], ['xl', 'XL']])}
@@ -1226,6 +1239,7 @@ class SuperAnki {
                     <span><kbd class="k">H</kbd></span><span>Afficher l'indice</span>
                     <span><kbd class="k">Échap</kbd></span><span>Quitter la session / fermer une fenêtre</span>
                     <span><kbd class="k">Ctrl</kbd> + <kbd class="k">Entrée</kbd></span><span>Enregistrer une carte</span>
+                    <span><kbd class="k">Ctrl</kbd> + <kbd class="k">K</kbd> ou <kbd class="k">/</kbd></span><span>Rechercher une carte</span>
                 </div>
             </div>
 
@@ -1278,7 +1292,7 @@ class SuperAnki {
     poolFor(deckIds) {
         if (deckIds === 'errors') return this.errorCards();
         const set = deckIds ? new Set(deckIds) : null;
-        return this.data.cards.filter(c => !set || set.has(c.deckId));
+        return this.data.cards.filter(c => !c.suspended && (!set || set.has(c.deckId)));
     }
     endSession(goHome = true) {
         const s = this.session;
@@ -1424,7 +1438,8 @@ class SuperAnki {
         s.history.push({
             card: { ...this.card(s.current) }, stats: JSON.stringify(this.data.stats),
             queue: [...s.queue], learning: s.learning ? s.learning.map(l => ({ ...l })) : null,
-            done: s.done, correct: s.correct, missed: [...s.missed], retries: s.retries ? { ...s.retries } : null, current: s.current
+            done: s.done, correct: s.correct, missed: [...s.missed], retries: s.retries ? { ...s.retries } : null, current: s.current,
+            revlogLen: this.data.revlog.length
         });
         if (s.history.length > 50) s.history.shift();
     }
@@ -1433,7 +1448,7 @@ class SuperAnki {
         if (!s || s.kind !== 'srs' || !s.revealed) return;
         const card = this.card(s.current), now = Date.now();
         this.snapshot();
-        const prev = card.state;
+        const prev = card.state, prevIvl = card.interval, secs = this.elapsedSec();
         const res = schedule(card, g, now, true);
         Object.assign(card, res);
         card.reps++; card.lastReview = now;
@@ -1444,7 +1459,8 @@ class SuperAnki {
         s.done++;
         if (g >= 2) s.correct++;
         if (g === 1 && !s.missed.includes(card.id)) s.missed.push(card.id);
-        this.recordReview(g, this.elapsedSec());
+        this.recordReview(g, secs);
+        this.logReview(card, g, prev === 'review' ? 1 : prev === 'relearning' ? 2 : 0, prevIvl, secs * 1000);
         s.lastId = card.id;
         this.save();
         this.nextCard();
@@ -1462,7 +1478,9 @@ class SuperAnki {
             if (s.retries[card.id] <= 2) s.queue.splice(Math.min(3, s.queue.length), 0, card.id);
         }
         s.done++;
-        this.recordReview(null, this.elapsedSec());
+        const secs = this.elapsedSec();
+        this.recordReview(null, secs);
+        this.logReview(card, ok ? 3 : 1, 3, card.interval, secs * 1000);
         this.save();
         this.nextCard();
     }
@@ -1473,6 +1491,7 @@ class SuperAnki {
         const card = this.card(h.card.id);
         if (card) Object.assign(card, h.card);
         this.data.stats = normalizeStats(JSON.parse(h.stats));
+        if (this.data.revlog.length > h.revlogLen) this.data.revlog.length = h.revlogLen;
         s.queue = h.queue; if (h.learning) s.learning = h.learning;
         s.done = h.done; s.correct = h.correct; s.missed = h.missed; if (h.retries) s.retries = h.retries;
         s.current = h.current; s.revealed = false; s.typed = null; s.cardStart = Date.now();
@@ -1612,7 +1631,9 @@ class SuperAnki {
             card.wrong++; card.errors++;
             if (!s.missed.includes(card.id)) s.missed.push(card.id);
         }
-        this.recordReview(null, clamp((Date.now() - s.cardStart) / 1000, 1, 60));
+        const secs = clamp((Date.now() - s.cardStart) / 1000, 1, 60);
+        this.recordReview(null, secs);
+        this.logReview(card, opt.ok ? 3 : 1, 3, card.interval, secs * 1000);
         this.save();
         if (s.kind === 'chrono') {
             if (!opt.ok) { s.timeLeft = Math.max(0, s.timeLeft - 3); }
@@ -1812,7 +1833,7 @@ class SuperAnki {
             <div class="editor-area rich" contenteditable="true" id="${id}" data-placeholder="${esc(placeholder)}" role="textbox" aria-multiline="true"></div>
         </div>`;
     }
-    openCardModal(cardId, presetDeck) {
+    openCardModal(cardId, presetDeck, prefillFront) {
         if (!this.data.decks.length) { this.toast('Crée d\'abord un paquet.', 'warning'); this.openDeckModal(); return; }
         const card = cardId ? this.card(cardId) : null;
         const inSession = !!this.session;
@@ -1824,12 +1845,12 @@ class SuperAnki {
                     <select class="select" id="cf-deck">${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${d.id === deckId ? 'selected' : ''}>${esc(d.emoji)} ${esc(d.name)}</option>`).join('')}</select></div>
                 <div class="field"><span class="label">Recto · question</span>${this.editorHtml('cf-front', 'Question ou terme... (tu peux coller une image)')}</div>
                 <div class="field"><span class="label">Verso · réponse</span>${this.editorHtml('cf-back', 'Réponse...')}</div>
-                <details class="field" ${card && (card.hint || card.detail || card.tags.length) ? 'open' : ''}>
-                    <summary class="label" style="cursor:pointer;display:flex;align-items:center;gap:6px">${ic('chevronDown')}Plus d'options (indice, détails, tags${card ? '' : ', sens inversé'})</summary>
+                <details class="field" ${card && (card.hint || card.detail || card.tags.length || card.suspended) ? 'open' : ''}>
+                    <summary class="label" style="cursor:pointer;display:flex;align-items:center;gap:6px">${ic('chevronDown')}Plus d'options (indice, détails, tags${card ? ', suspendre' : ', sens inversé'})</summary>
                     <div class="field" style="margin-top:12px"><label class="label" for="cf-hint">Indice (affiché sur demande avant la réponse)</label><input class="input" id="cf-hint" placeholder="Un petit coup de pouce..." value="${esc(card ? stripHtml(card.hint) : '')}"></div>
                     <div class="field"><span class="label">Détails (repliés sous « En savoir plus »)</span>${this.editorHtml('cf-detail', 'Explication plus poussée...', true)}</div>
                     <div class="field"><label class="label" for="cf-tags">Tags (séparés par des virgules)</label><input class="input" id="cf-tags" placeholder="chapitre1, dates" value="${esc(card ? card.tags.join(', ') : '')}"></div>
-                    ${card ? '' : `<label class="field" style="display:flex;align-items:center;gap:12px;cursor:pointer"><span class="switch"><input type="checkbox" id="cf-both"><span></span></span><span class="small"><b>Créer aussi la carte inversée</b><br><span class="muted">Réponse → question, utile pour le vocabulaire.</span></span></label>`}
+                    ${card ? `<label class="field" style="display:flex;align-items:center;gap:12px;cursor:pointer"><span class="switch"><input type="checkbox" id="cf-susp" ${card.suspended ? 'checked' : ''}><span></span></span><span class="small"><b>Suspendre la carte</b><br><span class="muted">Elle ne sera plus proposée en révision, sans être supprimée.</span></span></label>` : `<label class="field" style="display:flex;align-items:center;gap:12px;cursor:pointer"><span class="switch"><input type="checkbox" id="cf-both"><span></span></span><span class="small"><b>Créer aussi la carte inversée</b><br><span class="muted">Réponse → question, utile pour le vocabulaire.</span></span></label>`}
                 </details>
                 ${card ? `<p class="help">${card.state === 'new' ? 'Carte jamais révisée.' : `Prochaine révision ${fmtRelativeFuture(card.due)} · ${plural(card.reps, 'révision')} · ${plural(card.lapses, 'oubli')}`}</p>` : ''}`,
             foot: `${card ? `<button class="btn btn-danger-soft" id="cf-delete" style="margin-right:auto">${ic('trash')}<span class="hide-mobile">Supprimer</span></button>` : ''}
@@ -1840,6 +1861,7 @@ class SuperAnki {
         m.dataset.cardModal = '1';
         const front = $('#cf-front', m), back = $('#cf-back', m), detail = $('#cf-detail', m);
         if (card) { front.innerHTML = card.front; back.innerHTML = card.back; detail.innerHTML = card.detail; }
+        else if (prefillFront) front.textContent = prefillFront;
         const save = (keepOpen) => {
             const f = sanitizeHtml(front.innerHTML), bk = sanitizeHtml(back.innerHTML);
             if (isBlank(f)) { this.toast('Le recto (question) est vide.', 'warning'); front.focus(); return; }
@@ -1852,6 +1874,8 @@ class SuperAnki {
             this.lastDeckUsed = fields.deckId;
             if (card) {
                 Object.assign(card, fields);
+                const susp = $('#cf-susp', m);
+                if (susp) card.suspended = susp.checked;
                 this.toast('Carte modifiée', 'success');
             } else {
                 const base = { state: 'new', step: 0, interval: 0, ease: 2.5, due: Date.now(), reps: 0, lapses: 0, lastReview: null, errors: 0, wrong: 0, right: 0 };
@@ -2079,6 +2103,7 @@ class SuperAnki {
             title: meta.title,
             body: `<p class="muted small" style="margin-bottom:16px">${meta.desc}</p>
                 <div class="field"><span class="label">Cartes</span>
+                    <label class="input-icon" style="display:block;margin-bottom:8px">${ic('search')}<input class="input" id="pick-filter" placeholder="Filtrer les paquets..." autocomplete="off"></label>
                     <div class="pick-list" id="pick-list">
                         ${item('all', '📂', 'Tous les paquets', this.data.cards.length)}
                         ${item('errors', '🎯', 'Mes erreurs', errCount)}
@@ -2095,6 +2120,10 @@ class SuperAnki {
             if (!b || b.disabled) return;
             sel = b.dataset.pick;
             $$('[data-pick]', m).forEach(x => x.classList.toggle('active', x === b));
+        });
+        $('#pick-filter', m).addEventListener('input', e => {
+            const q = fold(e.target.value.trim());
+            $$('[data-pick]', m).forEach(b => { b.classList.toggle('hidden', !!q && !fold(b.textContent).includes(q)); });
         });
         $('#opt-seg', m).addEventListener('click', e => {
             const b = e.target.closest('[data-opt]');
@@ -2118,6 +2147,79 @@ class SuperAnki {
         });
     }
 
+    /* ---------- Tooltips (charts, calendar...) ---------- */
+    showTip(target, x, y) {
+        if (!this.tipEl) { this.tipEl = document.createElement('div'); this.tipEl.className = 'chart-tip'; document.body.appendChild(this.tipEl); }
+        const tip = this.tipEl;
+        if (this.tipTarget !== target) {
+            if (this.tipTarget) this.tipTarget.classList.remove('on');
+            this.tipTarget = target;
+            target.classList.add('on');
+            tip.innerHTML = target.dataset.tip;
+        }
+        tip.style.display = 'block';
+        const r = tip.getBoundingClientRect(), pad = 12;
+        let left = x + 14, top = y - r.height - 12;
+        if (left + r.width > innerWidth - pad) left = x - r.width - 14;
+        if (left < pad) left = pad;
+        if (top < pad) top = y + 18;
+        tip.style.left = `${left}px`; tip.style.top = `${top}px`;
+        this.tipTouch = true;
+    }
+    hideTip() {
+        if (this.tipEl) this.tipEl.style.display = 'none';
+        if (this.tipTarget) { this.tipTarget.classList.remove('on'); this.tipTarget = null; }
+    }
+
+    /* ---------- Popovers (streak, sync) ---------- */
+    togglePopover(anchor, build) {
+        if (this.popover && this.popoverAnchor === anchor) { this.closePopover(); return; }
+        this.closePopover();
+        const pop = document.createElement('div');
+        pop.className = 'popover';
+        pop.dataset.kind = anchor.dataset.action === 'pop-sync' ? 'sync' : 'streak';
+        pop.innerHTML = build();
+        document.body.appendChild(pop);
+        this.popover = pop; this.popoverAnchor = anchor; this.popoverBuild = build;
+        const r = anchor.getBoundingClientRect(), w = pop.offsetWidth;
+        pop.style.top = `${r.bottom + 8}px`;
+        pop.style.left = `${clamp(r.right - w, 10, innerWidth - w - 10)}px`;
+    }
+    refreshPopover() { if (this.popover) this.popover.innerHTML = this.popoverBuild(); }
+    closePopover() {
+        if (!this.popover) return;
+        this.popover.remove();
+        this.popover = null; this.popoverAnchor = null;
+    }
+    streakPopoverHtml() {
+        const st = this.data.stats, today = dayKey(), alive = st.lastStudyDate === today;
+        const days = Array.from({ length: 7 }, (_, i) => addDays(Date.now(), i - 6));
+        const letters = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+        return `
+            <div class="pop-head"><span class="pop-flame ${alive ? '' : 'cold'}">${ic('flame')}</span><div><b>${plural(st.streak, 'jour')} de suite</b><div class="small muted">Record : ${plural(st.longestStreak, 'jour')}</div></div></div>
+            <div class="week-dots">${days.map(t => { const k = dayKey(t), v = st.history[k] || 0; return `<div class="${v ? 'on' : ''} ${k === today ? 'today' : ''}" title="${esc(longDate(t))} : ${plural(v, 'révision')}"><span>${letters[new Date(t).getDay()]}</span><i>${v ? ic('check') : ''}</i></div>`; }).join('')}</div>
+            <p class="small ${alive ? '' : 'muted'}" style="margin:10px 0">${alive ? `✅ Révision du jour faite (${plural(st.history[today] || 0, 'carte')}). Reviens demain !` : `Révise au moins une carte aujourd'hui pour ${st.streak ? 'prolonger' : 'démarrer'} ta série.`}</p>
+            <div class="pop-freeze">${ic('snow')}<span><b>${st.freezes}/2 gel${st.freezes > 1 ? 's' : ''} de série</b><br><span class="tiny muted">Un gel protège ta série si tu oublies un jour. +1 tous les 7 jours de suite.</span></span></div>
+            <div class="pop-actions">
+                ${alive ? '' : `<button class="btn btn-primary btn-sm" data-action="study" data-deck="">${ic('play')}Réviser</button>`}
+                <button class="btn btn-soft btn-sm" data-action="go-stats">${ic('chart')}Statistiques</button>
+            </div>`;
+    }
+    syncPopoverHtml() {
+        const st = Cloud.status;
+        const label = { ok: 'Tout est synchronisé', busy: 'Synchronisation en cours...', err: 'Synchronisation impossible', off: 'Synchronisation désactivée' }[st] || 'Synchronisation cloud';
+        const detail = st === 'err' ? 'Tu es peut-être hors ligne. Tes données restent enregistrées sur cet appareil et seront envoyées plus tard.'
+            : 'Ta progression est enregistrée sur cet appareil et copiée dans le cloud pour la retrouver sur tes autres appareils.';
+        const ago = Cloud.lastSync ? fmtAgo(Cloud.lastSync) : 'pas encore';
+        return `
+            <div class="pop-head"><span class="pop-cloud ${st}">${ic('cloud')}</span><div><b>${label}</b><div class="small muted">Dernière synchro : ${ago}</div></div></div>
+            <p class="small muted" style="margin:10px 0">${detail}</p>
+            <div class="pop-actions">
+                <button class="btn btn-primary btn-sm" data-action="sync-now" ${st === 'busy' ? 'disabled' : ''}>${ic('refresh')}Synchroniser</button>
+                <button class="btn btn-soft btn-sm" data-action="go-settings">${ic('settings')}Réglages</button>
+            </div>`;
+    }
+
     /* ============================================================
        Toasts
        ============================================================ */
@@ -2137,6 +2239,8 @@ class SuperAnki {
        ============================================================ */
     bindGlobalEvents() {
         document.addEventListener('click', e => {
+            if (this.popover && !this.popover.contains(e.target) && !(this.popoverAnchor && this.popoverAnchor.contains(e.target))) this.closePopover();
+            else if (this.popover && e.target.closest('.popover [data-action], .popover [data-nav]')) setTimeout(() => this.closePopover(), 0);
             const nav = e.target.closest('[data-nav]');
             if (nav) { this.go(nav.dataset.nav); return; }
             const tb = e.target.closest('.tb-btn');
@@ -2155,13 +2259,17 @@ class SuperAnki {
             const k = el.dataset && el.dataset.input;
             if (k === 'search') {
                 this.ui.search = el.value; this.ui.limit = 60;
+                const f = el.closest('.search-field');
+                if (f) f.classList.toggle('has-value', !!el.value);
                 clearTimeout(this.searchTimer);
-                this.searchTimer = setTimeout(() => this.renderDeckPanel(), 120);
+                this.searchTimer = setTimeout(() => { this.renderDeckSidebar(); this.renderDeckPanel(); }, 110);
             }
         });
         document.addEventListener('change', e => {
             const el = e.target, k = el.dataset && el.dataset.input;
             if (k === 'sort') { this.ui.sort = el.value; this.renderDeckPanel(); }
+            else if (k === 'stats-deck') { this.statsUi.deck = el.value; this.renderStats(); }
+            else if (k === 'stats-check') { this.statsUi[el.dataset.key] = el.checked; this.renderStats(); }
             else if (k === 'toggle') {
                 this.setSetting(el.dataset.key, el.checked);
                 if (el.dataset.key === 'cloudSync') {
@@ -2197,6 +2305,19 @@ class SuperAnki {
             if (file) { e.preventDefault(); this.editorRange = null; this.insertImage(file, area); }
         });
         document.addEventListener('keydown', e => this.onKey(e));
+        const tipAt = (e) => {
+            const t = e.target.closest && e.target.closest('[data-tip]');
+            if (!t) { this.hideTip(); return; }
+            this.showTip(t, e.clientX, e.clientY);
+        };
+        document.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') tipAt(e); }, { passive: true });
+        document.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') tipAt(e); }, { passive: true });
+        window.addEventListener('scroll', () => { if (this.tipEl && this.tipTouch) this.hideTip(); this.closePopover(); }, { passive: true });
+        let rz;
+        window.addEventListener('resize', () => {
+            clearTimeout(rz);
+            rz = setTimeout(() => { if (this.view === 'stats') this.drawCharts(); this.closePopover(); }, 150);
+        });
         matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if (this.data && this.data.settings.theme === 'auto') this.applySettings(); });
         const flush = () => { if (this.saveTimer) this.writeNow(); };
         window.addEventListener('pagehide', flush);
@@ -2213,6 +2334,11 @@ class SuperAnki {
             if (e.key === 'Escape') { e.preventDefault(); this.closeModal(top); }
             else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && top._save) { e.preventDefault(); top._save(); }
             return;
+        }
+        if (e.key === 'Escape' && this.popover) { this.closePopover(); return; }
+        if (e.target.id === 'card-search' && e.key === 'Escape') { e.preventDefault(); this.handleAction('clear-search'); return; }
+        if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') || (e.key === '/' && !typing && this.view !== 'session')) {
+            e.preventDefault(); this.handleAction('global-search'); return;
         }
         const s = this.session;
         if (this.view !== 'session') return;
@@ -2306,6 +2432,7 @@ class SuperAnki {
                 if (!ok) break;
                 const now = Date.now();
                 this.data.cards.forEach(c => Object.assign(c, { state: 'new', step: 0, interval: 0, ease: 2.5, due: now, reps: 0, lapses: 0, lastReview: null, errors: 0 }));
+                this.data.revlog = [];
                 this.data.stats.newSeen = { date: dayKey(), count: 0 };
                 this.save(); this.render();
                 this.toast('Progression remise à zéro', 'success');
@@ -2342,6 +2469,39 @@ class SuperAnki {
                 break;
             }
             case 'quiz-answer': this.quizAnswer(Number(ds.i), el); break;
+            case 'clear-search': {
+                this.ui.search = ''; this.ui.limit = 60;
+                const inp = $('#card-search');
+                if (inp) { inp.value = ''; inp.closest('.search-field').classList.remove('has-value'); inp.focus(); }
+                this.renderDeckSidebar(); this.renderDeckPanel();
+                break;
+            }
+            case 'global-search': {
+                if (this.view !== 'decks') this.go('decks');
+                const inp = $('#card-search');
+                if (inp) { inp.focus(); inp.select(); }
+                break;
+            }
+            case 'new-card-from-search': this.openCardModal(null, this.ui.deck !== 'all' && this.ui.deck !== 'errors' ? this.ui.deck : null, this.ui.search.trim()); break;
+            case 'stats-opt': {
+                const v = ds.value;
+                this.statsUi[ds.key] = v === 'true' ? true : v === 'false' ? false : isNaN(Number(v)) ? v : Number(v);
+                this.renderStats();
+                break;
+            }
+            case 'chart-toggle': {
+                const set = this.statsUi.hidden[ds.chart] || (this.statsUi.hidden[ds.chart] = new Set());
+                set.has(ds.key) ? set.delete(ds.key) : set.add(ds.key);
+                el.classList.toggle('off', set.has(ds.key));
+                this.drawCharts(ds.chart);
+                break;
+            }
+            case 'cal-year': this.statsUi.calYear += Number(ds.delta); this.renderStats(); break;
+            case 'stats-deck': this.statsUi.deck = ds.deck; this.renderStats(); window.scrollTo({ top: 0 }); break;
+            case 'pop-streak': this.togglePopover(el, () => this.streakPopoverHtml()); break;
+            case 'pop-sync': this.togglePopover(el, () => this.syncPopoverHtml()); break;
+            case 'go-stats': this.go('stats'); break;
+            case 'go-settings': this.go('settings'); break;
             case 'quiz-next': this.nextQuestion(); break;
             default: break;
         }
@@ -2417,10 +2577,3 @@ function parseImport(text) {
     return rows;
 }
 
-const app = new SuperAnki();
-window.app = app;
-app.init().catch(err => {
-    console.error(err);
-    const boot = document.getElementById('boot');
-    if (boot) boot.innerHTML = `Oups, le chargement a échoué : ${esc(err.message)}. <br><button class="btn btn-primary" style="margin-top:12px" onclick="location.reload()">Recharger</button>`;
-});

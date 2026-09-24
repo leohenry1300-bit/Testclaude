@@ -11,8 +11,9 @@
             <button class="nav-btn" data-nav="settings"><svg class="i" viewBox="0 0 24 24"><use href="#i-settings"/></svg>Paramètres</button>
         </nav>
         <div class="topbar-actions" style="margin-left:auto">
-            <button id="sync-indicator" class="sync-dot hidden" title="Synchronisation cloud" data-nav="settings"><svg class="i" viewBox="0 0 24 24"><use href="#i-cloud"/></svg></button>
-            <button id="streak-chip" class="streak-chip cold" data-nav="stats" title="Série actuelle">
+            <button class="icon-btn" data-action="global-search" title="Rechercher une carte (Ctrl+K)" aria-label="Rechercher"><svg class="i" viewBox="0 0 24 24"><use href="#i-search"/></svg></button>
+            <button id="sync-indicator" class="sync-dot hidden" title="Synchronisation cloud" data-action="pop-sync" aria-label="Synchronisation cloud"><svg class="i" viewBox="0 0 24 24"><use href="#i-cloud"/></svg></button>
+            <button id="streak-chip" class="streak-chip cold" data-action="pop-streak" title="Série actuelle" aria-label="Série actuelle">
                 <svg class="i" viewBox="0 0 24 24"><use href="#i-flame"/></svg><span id="streak-value">0</span>
             </button>
         </div>

@@ -14,7 +14,7 @@
 <title>SuperAnki Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Lora:wght@400;600;700&family=Nunito:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&family=Lora:wght@400;600;700&family=Nunito:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&family=Playfair+Display:wght@600;700;800&family=Patrick+Hand&family=Press+Start+2P&family=VT323&display=swap">
 <style>
 /* ============================================================
    SuperAnki Pro - design system
@@ -62,7 +62,7 @@
 }
 
 /* ---------- Dark family ---------- */
-[data-theme="nuit"], [data-theme="oled"], [data-theme="foret"], [data-theme="neon"], [data-theme="terminal"] { color-scheme: dark; }
+[data-theme="nuit"], [data-theme="oled"], [data-theme="foret"], [data-theme="neon"], [data-theme="terminal"], [data-theme="nord"], [data-theme="dracula"], [data-theme="cafe"], [data-theme="luxe"], [data-theme="synthwave"], [data-theme="craie"], [data-theme="contraste"] { color-scheme: dark; }
 
 [data-theme="nuit"] {
   --bg: #0b1020; --surface: #131a2e; --surface-2: #1a2238; --surface-3: #232d47;
@@ -609,7 +609,7 @@ img { max-width: 100%; }
    ============================================================ */
 .modal-back { position: fixed; inset: 0; z-index: 80; background: rgba(8, 10, 20, .55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; animation: fadeBg .18s ease; }
 @keyframes fadeBg { from { opacity: 0; } }
-.modal { width: 100%; max-width: 560px; max-height: calc(100dvh - 32px); display: flex; flex-direction: column; background: var(--surface); border: var(--border-w) solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); animation: pop .2s ease; overflow: hidden; }
+.modal { background: var(--surface-solid, var(--surface)) !important; width: 100%; max-width: 560px; max-height: calc(100dvh - 32px); display: flex; flex-direction: column; background: var(--surface); border: var(--border-w) solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); animation: pop .2s ease; overflow: hidden; }
 .modal.wide { max-width: 720px; }
 .modal.narrow { max-width: 420px; }
 @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.98); } }
@@ -719,6 +719,328 @@ code { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size:
   .modal-foot .btn.hide-mobile { display: none; }
 }
 
+/* ============================================================
+   Additional themes
+   ============================================================ */
+[data-theme="aurore"] {
+  --bg: #f4f2ff;
+  --bg-accent: radial-gradient(700px 500px at 5% 0%, rgba(244,114,182,.35), transparent 60%), radial-gradient(700px 500px at 100% 10%, rgba(129,140,248,.35), transparent 60%), radial-gradient(800px 600px at 50% 110%, rgba(34,211,238,.28), transparent 60%);
+  --surface: rgba(255,255,255,.62); --surface-solid: #ffffff; --surface-2: rgba(255,255,255,.55); --surface-3: rgba(237,233,254,.9);
+  --border: rgba(255,255,255,.85); --border-strong: rgba(196,181,253,.8);
+  --text: #1e1b4b; --text-muted: #4c4677; --text-faint: #8580ad;
+  --primary: #7c3aed; --primary-2: #ec4899; --on-primary: #fff;
+  --primary-soft: rgba(124,58,237,.12);
+  --hero: linear-gradient(120deg, #7c3aed, #ec4899 55%, #f59e0b);
+  --radius: 24px; --radius-sm: 16px;
+  --shadow: 0 8px 32px rgba(76, 29, 149, .10), inset 0 1px 0 rgba(255,255,255,.7);
+}
+[data-theme="aurore"] .panel, [data-theme="aurore"] .topbar, [data-theme="aurore"] .bottom-nav, [data-theme="aurore"] .quiz-opt { backdrop-filter: blur(18px) saturate(170%); -webkit-backdrop-filter: blur(18px) saturate(170%); }
+
+[data-theme="solaire"] {
+  --bg: #fdf6e3; --bg-accent: none; --surface: #fffbef; --surface-2: #f5eed8; --surface-3: #eee8d5;
+  --border: #e6dfc6; --border-strong: #d3cbb0;
+  --text: #073642; --text-muted: #586e75; --text-faint: #93a1a1;
+  --primary: #268bd2; --primary-2: #2aa198; --on-primary: #fff;
+  --new: #268bd2; --learn: #b58900; --due: #dc322f; --mature: #859900;
+  --again: #dc322f; --hard: #cb4b16; --good: #268bd2; --easy: #859900;
+  --hero: linear-gradient(135deg, #268bd2, #2aa198);
+  --radius: 12px; --radius-sm: 9px;
+  --shadow: 0 1px 2px rgba(7,54,66,.06), 0 4px 14px rgba(7,54,66,.06);
+}
+
+[data-theme="cahier"] {
+  --font: 'Nunito', system-ui, sans-serif;
+  --font-display: 'Patrick Hand', 'Comic Sans MS', cursive;
+  --font-card: 'Patrick Hand', 'Comic Sans MS', cursive;
+  --bg: #fdfdf8;
+  --bg-accent: linear-gradient(90deg, transparent 54px, rgba(233,120,120,.55) 54px, rgba(233,120,120,.55) 56px, transparent 56px), repeating-linear-gradient(180deg, transparent 0 31px, #cfe0f5 31px 32px);
+  --surface: #fffef9; --surface-2: #f6f7f1; --surface-3: #ecefe4;
+  --border: #d8e3f0; --border-strong: #b7c9e3;
+  --text: #1f2a44; --text-muted: #4a5878; --text-faint: #8391ad;
+  --primary: #2f5bd3; --primary-2: #d33c3c; --on-primary: #fff;
+  --hero: #fff3a8; --on-hero: #3a3200;
+  --radius: 4px; --radius-sm: 4px; --radius-xs: 3px;
+  --shadow: 0 1px 1px rgba(31,42,68,.08), 0 3px 10px rgba(31,42,68,.07);
+  --heading-spacing: .01em; --card-size: 1.6rem;
+}
+[data-theme="cahier"] .hero { transform: rotate(-.6deg); box-shadow: 0 12px 24px rgba(58,50,0,.18); }
+[data-theme="cahier"] .hero .btn-hero { background: #2f5bd3; color: #fff; }
+[data-theme="cahier"] .hero .btn-hero-ghost { border-color: rgba(58,50,0,.35); background: rgba(255,255,255,.4); }
+[data-theme="cahier"] h2, [data-theme="cahier"] h3, [data-theme="cahier"] h4 { font-weight: 400 !important; font-size: 1.15em; }
+
+[data-theme="nord"] {
+  --bg: #2e3440; --bg-accent: none; --surface: #3b4252; --surface-2: #434c5e; --surface-3: #4c566a;
+  --border: #434c5e; --border-strong: #4c566a;
+  --text: #eceff4; --text-muted: #d8dee9; --text-faint: #a3adbf;
+  --primary: #88c0d0; --primary-2: #81a1c1; --on-primary: #2e3440;
+  --new: #81a1c1; --learn: #ebcb8b; --due: #bf616a; --mature: #a3be8c;
+  --again: #bf616a; --hard: #d08770; --good: #81a1c1; --easy: #a3be8c;
+  --hero: linear-gradient(135deg, #5e81ac, #88c0d0); --on-hero: #eceff4;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 2px 10px rgba(0,0,0,.18);
+}
+
+[data-theme="dracula"] {
+  --bg: #282a36; --bg-accent: none; --surface: #303241; --surface-2: #383a4a; --surface-3: #44475a;
+  --border: #44475a; --border-strong: #565a73;
+  --text: #f8f8f2; --text-muted: #c6c9dc; --text-faint: #8a90b4;
+  --primary: #bd93f9; --primary-2: #ff79c6; --on-primary: #282a36;
+  --new: #8be9fd; --learn: #ffb86c; --due: #ff5555; --mature: #50fa7b;
+  --again: #ff5555; --hard: #ffb86c; --good: #8be9fd; --easy: #50fa7b;
+  --hero: linear-gradient(135deg, #6272a4, #bd93f9 60%, #ff79c6);
+  --shadow: 0 4px 18px rgba(0,0,0,.28);
+}
+
+[data-theme="cafe"] {
+  --font: 'Nunito', system-ui, sans-serif; --font-display: 'Lora', Georgia, serif; --font-card: 'Lora', Georgia, serif;
+  --bg: #1c1512; --bg-accent: radial-gradient(900px 500px at 100% 0%, rgba(212,163,115,.10), transparent 60%);
+  --surface: #261d18; --surface-2: #30251f; --surface-3: #3b2e26;
+  --border: #3b2e26; --border-strong: #5a463a;
+  --text: #f3e7dc; --text-muted: #c9b3a2; --text-faint: #9a8373;
+  --primary: #d4a373; --primary-2: #e9c46a; --on-primary: #1c1512;
+  --new: #8ecae6; --learn: #e9c46a; --due: #e76f51; --mature: #90be6d;
+  --again: #e76f51; --hard: #e9c46a; --good: #8ecae6; --easy: #90be6d;
+  --hero: linear-gradient(135deg, #7f5539, #b08968); --on-hero: #fff8f0;
+  --shadow: 0 6px 20px rgba(0,0,0,.35);
+}
+
+[data-theme="luxe"] {
+  --font: 'Inter', system-ui, sans-serif; --font-display: 'Playfair Display', Georgia, serif; --font-card: 'Playfair Display', Georgia, serif;
+  --bg: #0c0b09; --bg-accent: radial-gradient(900px 500px at 50% -10%, rgba(212,175,55,.10), transparent 60%);
+  --surface: #15130f; --surface-2: #1d1a15; --surface-3: #26221b;
+  --border: #2c271e; --border-strong: #4a3f2a;
+  --text: #f4ecd8; --text-muted: #c7b999; --text-faint: #8d8066;
+  --primary: #d4af37; --primary-2: #f1d67a; --on-primary: #15130f;
+  --new: #9fb8d9; --learn: #e2b857; --due: #d9776a; --mature: #9dc49a;
+  --again: #d9776a; --hard: #e2b857; --good: #9fb8d9; --easy: #9dc49a;
+  --hero: linear-gradient(135deg, #1d1a15, #2c2416); --on-hero: #f4ecd8;
+  --radius: 6px; --radius-sm: 4px; --radius-xs: 3px;
+  --shadow: 0 0 0 1px rgba(212,175,55,.12), 0 10px 30px rgba(0,0,0,.4);
+  --heading-spacing: .01em;
+}
+[data-theme="luxe"] .btn-primary { background: linear-gradient(135deg, #b8912b, #f1d67a); }
+[data-theme="luxe"] .hero { border: 1px solid rgba(212,175,55,.45); }
+[data-theme="luxe"] .hero-title { color: #e8c96a; }
+[data-theme="luxe"] .hero .btn-hero { background: linear-gradient(135deg, #b8912b, #f1d67a); color: #15130f; }
+
+[data-theme="synthwave"] {
+  --font: 'Space Grotesk', system-ui, sans-serif; --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --bg: #1a0b2e; --bg-accent: linear-gradient(180deg, #1a0b2e 0%, #2d0f45 55%, #53196b 100%);
+  --surface: rgba(38,15,66,.88); --surface-solid: #26104a; --surface-2: #2e1353; --surface-3: #3d1a6b;
+  --border: #4b2380; --border-strong: #6d33b3;
+  --text: #fdf0ff; --text-muted: #d9b8f0; --text-faint: #a07cc4;
+  --primary: #ff3cac; --primary-2: #ffb800; --on-primary: #1a0b2e;
+  --new: #2de2e6; --learn: #ffb800; --due: #ff3864; --mature: #6dff9b;
+  --again: #ff3864; --hard: #ffb800; --good: #2de2e6; --easy: #6dff9b;
+  --hero: linear-gradient(180deg, #ffb800 0%, #ff3cac 55%, #784ba0 100%); --on-hero: #1a0b2e;
+  --shadow: 0 0 0 1px rgba(255,60,172,.15), 0 10px 30px rgba(0,0,0,.35);
+  --heading-transform: uppercase; --heading-spacing: .05em;
+}
+[data-theme="synthwave"] body::before {
+  content: ""; position: fixed; left: -50%; right: -50%; bottom: 0; height: 45vh; z-index: -1; pointer-events: none;
+  background-image: linear-gradient(rgba(255,60,172,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,60,172,.5) 1px, transparent 1px);
+  background-size: 48px 48px; transform: perspective(320px) rotateX(62deg); transform-origin: bottom;
+  -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 90%); mask-image: linear-gradient(to top, #000 10%, transparent 90%);
+}
+[data-theme="synthwave"] .hero-title { text-shadow: 0 2px 0 rgba(255,255,255,.35); }
+[data-theme="synthwave"] .hero .btn-hero { background: #1a0b2e; color: #ffb800; }
+[data-theme="synthwave"] .hero .btn-hero-ghost { border-color: rgba(26,11,46,.4); color: #1a0b2e; background: rgba(255,255,255,.2); }
+[data-theme="synthwave"] h2, [data-theme="synthwave"] .section-title { text-shadow: 0 0 12px rgba(255,60,172,.6); }
+
+[data-theme="gameboy"] {
+  --font: 'VT323', ui-monospace, monospace; --font-display: 'Press Start 2P', ui-monospace, monospace; --font-card: 'VT323', ui-monospace, monospace;
+  --bg: #9bbc0f; --bg-accent: none;
+  --surface: #8bac0f; --surface-2: #9bbc0f; --surface-3: #7a9a0d;
+  --border: #306230; --border-strong: #0f380f;
+  --text: #0f380f; --text-muted: #214f21; --text-faint: #306230;
+  --primary: #0f380f; --primary-2: #306230; --on-primary: #9bbc0f;
+  --primary-soft: #7a9a0d;
+  --new: #1d4f7a; --learn: #6d5a00; --due: #7a1d1d; --mature: #0f380f;
+  --again: #7a1d1d; --hard: #6d5a00; --good: #1d4f7a; --easy: #0f380f;
+  --hero: #306230; --on-hero: #9bbc0f;
+  --radius: 0; --radius-sm: 0; --radius-xs: 0; --border-w: 3px;
+  --shadow: 4px 4px 0 #0f380f; --shadow-lg: 6px 6px 0 #0f380f;
+  --card-size: 1.9rem;
+}
+[data-theme="gameboy"] body { font-size: 20px; line-height: 1.25; }
+[data-theme="gameboy"] .page-title, [data-theme="gameboy"] .hero-title { font-size: 1.05rem; line-height: 1.6; }
+[data-theme="gameboy"] h3, [data-theme="gameboy"] h4, [data-theme="gameboy"] .brand { font-size: .72rem !important; line-height: 1.6; }
+[data-theme="gameboy"] .status-num, [data-theme="gameboy"] .kpi b, [data-theme="gameboy"] .chrono-num { font-size: 1.2rem; }
+[data-theme="gameboy"] .btn, [data-theme="gameboy"] .grade-btn { border: 3px solid #0f380f; }
+[data-theme="gameboy"] .input, [data-theme="gameboy"] .select, [data-theme="gameboy"] .textarea { font-size: 20px; }
+[data-theme="gameboy"] img { image-rendering: pixelated; }
+
+[data-theme="craie"] {
+  --font: 'Patrick Hand', 'Comic Sans MS', cursive; --font-display: 'Patrick Hand', cursive; --font-card: 'Patrick Hand', cursive;
+  --bg: #1d372b; --bg-accent: radial-gradient(1200px 700px at 50% 30%, rgba(255,255,255,.07), transparent 70%);
+  --surface: #25453a; --surface-2: #2b4f42; --surface-3: #33594b;
+  --border: #3f6656; --border-strong: #6c9483;
+  --text: #f1f5ef; --text-muted: #c9d6cf; --text-faint: #93a89d;
+  --primary: #f7f3d6; --primary-2: #9fd8ef; --on-primary: #1d372b;
+  --new: #9fd8ef; --learn: #ffe08a; --due: #ff9e9e; --mature: #b5f2a4;
+  --again: #ff9e9e; --hard: #ffe08a; --good: #9fd8ef; --easy: #b5f2a4;
+  --hero: #2b4f42; --on-hero: #f7f3d6;
+  --radius: 8px; --radius-sm: 6px;
+  --shadow: 0 2px 0 rgba(0,0,0,.25);
+  --card-size: 1.65rem;
+}
+[data-theme="craie"] body { font-size: 17px; }
+@media (min-width: 900px) { [data-theme="craie"] body { box-shadow: inset 0 0 0 12px #6b4423, inset 0 0 0 14px #4e3019; } }
+[data-theme="craie"] .panel, [data-theme="craie"] .hero { border-style: dashed; }
+[data-theme="craie"] .hero { border: 2px dashed rgba(247,243,214,.45); }
+[data-theme="craie"] h2, [data-theme="craie"] h3, [data-theme="craie"] h4 { font-weight: 400 !important; }
+
+[data-theme="contraste"] {
+  --bg: #000; --bg-accent: none; --surface: #000; --surface-2: #111; --surface-3: #222;
+  --border: #fff; --border-strong: #fff;
+  --text: #fff; --text-muted: #fff; --text-faint: #d4d4d4;
+  --primary: #ffff00; --primary-2: #00ffff; --on-primary: #000; --primary-soft: #333300;
+  --ring: #ffff00;
+  --new: #00ffff; --learn: #ffcc00; --due: #ff7070; --mature: #00ff66;
+  --again: #ff7070; --hard: #ffcc00; --good: #00ffff; --easy: #00ff66;
+  --hero: #000; --on-hero: #fff; --border-w: 2px;
+  --shadow: none; --shadow-lg: 0 0 0 2px #fff;
+}
+[data-theme="contraste"] body { font-size: 16.5px; }
+[data-theme="contraste"] .hero { border: 2px solid #fff; }
+[data-theme="contraste"] .hero .btn-hero { background: #ffff00; color: #000; }
+[data-theme="contraste"] :focus-visible { outline: 3px solid #ffff00; outline-offset: 3px; }
+[data-theme="contraste"] a, [data-theme="contraste"] .link { text-decoration: underline; }
+
+/* Theme picker */
+.theme-group { margin-top: 18px; }
+.theme-group h5 { margin: 0 0 10px; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--text-faint); }
+.theme-group .theme-grid { margin-top: 0; }
+.theme-prev { height: 104px; }
+.theme-prev .tp-bar { height: 12px; border-radius: 4px; display: flex; align-items: center; padding: 0 5px; }
+.theme-prev .tp-bar span { width: 18px; height: 4px; border-radius: 2px; }
+.theme-prev .tp-hero { height: 22px; border-radius: 6px; }
+.theme-prev .tp-btn { height: 10px; width: 70%; border-radius: 4px; margin-top: auto; }
+.theme-name { position: relative; flex-direction: column; align-items: flex-start; gap: 1px; }
+.theme-name > span:first-child { font-size: .95rem; }
+.theme-check { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 99px; background: var(--primary); color: var(--on-primary); display: grid; place-items: center; }
+.theme-check .i { width: 14px; height: 14px; }
+
+/* ============================================================
+   Search
+   ============================================================ */
+.search-field { position: relative; }
+.search-field .input { padding-right: 44px; }
+.search-field input::-webkit-search-cancel-button { display: none; }
+.search-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 99px; display: none; place-items: center; color: var(--text-muted); background: var(--surface-3); }
+.search-clear:hover { color: var(--text); }
+.search-clear .i { width: 16px; height: 16px; }
+.search-field.has-value .search-clear { display: grid; }
+.search-help { grid-column: 1 / -1; font-size: .75rem; color: var(--text-faint); padding: 0 4px; }
+.search-help code { font-size: .72rem; }
+mark.hl { background: color-mix(in srgb, #facc15 55%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+.result-line { display: flex; align-items: center; gap: 8px; padding: 10px 20px; font-size: .85rem; color: var(--text-muted); border-bottom: var(--border-w) solid var(--border); background: var(--surface-2); }
+.result-line .link { font-size: .85rem; }
+.dl-item.dim { opacity: .45; }
+.card-row.is-susp { opacity: .6; }
+
+/* ============================================================
+   Popovers & tooltips
+   ============================================================ */
+.popover { position: fixed; z-index: 90; width: min(320px, calc(100vw - 20px)); background: var(--surface-solid, var(--surface)); border: var(--border-w) solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); padding: 16px; animation: pop .16s ease; }
+.pop-head { display: flex; align-items: center; gap: 12px; }
+.pop-head b { font-size: 1rem; }
+.pop-flame, .pop-cloud { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex: none; background: color-mix(in srgb, #f97316 15%, var(--surface)); color: #f97316; }
+.pop-flame .i, .pop-cloud .i { width: 24px; height: 24px; }
+.pop-flame.cold { color: var(--text-faint); background: var(--surface-2); }
+.pop-cloud { color: var(--text-faint); background: var(--surface-2); }
+.pop-cloud.ok { color: var(--mature); background: color-mix(in srgb, var(--mature) 14%, var(--surface)); }
+.pop-cloud.busy { color: var(--learn); } .pop-cloud.err { color: var(--due); background: color-mix(in srgb, var(--due) 12%, var(--surface)); }
+.week-dots { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 14px; text-align: center; }
+.week-dots div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: .7rem; font-weight: 700; color: var(--text-faint); }
+.week-dots i { width: 30px; height: 30px; border-radius: 99px; background: var(--surface-2); border: 2px solid var(--border); display: grid; place-items: center; }
+.week-dots .on i { background: #f97316; border-color: #f97316; color: #fff; }
+.week-dots .on i .i { width: 15px; height: 15px; stroke-width: 3; }
+.week-dots .today span { color: var(--text); }
+.week-dots .today i { border-color: var(--text-faint); }
+.pop-freeze { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius-xs); background: var(--surface-2); font-size: .85rem; }
+.pop-freeze > .i { color: #38bdf8; margin-top: 2px; }
+.pop-actions { display: flex; gap: 8px; margin-top: 12px; }
+.pop-actions .btn { flex: 1; }
+.chart-tip { position: fixed; z-index: 150; pointer-events: none; display: none; max-width: 260px; background: var(--surface-solid, var(--surface)); color: var(--text); border: var(--border-w) solid var(--border-strong); border-radius: 10px; padding: 8px 11px; font-size: .8rem; line-height: 1.45; box-shadow: var(--shadow-lg); }
+.chart-tip b { display: block; margin-bottom: 3px; font-size: .82rem; }
+.tip-row { display: flex; align-items: center; gap: 7px; }
+.tip-row em { margin-left: auto; padding-left: 14px; font-style: normal; font-weight: 800; }
+.tip-foot { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: .75rem; }
+.sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+
+/* ============================================================
+   Stats (Anki-like)
+   ============================================================ */
+.stats-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.stats-scope { min-width: 260px; }
+@media (max-width: 560px) { .stats-scope { min-width: 0; width: 100%; } }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.stats-grid .stat-card.wide { grid-column: 1 / -1; }
+@media (max-width: 900px) { .stats-grid { grid-template-columns: 1fr; } }
+.stat-card { min-width: 0; }
+.stat-title { font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.stat-sub { font-size: .8rem; color: var(--text-muted); margin-top: 3px; }
+.stat-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px 16px; margin-bottom: 12px; }
+.stat-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.seg-sm { padding: 3px; }
+.seg-sm button { min-height: 30px; padding: 5px 10px; font-size: .78rem; }
+.check { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 700; color: var(--text-muted); cursor: pointer; }
+.check input { accent-color: var(--primary); width: 16px; height: 16px; }
+.stat-text p + p { margin-top: 6px; }
+.stat-text { font-size: .92rem; }
+.chart { width: 100%; min-height: 60px; }
+.chart svg { display: block; overflow: visible; max-width: 100%; height: auto; }
+.chart text { fill: var(--text-faint); font-size: 11px; font-family: var(--font); }
+.chart .grid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .axis { stroke: var(--border-strong); }
+.chart .hit { fill: transparent; cursor: crosshair; }
+.chart .hit.on { fill: color-mix(in srgb, var(--text) 7%, transparent); }
+.chart .slice { cursor: pointer; transition: opacity .15s; }
+.chart .slice.on { opacity: .8; }
+.chart .donut-num { font-size: 26px; font-weight: 800; fill: var(--text); }
+.chart.donut { width: auto; flex: none; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chart-legend button, .chart-legend > span { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; color: var(--text-muted); padding: 4px 9px; border-radius: 99px; border: var(--border-w) solid var(--border); background: var(--surface-2); }
+.chart-legend button.off { opacity: .45; text-decoration: line-through; }
+.chart-legend.static > span { background: none; border: 0; padding: 2px 6px; }
+.stat-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 14px 0 0; font-size: .85rem; }
+.stat-facts dt { color: var(--text-muted); text-align: right; }
+.stat-facts dd { margin: 0; font-weight: 700; }
+.no-data { display: grid; place-items: center; min-height: 140px; color: var(--text-faint); font-weight: 700; font-size: .85rem; letter-spacing: .02em; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); text-align: center; padding: 16px; }
+.donut-wrap { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; margin-top: 10px; }
+.stat-table { border-collapse: collapse; font-size: .85rem; }
+.stat-table td, .stat-table th { padding: 5px 10px; text-align: right; white-space: nowrap; }
+.stat-table td:first-child, .stat-table th:first-child { text-align: left; }
+.legend-table td:first-child { display: flex; align-items: center; gap: 8px; }
+.legend-table tr.total td { border-top: 1px solid var(--border); font-weight: 800; }
+.table-scroll { overflow-x: auto; margin-top: 10px; }
+.retention { width: 100%; }
+.retention thead th { font-size: .78rem; border-bottom: 1px solid var(--border-strong); }
+.retention tbody th { font-weight: 700; }
+.retention tbody tr + tr { border-top: 1px solid var(--border); }
+.retention .c-young { color: color-mix(in srgb, var(--mature) 70%, var(--text)); }
+.retention .c-mature { color: var(--mature); }
+.year-nav { display: flex; align-items: center; gap: 6px; }
+.year-nav b { min-width: 44px; text-align: center; }
+.year-nav button:disabled { opacity: .3; }
+.cal-wrap { display: flex; gap: 6px; }
+.cal-days { display: grid; grid-template-rows: repeat(7, 13px); gap: 3px; font-size: .62rem; color: var(--text-faint); font-weight: 700; padding-top: 0; }
+.cal-days span { line-height: 13px; }
+.heatmap.year { grid-template-rows: repeat(7, 13px); grid-auto-columns: 13px; }
+.heatmap i.pad { background: transparent; }
+.heatmap i.future { opacity: .4; }
+.heatmap i:not(.pad):hover, .heatmap i.on { outline: 2px solid var(--text); outline-offset: 0; }
+.cal-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; }
+.cal-scale { display: inline-flex; align-items: center; gap: 3px; font-size: .7rem; color: var(--text-faint); }
+.cal-scale i { width: 11px; height: 11px; border-radius: 3px; background: var(--surface-2); display: inline-block; }
+.cal-scale i.l1 { background: color-mix(in srgb, var(--primary) 30%, var(--surface-2)); }
+.cal-scale i.l2 { background: color-mix(in srgb, var(--primary) 55%, var(--surface-2)); }
+.cal-scale i.l3 { background: color-mix(in srgb, var(--primary) 80%, var(--surface-2)); }
+.cal-scale i.l4 { background: var(--primary); }
+button.deck-progress-row { width: 100%; text-align: left; border-radius: var(--radius-xs); padding: 8px 6px; }
+button.deck-progress-row:hover { background: var(--surface-2); }
+
 </style>
 </head>
 <body>
@@ -735,8 +1057,9 @@ code { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size:
             <button class="nav-btn" data-nav="settings"><svg class="i" viewBox="0 0 24 24"><use href="#i-settings"/></svg>Paramètres</button>
         </nav>
         <div class="topbar-actions" style="margin-left:auto">
-            <button id="sync-indicator" class="sync-dot hidden" title="Synchronisation cloud" data-nav="settings"><svg class="i" viewBox="0 0 24 24"><use href="#i-cloud"/></svg></button>
-            <button id="streak-chip" class="streak-chip cold" data-nav="stats" title="Série actuelle">
+            <button class="icon-btn" data-action="global-search" title="Rechercher une carte (Ctrl+K)" aria-label="Rechercher"><svg class="i" viewBox="0 0 24 24"><use href="#i-search"/></svg></button>
+            <button id="sync-indicator" class="sync-dot hidden" title="Synchronisation cloud" data-action="pop-sync" aria-label="Synchronisation cloud"><svg class="i" viewBox="0 0 24 24"><use href="#i-cloud"/></svg></button>
+            <button id="streak-chip" class="streak-chip cold" data-action="pop-streak" title="Série actuelle" aria-label="Série actuelle">
                 <svg class="i" viewBox="0 0 24 24"><use href="#i-flame"/></svg><span id="streak-value">0</span>
             </button>
         </div>
@@ -818,7 +1141,9 @@ const ICONS = {
     clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     alert: '<path d="m10.3 3.9-8.1 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3.1l-8-14a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
     refresh: '<path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/>',
-    card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'
+    card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+    pause: '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+    check2: '<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>'
 };
 const ic = (name, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 function injectSprite() {
@@ -877,6 +1202,14 @@ function fmtRelativeFuture(t, now = Date.now()) {
     if (days === 1) return 'demain';
     return `dans ${fmtDays(days)}`;
 }
+function fmtAgo(t) {
+    const s = Math.max(0, (Date.now() - t) / 1000);
+    if (s < 45) return "à l'instant";
+    if (s < 3600) return `il y a ${Math.round(s / 60)} min`;
+    if (s < 86400) return `il y a ${Math.round(s / 3600)} h`;
+    return `il y a ${plural(Math.round(s / 86400), 'jour')}`;
+}
+const longDate = t => new Date(t).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 function fmtDuration(sec) {
     sec = Math.round(sec);
     if (sec < 60) return `${sec} s`;
@@ -975,19 +1308,31 @@ const isBlank = html => !stripHtml(html).trim() && !hasImage(html);
    Themes & defaults
    ============================================================ */
 const THEMES = [
-    { id: 'auto', name: 'Automatique', desc: 'Suit ton appareil', p: { bg: 'linear-gradient(90deg,#f5f6fb 50%,#0b1020 50%)', surface: '#ffffff', primary: '#4f46e5', text: '#151a2d', line: '#c7cbe0' } },
-    { id: 'clair', name: 'Clair', desc: 'Net et lumineux', p: { bg: '#f5f6fb', surface: '#ffffff', primary: '#4f46e5', text: '#151a2d', line: '#d7dbe8' } },
-    { id: 'nuit', name: 'Nuit', desc: 'Sombre et doux', p: { bg: '#0b1020', surface: '#131a2e', primary: '#818cf8', text: '#e8ebf5', line: '#2b3553' } },
-    { id: 'oled', name: 'Noir OLED', desc: 'Noir pur, économe', p: { bg: '#000', surface: '#0b0b0c', primary: '#f4f4f5', text: '#f4f4f5', line: '#27272a' } },
-    { id: 'papier', name: 'Papier', desc: 'Sépia, typo livre', p: { bg: '#efe6d2', surface: '#fbf6ea', primary: '#9a3412', text: '#33271b', line: '#dccdab' } },
-    { id: 'ocean', name: 'Océan', desc: 'Bleu frais', p: { bg: '#e9f4fb', surface: '#ffffff', primary: '#0284c7', text: '#0b2a3f', line: '#cfe3f1' } },
-    { id: 'foret', name: 'Forêt', desc: 'Vert profond', p: { bg: '#0d1712', surface: '#14231b', primary: '#4ade80', text: '#e3f1e8', line: '#2a4636' } },
-    { id: 'sakura', name: 'Sakura', desc: 'Rose tout doux', p: { bg: '#fff4f6', surface: '#ffffff', primary: '#db2777', text: '#4a1d2c', line: '#fbd5de' } },
-    { id: 'lavande', name: 'Lavande', desc: 'Violet pastel', p: { bg: '#f4f1fd', surface: '#ffffff', primary: '#7c3aed', text: '#251a45', line: '#e3dbfa' } },
-    { id: 'neon', name: 'Néon', desc: 'Cyberpunk lumineux', p: { bg: '#07000f', surface: '#120823', primary: '#ff2bd6', text: '#f5e9ff', line: '#3a1a5c' } },
-    { id: 'terminal', name: 'Terminal', desc: 'Rétro, vert sur noir', p: { bg: '#020a03', surface: '#031205', primary: '#4dff7a', text: '#4dff7a', line: '#0f4a18' } },
-    { id: 'brutal', name: 'Brutaliste', desc: 'Contrasté, audacieux', p: { bg: '#fff8e7', surface: '#ffffff', primary: '#ffd400', text: '#111', line: '#111' } }
+    { id: 'auto', group: 'clair', name: 'Automatique', desc: 'Suit ton appareil', font: 'Inter', p: { bg: 'linear-gradient(90deg,#f5f6fb 50%,#0b1020 50%)', surface: '#ffffff', primary: '#4f46e5', text: '#151a2d', line: '#c7cbe0', hero: 'linear-gradient(135deg,#4f46e5,#7c3aed)' } },
+    { id: 'clair', group: 'clair', name: 'Clair', desc: 'Net et lumineux', font: 'Inter', p: { bg: '#f5f6fb', surface: '#ffffff', primary: '#4f46e5', text: '#151a2d', line: '#d7dbe8', hero: 'linear-gradient(135deg,#4f46e5,#7c3aed)' } },
+    { id: 'aurore', group: 'clair', name: 'Aurore', desc: 'Verre dépoli, dégradés', font: 'Inter', p: { bg: 'radial-gradient(circle at 20% 20%,#f9a8d4,transparent 50%),radial-gradient(circle at 80% 30%,#a5b4fc,transparent 50%),radial-gradient(circle at 50% 90%,#67e8f9,transparent 55%),#f5f3ff', surface: 'rgba(255,255,255,.6)', primary: '#7c3aed', text: '#1e1b4b', line: 'rgba(255,255,255,.9)', hero: 'linear-gradient(120deg,#7c3aed,#ec4899,#f59e0b)' } },
+    { id: 'ocean', group: 'clair', name: 'Océan', desc: 'Bleu frais', font: 'Inter', p: { bg: '#e9f4fb', surface: '#ffffff', primary: '#0284c7', text: '#0b2a3f', line: '#cfe3f1', hero: 'linear-gradient(135deg,#0369a1,#14b8a6)' } },
+    { id: 'sakura', group: 'clair', name: 'Sakura', desc: 'Rose tout doux', font: 'Nunito', p: { bg: '#fff4f6', surface: '#ffffff', primary: '#db2777', text: '#4a1d2c', line: '#fbd5de', hero: 'linear-gradient(135deg,#f472b6,#fda4af)' } },
+    { id: 'lavande', group: 'clair', name: 'Lavande', desc: 'Violet pastel', font: 'Nunito', p: { bg: '#f4f1fd', surface: '#ffffff', primary: '#7c3aed', text: '#251a45', line: '#e3dbfa', hero: 'linear-gradient(135deg,#7c3aed,#a78bfa)' } },
+    { id: 'solaire', group: 'clair', name: 'Solarisé', desc: 'Doux pour les yeux', font: 'Inter', p: { bg: '#fdf6e3', surface: '#fffbef', primary: '#268bd2', text: '#073642', line: '#e6dfc6', hero: 'linear-gradient(135deg,#268bd2,#2aa198)' } },
+    { id: 'papier', group: 'clair', name: 'Papier', desc: 'Sépia, typo livre', font: 'Lora', p: { bg: '#efe6d2', surface: '#fbf6ea', primary: '#9a3412', text: '#33271b', line: '#dccdab', hero: '#3b2c1c' } },
+    { id: 'cahier', group: 'clair', name: 'Cahier', desc: 'Lignes et écriture', font: 'Patrick Hand', p: { bg: 'repeating-linear-gradient(#fdfdf8 0 9px,#c9dcf3 9px 10px)', surface: '#fffef9', primary: '#2f5bd3', text: '#1f2a44', line: '#d8e3f0', hero: '#fff3a8' } },
+    { id: 'nuit', group: 'sombre', name: 'Nuit', desc: 'Sombre et doux', font: 'Inter', p: { bg: '#0b1020', surface: '#131a2e', primary: '#818cf8', text: '#e8ebf5', line: '#2b3553', hero: 'linear-gradient(135deg,#4f46e5,#7c3aed)' } },
+    { id: 'oled', group: 'sombre', name: 'Noir OLED', desc: 'Noir pur, économe', font: 'Inter', p: { bg: '#000', surface: '#0b0b0c', primary: '#f4f4f5', text: '#f4f4f5', line: '#27272a', hero: '#0b0b0c' } },
+    { id: 'nord', group: 'sombre', name: 'Nordique', desc: 'Bleu glacier apaisant', font: 'Inter', p: { bg: '#2e3440', surface: '#3b4252', primary: '#88c0d0', text: '#eceff4', line: '#4c566a', hero: 'linear-gradient(135deg,#5e81ac,#88c0d0)' } },
+    { id: 'dracula', group: 'sombre', name: 'Dracula', desc: 'Le classique des devs', font: 'Inter', p: { bg: '#282a36', surface: '#303241', primary: '#bd93f9', text: '#f8f8f2', line: '#44475a', hero: 'linear-gradient(135deg,#6272a4,#bd93f9,#ff79c6)' } },
+    { id: 'foret', group: 'sombre', name: 'Forêt', desc: 'Vert profond', font: 'Nunito', p: { bg: '#0d1712', surface: '#14231b', primary: '#4ade80', text: '#e3f1e8', line: '#2a4636', hero: 'linear-gradient(135deg,#166534,#3f6212)' } },
+    { id: 'cafe', group: 'sombre', name: 'Café', desc: 'Brun chaleureux', font: 'Lora', p: { bg: '#1c1512', surface: '#261d18', primary: '#d4a373', text: '#f3e7dc', line: '#3b2e26', hero: 'linear-gradient(135deg,#7f5539,#b08968)' } },
+    { id: 'luxe', group: 'sombre', name: 'Luxe', desc: 'Noir et or', font: 'Playfair Display', p: { bg: '#0c0b09', surface: '#15130f', primary: '#d4af37', text: '#f4ecd8', line: '#4a3f2a', hero: 'linear-gradient(135deg,#1d1a15,#2c2416)' } },
+    { id: 'neon', group: 'fun', name: 'Néon', desc: 'Cyberpunk lumineux', font: 'Space Grotesk', p: { bg: '#07000f', surface: '#120823', primary: '#ff2bd6', text: '#f5e9ff', line: '#3a1a5c', hero: 'linear-gradient(120deg,#ff2bd6,#7b2bff,#00e5ff)' } },
+    { id: 'synthwave', group: 'fun', name: 'Synthwave', desc: 'Coucher de soleil rétro', font: 'Space Grotesk', p: { bg: 'linear-gradient(180deg,#1a0b2e,#53196b)', surface: '#2a1147', primary: '#ff3cac', text: '#fdf0ff', line: '#4b2380', hero: 'linear-gradient(180deg,#ffb800,#ff3cac 55%,#784ba0)' } },
+    { id: 'terminal', group: 'fun', name: 'Terminal', desc: 'Rétro, vert sur noir', font: 'JetBrains Mono', p: { bg: '#020a03', surface: '#031205', primary: '#4dff7a', text: '#4dff7a', line: '#0f4a18', hero: '#031205' } },
+    { id: 'gameboy', group: 'fun', name: 'Game Boy', desc: '8 bits, 4 couleurs', font: 'VT323', p: { bg: '#9bbc0f', surface: '#8bac0f', primary: '#0f380f', text: '#0f380f', line: '#306230', hero: '#306230' } },
+    { id: 'craie', group: 'fun', name: 'Tableau noir', desc: 'Craie sur ardoise', font: 'Patrick Hand', p: { bg: '#1f3a2e', surface: '#25453a', primary: '#f7f3d6', text: '#f1f5ef', line: '#5d8576', hero: '#2b4f42' } },
+    { id: 'brutal', group: 'fun', name: 'Brutaliste', desc: 'Contrasté, audacieux', font: 'Space Grotesk', p: { bg: '#fff8e7', surface: '#ffffff', primary: '#ffd400', text: '#111', line: '#111', hero: '#ff5c8a' } },
+    { id: 'contraste', group: 'fun', name: 'Contraste élevé', desc: 'Lisibilité maximale', font: 'Inter', p: { bg: '#000', surface: '#000', primary: '#ffff00', text: '#fff', line: '#fff', hero: '#000' } }
 ];
+const THEME_GROUPS = [['clair', 'Clairs'], ['sombre', 'Sombres'], ['fun', 'Originaux']];
 const CARD_SIZES = { s: '1.1rem', m: '1.35rem', l: '1.6rem', xl: '1.9rem' };
 const DEFAULT_SETTINGS = {
     theme: 'auto', cardSize: 'm', newPerDay: 20, newOrder: 'random', showIntervals: true,
@@ -1005,9 +1350,11 @@ const STATUS = {
     new: { label: 'Nouvelles', one: 'Nouvelle', color: 'var(--new)', icon: 'sparkle' },
     learn: { label: 'En cours', one: 'En cours', color: 'var(--learn)', icon: 'sprout' },
     due: { label: 'À revoir', one: 'À revoir', color: 'var(--due)', icon: 'repeat' },
-    mature: { label: 'Maîtrisées', one: 'Maîtrisée', color: 'var(--mature)', icon: 'award' }
+    mature: { label: 'Maîtrisées', one: 'Maîtrisée', color: 'var(--mature)', icon: 'award' },
+    susp: { label: 'Suspendues', one: 'Suspendue', color: '#eab308', icon: 'pause' }
 };
 const MATURE_IVL = 21;
+const REVLOG_MAX = 40000;
 
 /* ============================================================
    Data normalization: survives corrupted / legacy saves
@@ -1042,7 +1389,8 @@ function normalizeCard(c) {
         created: num(c.created, 0), state, step: Math.max(0, num(c.step, 0)), interval,
         ease: clamp(num(c.ease ?? c.easeFactor, 2.5), 1.3, 5), due, reps, lapses,
         lastReview: c.lastReview ? num(c.lastReview, null) : null,
-        errors: Math.max(0, num(c.errors, lapses >= 2 ? 1 : 0)), wrong: num(c.wrong, 0), right: num(c.right, 0)
+        errors: Math.max(0, num(c.errors, lapses >= 2 ? 1 : 0)), wrong: num(c.wrong, 0), right: num(c.right, 0),
+        suspended: !!c.suspended
     };
 }
 function normalizeStats(s) {
@@ -1095,7 +1443,8 @@ function normalizeState(raw) {
     if (!THEMES.some(t => t.id === settings.theme)) settings.theme = 'auto';
     if (!CARD_SIZES[settings.cardSize]) settings.cardSize = 'm';
     settings.newPerDay = clamp(num(settings.newPerDay, 20), 0, 9999);
-    return { version: 4, decks, cards, stats: normalizeStats(raw.stats), settings, updatedAt: num(raw.updatedAt, 0) };
+    const revlog = toArray(raw.revlog).filter(r => Array.isArray(r) && r.length >= 4 && Number.isFinite(r[0])).slice(-REVLOG_MAX);
+    return { version: 4, decks, cards, stats: normalizeStats(raw.stats), settings, revlog, updatedAt: num(raw.updatedAt, 0) };
 }
 function seedState() {
     const now = Date.now();
@@ -1207,6 +1556,7 @@ function previewLabel(card, grade, now) {
     return r.state === 'review' ? fmtDays(r.interval) : fmtDelay(r.due - now);
 }
 function cardStatus(c, now, eod) {
+    if (c.suspended) return 'susp';
     if (c.state === 'new') return 'new';
     if (c.state === 'review' ? c.due <= eod : c.due <= now) return 'due';
     if (c.state === 'review' && c.interval >= MATURE_IVL) return 'mature';
@@ -1250,7 +1600,7 @@ const Cloud = {
             return true;
         } catch { return false; }
     },
-    setStatus(s) { this.status = s; app && app.renderSyncIndicator(); },
+    setStatus(s) { this.status = s; app && app.renderSyncIndicator(); if (app && app.popover && app.popover.dataset.kind === 'sync') app.refreshPopover(); },
     async pull() {
         if (!(await this.ensure())) { this.setStatus('err'); return null; }
         const res = await this.client.from('game_state').select('data, updated_at').eq('id', 'main').maybeSingle();
@@ -1272,6 +1622,7 @@ const Cloud = {
             const payload = JSON.parse(app.serialize());
             const res = await this.client.from('game_state').upsert({ id: 'main', data: payload, updated_at: new Date(app.data.updatedAt || Date.now()).toISOString() });
             if (res.error) throw new Error(res.error.message);
+            this.lastSync = Date.now();
             this.setStatus('ok');
         } catch (e) {
             console.warn('Sync cloud:', e.message);
@@ -1296,11 +1647,13 @@ const Cloud = {
                     app.replaceData(remote, false);
                     app.toast('Progression synchronisée depuis le cloud', 'success', ic('cloud'));
                 }
+                this.lastSync = Date.now();
                 this.setStatus('ok');
             } else if ((app.data.updatedAt || 0) > remoteAt + 1000) {
                 await this.push();
                 if (manual) app.toast('Cloud mis à jour', 'success');
             } else {
+                this.lastSync = Date.now();
                 this.setStatus('ok');
                 if (manual) app.toast('Déjà à jour', 'success');
             }
@@ -1313,45 +1666,13 @@ const Cloud = {
 };
 
 /* ============================================================
-   Charts (tiny SVG helpers, no library)
-   ============================================================ */
-function barChartSVG(values, labels, opts = {}) {
-    const W = 340, H = opts.height || 170, top = 18, bottom = 22;
-    const n = values.length, max = Math.max(1, ...values), bw = W / n;
-    const colors = opts.colors || [];
-    const every = Math.ceil(n / (opts.maxLabels || 12));
-    let bars = '';
-    values.forEach((v, i) => {
-        const h = Math.max(v > 0 ? 2 : 0, (v / max) * (H - top - bottom));
-        const x = i * bw + bw * 0.16, w = bw * 0.68, y = H - bottom - h;
-        bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(4, w / 3).toFixed(1)}" fill="${colors[i] || opts.color || 'var(--primary)'}"><title>${esc(labels[i])} : ${v}</title></rect>`;
-        if (v > 0 && n <= 16) bars += `<text class="val" x="${(x + w / 2).toFixed(1)}" y="${(y - 5).toFixed(1)}" text-anchor="middle">${v}</text>`;
-        if (i % every === 0) bars += `<text x="${(x + w / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle">${esc(labels[i])}</text>`;
-    });
-    return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img">${`<line x1="0" x2="${W}" y1="${H - bottom + .5}" y2="${H - bottom + .5}" stroke="var(--border)"/>`}${bars}</svg></div>`;
-}
-function donutSVG(segments) {
-    const total = segments.reduce((a, s) => a + s.value, 0);
-    const R = 60, C = 2 * Math.PI * R;
-    let offset = 0, arcs = '';
-    if (total === 0) arcs = `<circle cx="80" cy="80" r="${R}" fill="none" stroke="var(--surface-3)" stroke-width="22"/>`;
-    segments.forEach(s => {
-        if (!s.value) return;
-        const len = (s.value / total) * C;
-        arcs += `<circle cx="80" cy="80" r="${R}" fill="none" stroke="${s.color}" stroke-width="22" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 80 80)"><title>${esc(s.label)} : ${s.value}</title></circle>`;
-        offset += len;
-    });
-    return `<svg viewBox="0 0 160 160">${arcs}<text x="80" y="78" text-anchor="middle" style="font-size:26px;font-weight:800;fill:var(--text)">${total}</text><text x="80" y="98" text-anchor="middle" style="font-size:11px;fill:var(--text-muted)">cartes</text></svg>`;
-}
-
-/* ============================================================
    Application
    ============================================================ */
 class SuperAnki {
     constructor() {
         this.data = null;
         this.view = 'dashboard';
-        this.ui = { deck: 'all', filter: 'all', search: '', sort: 'recent', limit: 60 };
+        this.ui = { deck: 'all', filter: 'all', search: '', sort: 'auto', limit: 60 };
         this.session = null;
         this.modals = [];
         this.saveTimer = null;
@@ -1359,6 +1680,8 @@ class SuperAnki {
         this.imageTarget = null;
         this.saveErrorShown = false;
         this.searchCache = new Map();
+        this.chartDefs = {};
+        this.statsUi = { deck: 'all', fcRange: 31, fcCumul: true, rvRange: 30, rvTime: false, ivRange: '1m', hrRange: 30, btRange: 30, adRange: 30, calYear: new Date().getFullYear(), hidden: {} };
     }
 
     /* ---------- boot ---------- */
@@ -1388,8 +1711,8 @@ class SuperAnki {
     }
 
     serialize() {
-        const { version, decks, cards, stats, settings, updatedAt } = this.data;
-        return JSON.stringify({ version, decks, cards, stats, settings, updatedAt });
+        const { version, decks, cards, stats, settings, revlog, updatedAt } = this.data;
+        return JSON.stringify({ version, decks, cards, stats, settings, revlog, updatedAt });
     }
     save(sync = true) {
         this.data.updatedAt = Date.now();
@@ -1484,10 +1807,15 @@ class SuperAnki {
     deck(id) { return this.data.decks.find(d => d.id === id); }
     sortedDecks() { return [...this.data.decks].sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' })); }
     cardsOf(deckId) { return deckId ? this.data.cards.filter(c => c.deckId === deckId) : this.data.cards; }
-    errorCards() { return this.data.cards.filter(c => c.errors > 0); }
+    errorCards() { return this.data.cards.filter(c => c.errors > 0 && !c.suspended); }
+    logReview(card, grade, type, prevIvl, ms) {
+        const log = this.data.revlog;
+        log.push([Date.now(), card.id, grade, type, card.state === 'review' ? card.interval : 0, prevIvl || 0, Math.round(ms)]);
+        if (log.length > REVLOG_MAX + 2000) log.splice(0, log.length - REVLOG_MAX);
+    }
     countStatuses(cards) {
         const now = Date.now(), eod = endOfDay(now);
-        const out = { new: 0, learn: 0, due: 0, mature: 0, total: cards.length };
+        const out = { new: 0, learn: 0, due: 0, mature: 0, susp: 0, total: cards.length };
         cards.forEach(c => { out[cardStatus(c, now, eod)]++; });
         return out;
     }
@@ -1499,7 +1827,7 @@ class SuperAnki {
     studyPlan(deckIds, extraNew = 0) {
         const now = Date.now(), eod = endOfDay(now);
         const set = deckIds ? new Set(deckIds) : null;
-        const pool = this.data.cards.filter(c => !set || set.has(c.deckId));
+        const pool = this.data.cards.filter(c => !c.suspended && (!set || set.has(c.deckId)));
         const learning = pool.filter(c => c.state === 'learning' || c.state === 'relearning').map(c => ({ id: c.id, due: c.due }));
         const reviews = pool.filter(c => c.state === 'review' && c.due <= eod).sort((a, b) => a.due - b.due);
         let fresh = pool.filter(c => c.state === 'new');
@@ -1510,7 +1838,7 @@ class SuperAnki {
     }
     nextDueTime() {
         let min = Infinity;
-        this.data.cards.forEach(c => { if (c.state !== 'new' && c.due < min) min = c.due; });
+        this.data.cards.forEach(c => { if (c.state !== 'new' && !c.suspended && c.due < min) min = c.due; });
         return min;
     }
 
@@ -1677,7 +2005,6 @@ class SuperAnki {
     renderDecks() {
         const ui = this.ui;
         if (ui.deck !== 'all' && ui.deck !== 'errors' && !this.deck(ui.deck)) ui.deck = 'all';
-        const errCount = this.errorCards().length;
         $('#view-decks').innerHTML = `
         <div class="stack">
             <div>
@@ -1690,65 +2017,161 @@ class SuperAnki {
                 <button class="btn btn-soft" data-action="import">${ic('import')}<span>Importer</span></button>
             </div>
             <div class="panel search-bar">
-                <label class="input-icon">${ic('search')}<span class="sr-only">Rechercher</span>
-                    <input class="input" type="search" id="card-search" placeholder="Rechercher une carte (question, réponse, tag)..." value="${esc(ui.search)}" data-input="search" autocomplete="off">
-                </label>
+                <div class="search-field ${ui.search ? 'has-value' : ''}">
+                    <label class="input-icon">${ic('search')}<span class="sr-only">Rechercher</span>
+                        <input class="input" type="search" id="card-search" placeholder="Rechercher une carte..." value="${esc(ui.search)}" data-input="search" autocomplete="off" spellcheck="false" enterkeyhint="search">
+                    </label>
+                    <button class="search-clear" data-action="clear-search" aria-label="Effacer la recherche" title="Effacer (Échap)">${ic('x')}</button>
+                </div>
                 <label><span class="sr-only">Trier</span>
                     <select class="select" data-input="sort">
-                        ${[['recent', 'Plus récentes'], ['alpha', 'Alphabétique (A → Z)'], ['alpha-rev', 'Alphabétique (Z → A)'], ['due', 'Prochaine révision'], ['hard', 'Plus difficiles d\'abord']]
+                        ${[['auto', 'Pertinence / récentes'], ['recent', 'Plus récentes'], ['alpha', 'Alphabétique (A → Z)'], ['alpha-rev', 'Alphabétique (Z → A)'], ['due', 'Prochaine révision'], ['hard', 'Plus difficiles d\'abord']]
                             .map(([v, l]) => `<option value="${v}" ${ui.sort === v ? 'selected' : ''}>${l}</option>`).join('')}
                     </select>
                 </label>
+                <p class="search-help">Astuces : plusieurs mots = toutes les cartes qui les contiennent · <code>"mot exact"</code> · <code>-exclure</code> · les accents et petites fautes de frappe sont tolérés.</p>
             </div>
             <div class="manager">
-                <aside class="panel deck-list" aria-label="Paquets">
-                    <div class="dl-title">Paquets</div>
-                    <button class="dl-item ${ui.deck === 'all' ? 'active' : ''}" data-action="select-deck" data-deck="all"><span class="em">📂</span><span class="nm">Toutes les cartes</span><span class="ct">${this.data.cards.length}</span></button>
-                    <button class="dl-item errors ${ui.deck === 'errors' ? 'active' : ''}" data-action="select-deck" data-deck="errors"><span class="em">${ic('target')}</span><span class="nm">Mes erreurs</span><span class="ct">${errCount}</span></button>
-                    <div class="dl-sep"></div>
-                    ${this.sortedDecks().map(dk => `<button class="dl-item ${ui.deck === dk.id ? 'active' : ''}" data-action="select-deck" data-deck="${esc(dk.id)}"><span class="em">${esc(dk.emoji)}</span><span class="nm">${esc(dk.name)}</span><span class="ct">${this.cardsOf(dk.id).length}</span></button>`).join('')}
-                </aside>
+                <aside class="panel deck-list" id="deck-sidebar" aria-label="Paquets"></aside>
                 <div class="panel" id="deck-panel" style="overflow:hidden"></div>
             </div>
         </div>`;
+        this.renderDeckSidebar();
         this.renderDeckPanel();
+    }
+    renderDeckSidebar() {
+        const ui = this.ui, box = $('#deck-sidebar');
+        if (!box) return;
+        const q = this.searchMatches();
+        const count = list => (q ? list.filter(c => q.has(c.id)).length : list.length);
+        const item = (id, em, name, n, cls = '') => `<button class="dl-item ${cls} ${ui.deck === id ? 'active' : ''} ${q && !n ? 'dim' : ''}" data-action="select-deck" data-deck="${esc(id)}"><span class="em">${em}</span><span class="nm">${esc(name)}</span><span class="ct">${n}</span></button>`;
+        box.innerHTML = `
+            <div class="dl-title">${q ? 'Résultats par paquet' : 'Paquets'}</div>
+            ${item('all', '📂', 'Toutes les cartes', count(this.data.cards))}
+            ${item('errors', ic('target'), 'Mes erreurs', count(this.errorCards()), 'errors')}
+            <div class="dl-sep"></div>
+            ${this.sortedDecks().map(dk => item(dk.id, esc(dk.emoji), dk.name, count(this.cardsOf(dk.id)))).join('')}`;
+    }
+    /* Search: accent-insensitive, AND between words, "exact phrase", -exclude, typo tolerant */
+    parseQuery(q) {
+        const out = { terms: [], phrases: [], excludes: [] };
+        const re = /(-?)"([^"]*)"?|(-?)(\S+)/g;
+        let m;
+        while ((m = re.exec(q))) {
+            if (m[2] !== undefined) { const p = fold(m[2]).trim(); if (p) (m[1] ? out.excludes : out.phrases).push(p); continue; }
+            const t = fold(m[4]).replace(/^[^\p{L}\p{N}#]+|[^\p{L}\p{N}]+$/gu, '');
+            if (!t) continue;
+            (m[3] && t.length > 0 ? out.excludes : out.terms).push(t.replace(/^#/, ''));
+        }
+        out.empty = !out.terms.length && !out.phrases.length && !out.excludes.length;
+        return out;
+    }
+    searchIndex(c) {
+        const deck = this.deck(c.deckId);
+        const key = `${c.front}\u0001${c.back}\u0001${c.hint}\u0001${c.detail}\u0001${c.tags.join(',')}\u0001${deck ? deck.name : ''}`;
+        const hit = this.searchCache.get(c.id);
+        if (hit && hit.key === key) return hit;
+        const front = fold(stripHtml(c.front)), back = fold(stripHtml(c.back));
+        const extra = fold(`${stripHtml(c.hint)} ${stripHtml(c.detail)} ${c.tags.join(' ')} ${deck ? deck.name : ''}`);
+        const words = [...new Set(`${front} ${back} ${extra}`.split(/[^\p{L}\p{N}]+/u).filter(w => w.length >= 3))];
+        const idx = { key, front, back, extra, all: `${front} \u0001 ${back} \u0001 ${extra}`, words };
+        this.searchCache.set(c.id, idx);
+        return idx;
+    }
+    matchCard(c, q) {
+        const x = this.searchIndex(c);
+        if (q.excludes.some(t => x.all.includes(t))) return null;
+        if (q.phrases.some(p => !x.all.includes(p))) return null;
+        let score = q.phrases.length * 4;
+        const fuzzy = [];
+        for (const t of q.terms) {
+            const wordStart = new RegExp(`(^|[^\\p{L}\\p{N}])${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'u');
+            if (x.front.includes(t)) score += 3 + (wordStart.test(x.front) ? 1 : 0);
+            else if (x.back.includes(t)) score += 2 + (wordStart.test(x.back) ? 1 : 0);
+            else if (x.extra.includes(t)) score += 1;
+            else if (t.length >= 4) {
+                const tol = t.length >= 7 ? 2 : 1;
+                const w = x.words.find(w => (Math.abs(w.length - t.length) <= tol && levenshtein(w, t) <= tol)
+                    || (t.length >= 5 && w.length > t.length && levenshtein(w.slice(0, t.length), t) <= 1));
+                if (!w) return null;
+                fuzzy.push(w);
+                score += 0.5;
+            } else return null;
+        }
+        return { score, fuzzy };
+    }
+    /* Returns Map(cardId -> match) for the current query over ALL cards, or null when no query */
+    searchMatches() {
+        const raw = this.ui.search.trim();
+        if (!raw) return null;
+        if (this._sm && this._sm.raw === raw && this._sm.n === this.data.cards.length && this._sm.at === this.data.updatedAt) return this._sm.map;
+        const q = this.parseQuery(raw);
+        const map = new Map();
+        if (!q.empty) this.data.cards.forEach(c => { const m = this.matchCard(c, q); if (m) map.set(c.id, m); });
+        else this.data.cards.forEach(c => map.set(c.id, { score: 0, fuzzy: [] }));
+        this._sm = { raw, n: this.data.cards.length, at: this.data.updatedAt, map, q };
+        return map;
     }
     filteredCards() {
         const ui = this.ui, now = Date.now(), eod = endOfDay(now);
         let list = ui.deck === 'all' ? this.data.cards : ui.deck === 'errors' ? this.errorCards() : this.cardsOf(ui.deck);
-        const q = fold(ui.search.trim());
-        if (q) {
-            const terms = q.split(/\s+/);
-            list = list.filter(c => { const hay = this.searchText(c); return terms.every(t => hay.includes(t)); });
-        }
-        const statusCounts = { all: list.length, new: 0, learn: 0, due: 0, mature: 0 };
+        const matches = this.searchMatches();
+        const globalHits = matches ? matches.size : 0;
+        if (matches) list = list.filter(c => matches.has(c.id));
+        const statusCounts = { all: list.length, new: 0, learn: 0, due: 0, mature: 0, susp: 0 };
         const withStatus = list.map(c => { const s = cardStatus(c, now, eod); statusCounts[s]++; return { c, s }; });
         let rows = ui.filter === 'all' ? withStatus : withStatus.filter(r => r.s === ui.filter);
-        const txt = c => this.searchText(c).replace(/^[^a-z0-9]+/, '');
-        const cmp = (x, y) => x.localeCompare(y, 'fr', { ignorePunctuation: true });
+        const txt = c => { const x = this.searchIndex(c); return x.front.replace(/^[^\p{L}\p{N}]+/u, ''); };
+        const cmp = (a, b) => a.localeCompare(b, 'fr', { ignorePunctuation: true });
+        const sortKey = ui.sort === 'auto' ? (matches ? 'relevance' : 'recent') : ui.sort;
         const sorters = {
+            relevance: (a, b) => matches.get(b.c.id).score - matches.get(a.c.id).score || cmp(txt(a.c), txt(b.c)),
             recent: (a, b) => b.c.created - a.c.created,
             alpha: (a, b) => cmp(txt(a.c), txt(b.c)),
             'alpha-rev': (a, b) => cmp(txt(b.c), txt(a.c)),
             due: (a, b) => (a.c.state === 'new') - (b.c.state === 'new') || a.c.due - b.c.due,
             hard: (a, b) => b.c.errors - a.c.errors || b.c.lapses - a.c.lapses || a.c.ease - b.c.ease
         };
-        rows = [...rows].sort(sorters[ui.sort] || sorters.recent);
-        return { rows, statusCounts };
+        rows = [...rows].sort(sorters[sortKey] || sorters.recent);
+        return { rows, statusCounts, globalHits, searching: !!matches };
     }
-    searchText(c) {
-        const key = c.front + '\u0001' + c.back + '\u0001' + c.hint + '\u0001' + c.tags.join(',');
-        const hit = this.searchCache.get(c.id);
-        if (hit && hit.key === key) return hit.text;
-        const text = fold(`${stripHtml(c.front)} ${stripHtml(c.back)} ${stripHtml(c.hint)} ${c.tags.join(' ')}`);
-        this.searchCache.set(c.id, { key, text });
-        return text;
+    highlightResults() {
+        const sm = this._sm;
+        if (!this.ui.search.trim() || !sm) return;
+        const tokens = [...sm.q.terms, ...sm.q.phrases];
+        sm.map.forEach(m => m.fuzzy.forEach(w => tokens.push(w)));
+        const uniq = [...new Set(tokens.filter(t => t.length >= 1))].sort((a, b) => b.length - a.length);
+        if (!uniq.length) return;
+        const ACC = { a: 'aàâäáãå', e: 'eéèêë', i: 'iîïíì', o: 'oôöóòõ', u: 'uùûüú', c: 'cç', y: 'yÿ', n: 'nñ', "'": "'’" };
+        const rx = new RegExp(uniq.map(t => [...t].map(ch => (ACC[ch] ? `[${ACC[ch]}]` : ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))).join('')).join('|'), 'giu');
+        $$('#card-list .q, #card-list .a').forEach(root => {
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+            const nodes = [];
+            while (walker.nextNode()) nodes.push(walker.currentNode);
+            nodes.forEach(node => {
+                const text = node.nodeValue;
+                rx.lastIndex = 0;
+                if (!rx.test(text)) return;
+                rx.lastIndex = 0;
+                const frag = document.createDocumentFragment();
+                let last = 0, m;
+                while ((m = rx.exec(text))) {
+                    if (!m[0]) { rx.lastIndex++; continue; }
+                    frag.append(text.slice(last, m.index));
+                    const mk = document.createElement('mark'); mk.className = 'hl'; mk.textContent = m[0];
+                    frag.append(mk);
+                    last = m.index + m[0].length;
+                }
+                frag.append(text.slice(last));
+                node.replaceWith(frag);
+            });
+        });
     }
     renderDeckPanel() {
         const ui = this.ui, panel = $('#deck-panel');
         if (!panel) return;
         const deck = this.deck(ui.deck);
-        const { rows, statusCounts } = this.filteredCards();
+        const { rows, statusCounts, globalHits, searching } = this.filteredCards();
         const now = Date.now();
         let title, actions = '';
         if (ui.deck === 'all') title = `📂 Toutes les cartes`;
@@ -1763,15 +2186,16 @@ class SuperAnki {
                 <button class="icon-btn" title="Modifier le paquet" data-action="edit-deck" data-deck="${esc(deck.id)}">${ic('pencil')}</button>
                 <button class="icon-btn danger" title="Supprimer le paquet" data-action="delete-deck" data-deck="${esc(deck.id)}">${ic('trash')}</button>`;
         }
-        const chips = [['all', 'Toutes'], ['new', 'Nouvelles'], ['learn', 'En cours'], ['due', 'À revoir'], ['mature', 'Maîtrisées']]
-            .map(([k, l]) => `<button class="chip ${ui.filter === k ? 'active' : ''}" data-action="filter" data-filter="${k}">${k !== 'all' ? `<span class="dot" style="background:${STATUS[k].color}"></span>` : ''}${l} <span class="count">${statusCounts[k]}</span></button>`).join('');
+        const chipDefs = [['all', 'Toutes'], ['new', 'Nouvelles'], ['learn', 'En cours'], ['due', 'À revoir'], ['mature', 'Maîtrisées']];
+        if (statusCounts.susp || ui.filter === 'susp') chipDefs.push(['susp', 'Suspendues']);
+        const chips = chipDefs.map(([k, l]) => `<button class="chip ${ui.filter === k ? 'active' : ''}" data-action="filter" data-filter="${k}">${k !== 'all' ? `<span class="dot" style="background:${STATUS[k].color}"></span>` : ''}${l} <span class="count">${statusCounts[k]}</span></button>`).join('');
         const shown = rows.slice(0, ui.limit);
         const showDeck = ui.deck === 'all' || ui.deck === 'errors';
         const list = shown.map(({ c, s }) => {
             const dk = showDeck ? this.deck(c.deckId) : null;
-            const when = c.state === 'new' ? 'Jamais vue' : s === 'due' ? 'À revoir maintenant' : `Révision ${fmtRelativeFuture(c.due, now)}`;
+            const when = s === 'susp' ? 'Suspendue' : c.state === 'new' ? 'Jamais vue' : s === 'due' ? 'À revoir maintenant' : `Révision ${fmtRelativeFuture(c.due, now)}`;
             return `
-            <div class="card-row" data-action="edit-card" data-card="${esc(c.id)}">
+            <div class="card-row ${s === 'susp' ? 'is-susp' : ''}" data-action="edit-card" data-card="${esc(c.id)}">
                 <span class="dot" style="background:${STATUS[s].color}" title="${STATUS[s].one}"></span>
                 <div class="body">
                     <div class="q rich">${c.front}</div>
@@ -1789,112 +2213,21 @@ class SuperAnki {
                 </div>
             </div>`;
         }).join('');
-        const emptyMsg = ui.search ? 'Aucune carte ne correspond à ta recherche.'
-            : ui.deck === 'errors' ? 'Aucune erreur à retravailler. Les cartes que tu rates apparaîtront ici. 🎉'
-            : 'Aucune carte ici pour le moment.';
+        let emptyMsg;
+        if (searching) {
+            emptyMsg = globalHits && ui.deck !== 'all'
+                ? `Aucun résultat dans ce paquet pour « ${esc(ui.search.trim())} ».<br><button class="btn btn-primary btn-sm" style="margin-top:12px" data-action="select-deck" data-deck="all">${ic('search')}Voir les ${plural(globalHits, 'résultat')} dans tous les paquets</button>`
+                : `Aucune carte ne correspond à « ${esc(ui.search.trim())} ».<br><span class="small">Essaie un mot plus court, ou vérifie l'orthographe.</span>`;
+            if (!globalHits || ui.deck === 'all') emptyMsg += `<br><button class="btn btn-soft btn-sm" style="margin-top:12px" data-action="new-card-from-search">${ic('plus')}Créer une carte « ${esc(truncate(ui.search.trim(), 30))} »</button>`;
+        } else emptyMsg = ui.deck === 'errors' ? 'Aucune erreur à retravailler. Les cartes que tu rates apparaîtront ici. 🎉' : 'Aucune carte ici pour le moment.';
+        const resultLine = searching && statusCounts.all ? `<div class="result-line">${ic('search')}<span><b>${plural(statusCounts.all, 'résultat')}</b>${ui.deck !== 'all' ? ' dans ce paquet' : ''}${ui.deck !== 'all' && globalHits > statusCounts.all ? ` · <button class="link" data-action="select-deck" data-deck="all">${globalHits} dans tous les paquets</button>` : ''}</span></div>` : '';
         panel.innerHTML = `
             <div class="deck-panel-head"><h3>${title} <span class="tag">${plural(statusCounts.all, 'carte')}</span></h3><div class="deck-panel-actions">${actions}</div></div>
             <div class="filter-row"><div class="chip-row">${chips}</div></div>
+            ${resultLine}
             <div id="card-list">${list || `<div class="empty">${ic('search')}<p>${emptyMsg}</p></div>`}</div>
             ${rows.length > ui.limit ? `<div class="load-more"><button class="btn btn-soft" data-action="more">Afficher plus (${rows.length - ui.limit} restantes)</button></div>` : ''}`;
-    }
-
-    /* ---------- Stats ---------- */
-    renderStats() {
-        const d = this.data, st = d.stats, now = Date.now();
-        const counts = this.countStatuses(d.cards);
-        const today = dayKey();
-        const gc = st.gradeCounts, totalGrades = gc[1] + gc[2] + gc[3] + gc[4];
-        const retention = totalGrades ? Math.round((gc[3] + gc[4] + gc[2]) / totalGrades * 100) : null;
-        const histKeys = Object.keys(st.history).filter(k => st.history[k] > 0).sort();
-        const activeDays = histKeys.length;
-        const span = activeDays ? daysBetweenKeys(histKeys[0], today) + 1 : 0;
-        const totalReviews = Object.values(st.history).reduce((a, b) => a + b, 0);
-
-        const fc = new Array(14).fill(0);
-        d.cards.forEach(c => {
-            if (c.state === 'new') return;
-            const diff = daysBetweenKeys(today, dayKey(c.due));
-            if (diff < 0) fc[0]++; else if (diff < 14) fc[diff]++;
-        });
-        const fcLabels = fc.map((_, i) => (i === 0 ? 'Auj.' : i === 1 ? 'Dem.' : new Date(addDays(now, i)).toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '')));
-
-        const weeks = 26, start = new Date(addDays(now, -(weeks * 7 - 1)));
-        const dow = (start.getDay() + 6) % 7;
-        const heatStart = addDays(start.getTime(), -dow);
-        const maxDay = Math.max(1, ...Object.values(st.history));
-        let cells = '';
-        for (let t = heatStart, i = 0; i < 400; i++, t = addDays(heatStart, i)) {
-            const k = dayKey(t);
-            if (k > today) break;
-            const v = st.history[k] || 0, r = v / maxDay;
-            const lvl = v === 0 ? '' : r > 0.75 ? 'l4' : r > 0.5 ? 'l3' : r > 0.25 ? 'l2' : 'l1';
-            cells += `<i class="${lvl} ${k === today ? 'today' : ''}" title="${new Date(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} : ${plural(v, 'révision')}"></i>`;
-        }
-        const errCount = this.errorCards().length;
-        const deckRows = this.sortedDecks().map(dk => {
-            const cs = this.cardsOf(dk.id), c = this.countStatuses(cs);
-            const pct = cs.length ? Math.round(c.mature / cs.length * 100) : 0;
-            return { dk, pct, c, n: cs.length };
-        }).sort((a, b) => b.pct - a.pct);
-
-        $('#view-stats').innerHTML = `
-        <div class="stack">
-            <div><h2 class="page-title">Statistiques</h2><p class="page-sub">Ta progression, jour après jour.</p></div>
-            <div class="kpi-grid">
-                <div class="panel kpi"><span>Série actuelle</span><b>🔥 ${st.streak} j</b><em>${ic('snow')} ${plural(st.freezes, 'gel')} de série</em></div>
-                <div class="panel kpi"><span>Record de série</span><b>${st.longestStreak} j</b><em>&nbsp;</em></div>
-                <div class="panel kpi"><span>Aujourd'hui</span><b>${st.history[today] || 0}</b><em>${fmtDuration(st.timeByDay[today] || 0)} d'étude</em></div>
-                <div class="panel kpi"><span>Réussite</span><b>${retention === null ? '-' : retention + '%'}</b><em>${plural(totalGrades, 'réponse')}</em></div>
-                <div class="panel kpi"><span>Temps total</span><b>${fmtDuration(st.studySeconds)}</b><em>${plural(totalReviews, 'révision')}</em></div>
-                <div class="panel kpi"><span>Régularité</span><b>${span ? Math.round(activeDays / span * 100) : 0}%</b><em>${plural(activeDays, 'jour actif', 'jours actifs')}</em></div>
-            </div>
-
-            <div class="panel panel-pad chart-card">
-                <h4>Calendrier de révision (6 derniers mois)</h4>
-                <div class="heatmap-scroll"><div class="heatmap">${cells}</div></div>
-            </div>
-
-            <div class="chart-grid">
-                <div class="panel panel-pad chart-card">
-                    <h4>Répartition des cartes</h4>
-                    <div class="donut-wrap">
-                        ${donutSVG(['new', 'learn', 'due', 'mature'].map(k => ({ label: STATUS[k].label, value: counts[k], color: STATUS[k].color })))}
-                        <div class="legend">${['new', 'learn', 'due', 'mature'].map(k => `<div><span class="dot" style="background:${STATUS[k].color}"></span>${STATUS[k].label}<b>${counts[k]}</b></div>`).join('')}</div>
-                    </div>
-                </div>
-                <div class="panel panel-pad chart-card">
-                    <h4>Révisions prévues (14 jours)</h4>
-                    ${barChartSVG(fc, fcLabels, { color: 'var(--due)', maxLabels: 7 })}
-                </div>
-                <div class="panel panel-pad chart-card">
-                    <h4>Tes réponses</h4>
-                    ${barChartSVG([gc[1], gc[2], gc[3], gc[4]], ['Raté', 'Difficile', 'Bien', 'Facile'], { colors: ['var(--again)', 'var(--hard)', 'var(--good)', 'var(--easy)'] })}
-                </div>
-                <div class="panel panel-pad chart-card">
-                    <h4>Heures de révision</h4>
-                    ${barChartSVG(st.hourly, st.hourly.map((_, i) => `${i}h`), { maxLabels: 8 })}
-                </div>
-            </div>
-
-            <div class="panel panel-pad">
-                <div class="section-head" style="margin-bottom:6px">
-                    <h4 style="font-size:.95rem;font-weight:800">${ic('target')} Mes erreurs</h4>
-                    ${errCount ? `<button class="btn btn-primary btn-sm" data-action="practice-errors">${ic('play')}Retravailler (${errCount})</button>` : ''}
-                </div>
-                <p class="small muted">${errCount ? `${plural(errCount, 'carte')} ratée${errCount > 1 ? 's' : ''} récemment. Elles sortent de la liste dès que tu les réussis.` : 'Aucune erreur en attente. Les cartes ratées en révision, en quiz ou au chrono apparaîtront ici.'}</p>
-            </div>
-
-            <div class="panel panel-pad">
-                <h4 style="font-size:.95rem;font-weight:800;margin-bottom:8px">Maîtrise par paquet</h4>
-                ${deckRows.map(r => `
-                <div class="deck-progress-row">
-                    <span class="nm">${esc(r.dk.emoji)} ${esc(r.dk.name)}</span>
-                    <div class="progress"><i style="width:${r.n ? r.c.mature / r.n * 100 : 0}%;background:var(--mature)"></i><i style="width:${r.n ? r.c.learn / r.n * 100 : 0}%;background:var(--learn)"></i><i style="width:${r.n ? r.c.due / r.n * 100 : 0}%;background:var(--due)"></i></div>
-                    <b>${r.pct}%</b>
-                </div>`).join('') || '<p class="small muted">Aucun paquet.</p>'}
-            </div>
-        </div>`;
+        this.highlightResults();
     }
 
     /* ---------- Settings ---------- */
@@ -1909,19 +2242,22 @@ class SuperAnki {
             <div class="panel panel-pad set-section">
                 <h3>${ic('palette')} Thème</h3>
                 <p class="small muted">Chaque thème change tout le design : couleurs, typographie, formes.</p>
+                ${THEME_GROUPS.map(([g, gl]) => `
+                <div class="theme-group"><h5>${gl}</h5>
                 <div class="theme-grid">
-                    ${THEMES.map(t => `
-                    <button class="theme-opt ${s.theme === t.id ? 'active' : ''}" data-action="set" data-key="theme" data-value="${t.id}">
+                    ${THEMES.filter(t => t.group === g).map(t => `
+                    <button class="theme-opt ${s.theme === t.id ? 'active' : ''}" data-action="set" data-key="theme" data-value="${t.id}" aria-pressed="${s.theme === t.id}">
                         <div class="theme-prev" style="background:${t.p.bg}">
-                            <div class="tp-bar" style="background:${t.p.surface};border:1px solid ${t.p.line}"></div>
+                            <div class="tp-bar" style="background:${t.p.surface};border:1px solid ${t.p.line}"><span style="background:${t.p.primary}"></span></div>
+                            <div class="tp-hero" style="background:${t.p.hero}"></div>
                             <div class="tp-row">
-                                <div class="tp-card" style="background:${t.p.primary}"><div class="tp-line" style="background:${t.p.surface};width:60%"></div></div>
                                 <div class="tp-card" style="background:${t.p.surface};border:1px solid ${t.p.line}"><div class="tp-line" style="background:${t.p.text};width:80%"></div><div class="tp-line" style="background:${t.p.line};width:50%"></div></div>
+                                <div class="tp-card" style="background:${t.p.surface};border:1px solid ${t.p.line}"><div class="tp-btn" style="background:${t.p.primary}"></div></div>
                             </div>
                         </div>
-                        <div class="theme-name">${t.name} <small>${t.desc}</small></div>
+                        <div class="theme-name"><span style="font-family:'${t.font}',system-ui">${t.name}</span><small>${t.desc}</small>${s.theme === t.id ? `<span class="theme-check">${ic('check')}</span>` : ''}</div>
                     </button>`).join('')}
-                </div>
+                </div></div>`).join('')}
                 <div class="set-row">
                     <div class="txt"><b>Taille du texte des cartes</b><span>Pour la question et la réponse pendant les révisions.</span></div>
                     ${seg('cardSize', [['s', 'S'], ['m', 'M'], ['l', 'L'], ['xl', 'XL']])}
@@ -1996,6 +2332,7 @@ class SuperAnki {
                     <span><kbd class="k">H</kbd></span><span>Afficher l'indice</span>
                     <span><kbd class="k">Échap</kbd></span><span>Quitter la session / fermer une fenêtre</span>
                     <span><kbd class="k">Ctrl</kbd> + <kbd class="k">Entrée</kbd></span><span>Enregistrer une carte</span>
+                    <span><kbd class="k">Ctrl</kbd> + <kbd class="k">K</kbd> ou <kbd class="k">/</kbd></span><span>Rechercher une carte</span>
                 </div>
             </div>
 
@@ -2048,7 +2385,7 @@ class SuperAnki {
     poolFor(deckIds) {
         if (deckIds === 'errors') return this.errorCards();
         const set = deckIds ? new Set(deckIds) : null;
-        return this.data.cards.filter(c => !set || set.has(c.deckId));
+        return this.data.cards.filter(c => !c.suspended && (!set || set.has(c.deckId)));
     }
     endSession(goHome = true) {
         const s = this.session;
@@ -2194,7 +2531,8 @@ class SuperAnki {
         s.history.push({
             card: { ...this.card(s.current) }, stats: JSON.stringify(this.data.stats),
             queue: [...s.queue], learning: s.learning ? s.learning.map(l => ({ ...l })) : null,
-            done: s.done, correct: s.correct, missed: [...s.missed], retries: s.retries ? { ...s.retries } : null, current: s.current
+            done: s.done, correct: s.correct, missed: [...s.missed], retries: s.retries ? { ...s.retries } : null, current: s.current,
+            revlogLen: this.data.revlog.length
         });
         if (s.history.length > 50) s.history.shift();
     }
@@ -2203,7 +2541,7 @@ class SuperAnki {
         if (!s || s.kind !== 'srs' || !s.revealed) return;
         const card = this.card(s.current), now = Date.now();
         this.snapshot();
-        const prev = card.state;
+        const prev = card.state, prevIvl = card.interval, secs = this.elapsedSec();
         const res = schedule(card, g, now, true);
         Object.assign(card, res);
         card.reps++; card.lastReview = now;
@@ -2214,7 +2552,8 @@ class SuperAnki {
         s.done++;
         if (g >= 2) s.correct++;
         if (g === 1 && !s.missed.includes(card.id)) s.missed.push(card.id);
-        this.recordReview(g, this.elapsedSec());
+        this.recordReview(g, secs);
+        this.logReview(card, g, prev === 'review' ? 1 : prev === 'relearning' ? 2 : 0, prevIvl, secs * 1000);
         s.lastId = card.id;
         this.save();
         this.nextCard();
@@ -2232,7 +2571,9 @@ class SuperAnki {
             if (s.retries[card.id] <= 2) s.queue.splice(Math.min(3, s.queue.length), 0, card.id);
         }
         s.done++;
-        this.recordReview(null, this.elapsedSec());
+        const secs = this.elapsedSec();
+        this.recordReview(null, secs);
+        this.logReview(card, ok ? 3 : 1, 3, card.interval, secs * 1000);
         this.save();
         this.nextCard();
     }
@@ -2243,6 +2584,7 @@ class SuperAnki {
         const card = this.card(h.card.id);
         if (card) Object.assign(card, h.card);
         this.data.stats = normalizeStats(JSON.parse(h.stats));
+        if (this.data.revlog.length > h.revlogLen) this.data.revlog.length = h.revlogLen;
         s.queue = h.queue; if (h.learning) s.learning = h.learning;
         s.done = h.done; s.correct = h.correct; s.missed = h.missed; if (h.retries) s.retries = h.retries;
         s.current = h.current; s.revealed = false; s.typed = null; s.cardStart = Date.now();
@@ -2382,7 +2724,9 @@ class SuperAnki {
             card.wrong++; card.errors++;
             if (!s.missed.includes(card.id)) s.missed.push(card.id);
         }
-        this.recordReview(null, clamp((Date.now() - s.cardStart) / 1000, 1, 60));
+        const secs = clamp((Date.now() - s.cardStart) / 1000, 1, 60);
+        this.recordReview(null, secs);
+        this.logReview(card, opt.ok ? 3 : 1, 3, card.interval, secs * 1000);
         this.save();
         if (s.kind === 'chrono') {
             if (!opt.ok) { s.timeLeft = Math.max(0, s.timeLeft - 3); }
@@ -2582,7 +2926,7 @@ class SuperAnki {
             <div class="editor-area rich" contenteditable="true" id="${id}" data-placeholder="${esc(placeholder)}" role="textbox" aria-multiline="true"></div>
         </div>`;
     }
-    openCardModal(cardId, presetDeck) {
+    openCardModal(cardId, presetDeck, prefillFront) {
         if (!this.data.decks.length) { this.toast('Crée d\'abord un paquet.', 'warning'); this.openDeckModal(); return; }
         const card = cardId ? this.card(cardId) : null;
         const inSession = !!this.session;
@@ -2594,12 +2938,12 @@ class SuperAnki {
                     <select class="select" id="cf-deck">${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${d.id === deckId ? 'selected' : ''}>${esc(d.emoji)} ${esc(d.name)}</option>`).join('')}</select></div>
                 <div class="field"><span class="label">Recto · question</span>${this.editorHtml('cf-front', 'Question ou terme... (tu peux coller une image)')}</div>
                 <div class="field"><span class="label">Verso · réponse</span>${this.editorHtml('cf-back', 'Réponse...')}</div>
-                <details class="field" ${card && (card.hint || card.detail || card.tags.length) ? 'open' : ''}>
-                    <summary class="label" style="cursor:pointer;display:flex;align-items:center;gap:6px">${ic('chevronDown')}Plus d'options (indice, détails, tags${card ? '' : ', sens inversé'})</summary>
+                <details class="field" ${card && (card.hint || card.detail || card.tags.length || card.suspended) ? 'open' : ''}>
+                    <summary class="label" style="cursor:pointer;display:flex;align-items:center;gap:6px">${ic('chevronDown')}Plus d'options (indice, détails, tags${card ? ', suspendre' : ', sens inversé'})</summary>
                     <div class="field" style="margin-top:12px"><label class="label" for="cf-hint">Indice (affiché sur demande avant la réponse)</label><input class="input" id="cf-hint" placeholder="Un petit coup de pouce..." value="${esc(card ? stripHtml(card.hint) : '')}"></div>
                     <div class="field"><span class="label">Détails (repliés sous « En savoir plus »)</span>${this.editorHtml('cf-detail', 'Explication plus poussée...', true)}</div>
                     <div class="field"><label class="label" for="cf-tags">Tags (séparés par des virgules)</label><input class="input" id="cf-tags" placeholder="chapitre1, dates" value="${esc(card ? card.tags.join(', ') : '')}"></div>
-                    ${card ? '' : `<label class="field" style="display:flex;align-items:center;gap:12px;cursor:pointer"><span class="switch"><input type="checkbox" id="cf-both"><span></span></span><span class="small"><b>Créer aussi la carte inversée</b><br><span class="muted">Réponse → question, utile pour le vocabulaire.</span></span></label>`}
+                    ${card ? `<label class="field" style="display:flex;align-items:center;gap:12px;cursor:pointer"><span class="switch"><input type="checkbox" id="cf-susp" ${card.suspended ? 'checked' : ''}><span></span></span><span class="small"><b>Suspendre la carte</b><br><span class="muted">Elle ne sera plus proposée en révision, sans être supprimée.</span></span></label>` : `<label class="field" style="display:flex;align-items:center;gap:12px;cursor:pointer"><span class="switch"><input type="checkbox" id="cf-both"><span></span></span><span class="small"><b>Créer aussi la carte inversée</b><br><span class="muted">Réponse → question, utile pour le vocabulaire.</span></span></label>`}
                 </details>
                 ${card ? `<p class="help">${card.state === 'new' ? 'Carte jamais révisée.' : `Prochaine révision ${fmtRelativeFuture(card.due)} · ${plural(card.reps, 'révision')} · ${plural(card.lapses, 'oubli')}`}</p>` : ''}`,
             foot: `${card ? `<button class="btn btn-danger-soft" id="cf-delete" style="margin-right:auto">${ic('trash')}<span class="hide-mobile">Supprimer</span></button>` : ''}
@@ -2610,6 +2954,7 @@ class SuperAnki {
         m.dataset.cardModal = '1';
         const front = $('#cf-front', m), back = $('#cf-back', m), detail = $('#cf-detail', m);
         if (card) { front.innerHTML = card.front; back.innerHTML = card.back; detail.innerHTML = card.detail; }
+        else if (prefillFront) front.textContent = prefillFront;
         const save = (keepOpen) => {
             const f = sanitizeHtml(front.innerHTML), bk = sanitizeHtml(back.innerHTML);
             if (isBlank(f)) { this.toast('Le recto (question) est vide.', 'warning'); front.focus(); return; }
@@ -2622,6 +2967,8 @@ class SuperAnki {
             this.lastDeckUsed = fields.deckId;
             if (card) {
                 Object.assign(card, fields);
+                const susp = $('#cf-susp', m);
+                if (susp) card.suspended = susp.checked;
                 this.toast('Carte modifiée', 'success');
             } else {
                 const base = { state: 'new', step: 0, interval: 0, ease: 2.5, due: Date.now(), reps: 0, lapses: 0, lastReview: null, errors: 0, wrong: 0, right: 0 };
@@ -2849,6 +3196,7 @@ class SuperAnki {
             title: meta.title,
             body: `<p class="muted small" style="margin-bottom:16px">${meta.desc}</p>
                 <div class="field"><span class="label">Cartes</span>
+                    <label class="input-icon" style="display:block;margin-bottom:8px">${ic('search')}<input class="input" id="pick-filter" placeholder="Filtrer les paquets..." autocomplete="off"></label>
                     <div class="pick-list" id="pick-list">
                         ${item('all', '📂', 'Tous les paquets', this.data.cards.length)}
                         ${item('errors', '🎯', 'Mes erreurs', errCount)}
@@ -2865,6 +3213,10 @@ class SuperAnki {
             if (!b || b.disabled) return;
             sel = b.dataset.pick;
             $$('[data-pick]', m).forEach(x => x.classList.toggle('active', x === b));
+        });
+        $('#pick-filter', m).addEventListener('input', e => {
+            const q = fold(e.target.value.trim());
+            $$('[data-pick]', m).forEach(b => { b.classList.toggle('hidden', !!q && !fold(b.textContent).includes(q)); });
         });
         $('#opt-seg', m).addEventListener('click', e => {
             const b = e.target.closest('[data-opt]');
@@ -2888,6 +3240,79 @@ class SuperAnki {
         });
     }
 
+    /* ---------- Tooltips (charts, calendar...) ---------- */
+    showTip(target, x, y) {
+        if (!this.tipEl) { this.tipEl = document.createElement('div'); this.tipEl.className = 'chart-tip'; document.body.appendChild(this.tipEl); }
+        const tip = this.tipEl;
+        if (this.tipTarget !== target) {
+            if (this.tipTarget) this.tipTarget.classList.remove('on');
+            this.tipTarget = target;
+            target.classList.add('on');
+            tip.innerHTML = target.dataset.tip;
+        }
+        tip.style.display = 'block';
+        const r = tip.getBoundingClientRect(), pad = 12;
+        let left = x + 14, top = y - r.height - 12;
+        if (left + r.width > innerWidth - pad) left = x - r.width - 14;
+        if (left < pad) left = pad;
+        if (top < pad) top = y + 18;
+        tip.style.left = `${left}px`; tip.style.top = `${top}px`;
+        this.tipTouch = true;
+    }
+    hideTip() {
+        if (this.tipEl) this.tipEl.style.display = 'none';
+        if (this.tipTarget) { this.tipTarget.classList.remove('on'); this.tipTarget = null; }
+    }
+
+    /* ---------- Popovers (streak, sync) ---------- */
+    togglePopover(anchor, build) {
+        if (this.popover && this.popoverAnchor === anchor) { this.closePopover(); return; }
+        this.closePopover();
+        const pop = document.createElement('div');
+        pop.className = 'popover';
+        pop.dataset.kind = anchor.dataset.action === 'pop-sync' ? 'sync' : 'streak';
+        pop.innerHTML = build();
+        document.body.appendChild(pop);
+        this.popover = pop; this.popoverAnchor = anchor; this.popoverBuild = build;
+        const r = anchor.getBoundingClientRect(), w = pop.offsetWidth;
+        pop.style.top = `${r.bottom + 8}px`;
+        pop.style.left = `${clamp(r.right - w, 10, innerWidth - w - 10)}px`;
+    }
+    refreshPopover() { if (this.popover) this.popover.innerHTML = this.popoverBuild(); }
+    closePopover() {
+        if (!this.popover) return;
+        this.popover.remove();
+        this.popover = null; this.popoverAnchor = null;
+    }
+    streakPopoverHtml() {
+        const st = this.data.stats, today = dayKey(), alive = st.lastStudyDate === today;
+        const days = Array.from({ length: 7 }, (_, i) => addDays(Date.now(), i - 6));
+        const letters = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+        return `
+            <div class="pop-head"><span class="pop-flame ${alive ? '' : 'cold'}">${ic('flame')}</span><div><b>${plural(st.streak, 'jour')} de suite</b><div class="small muted">Record : ${plural(st.longestStreak, 'jour')}</div></div></div>
+            <div class="week-dots">${days.map(t => { const k = dayKey(t), v = st.history[k] || 0; return `<div class="${v ? 'on' : ''} ${k === today ? 'today' : ''}" title="${esc(longDate(t))} : ${plural(v, 'révision')}"><span>${letters[new Date(t).getDay()]}</span><i>${v ? ic('check') : ''}</i></div>`; }).join('')}</div>
+            <p class="small ${alive ? '' : 'muted'}" style="margin:10px 0">${alive ? `✅ Révision du jour faite (${plural(st.history[today] || 0, 'carte')}). Reviens demain !` : `Révise au moins une carte aujourd'hui pour ${st.streak ? 'prolonger' : 'démarrer'} ta série.`}</p>
+            <div class="pop-freeze">${ic('snow')}<span><b>${st.freezes}/2 gel${st.freezes > 1 ? 's' : ''} de série</b><br><span class="tiny muted">Un gel protège ta série si tu oublies un jour. +1 tous les 7 jours de suite.</span></span></div>
+            <div class="pop-actions">
+                ${alive ? '' : `<button class="btn btn-primary btn-sm" data-action="study" data-deck="">${ic('play')}Réviser</button>`}
+                <button class="btn btn-soft btn-sm" data-action="go-stats">${ic('chart')}Statistiques</button>
+            </div>`;
+    }
+    syncPopoverHtml() {
+        const st = Cloud.status;
+        const label = { ok: 'Tout est synchronisé', busy: 'Synchronisation en cours...', err: 'Synchronisation impossible', off: 'Synchronisation désactivée' }[st] || 'Synchronisation cloud';
+        const detail = st === 'err' ? 'Tu es peut-être hors ligne. Tes données restent enregistrées sur cet appareil et seront envoyées plus tard.'
+            : 'Ta progression est enregistrée sur cet appareil et copiée dans le cloud pour la retrouver sur tes autres appareils.';
+        const ago = Cloud.lastSync ? fmtAgo(Cloud.lastSync) : 'pas encore';
+        return `
+            <div class="pop-head"><span class="pop-cloud ${st}">${ic('cloud')}</span><div><b>${label}</b><div class="small muted">Dernière synchro : ${ago}</div></div></div>
+            <p class="small muted" style="margin:10px 0">${detail}</p>
+            <div class="pop-actions">
+                <button class="btn btn-primary btn-sm" data-action="sync-now" ${st === 'busy' ? 'disabled' : ''}>${ic('refresh')}Synchroniser</button>
+                <button class="btn btn-soft btn-sm" data-action="go-settings">${ic('settings')}Réglages</button>
+            </div>`;
+    }
+
     /* ============================================================
        Toasts
        ============================================================ */
@@ -2907,6 +3332,8 @@ class SuperAnki {
        ============================================================ */
     bindGlobalEvents() {
         document.addEventListener('click', e => {
+            if (this.popover && !this.popover.contains(e.target) && !(this.popoverAnchor && this.popoverAnchor.contains(e.target))) this.closePopover();
+            else if (this.popover && e.target.closest('.popover [data-action], .popover [data-nav]')) setTimeout(() => this.closePopover(), 0);
             const nav = e.target.closest('[data-nav]');
             if (nav) { this.go(nav.dataset.nav); return; }
             const tb = e.target.closest('.tb-btn');
@@ -2925,13 +3352,17 @@ class SuperAnki {
             const k = el.dataset && el.dataset.input;
             if (k === 'search') {
                 this.ui.search = el.value; this.ui.limit = 60;
+                const f = el.closest('.search-field');
+                if (f) f.classList.toggle('has-value', !!el.value);
                 clearTimeout(this.searchTimer);
-                this.searchTimer = setTimeout(() => this.renderDeckPanel(), 120);
+                this.searchTimer = setTimeout(() => { this.renderDeckSidebar(); this.renderDeckPanel(); }, 110);
             }
         });
         document.addEventListener('change', e => {
             const el = e.target, k = el.dataset && el.dataset.input;
             if (k === 'sort') { this.ui.sort = el.value; this.renderDeckPanel(); }
+            else if (k === 'stats-deck') { this.statsUi.deck = el.value; this.renderStats(); }
+            else if (k === 'stats-check') { this.statsUi[el.dataset.key] = el.checked; this.renderStats(); }
             else if (k === 'toggle') {
                 this.setSetting(el.dataset.key, el.checked);
                 if (el.dataset.key === 'cloudSync') {
@@ -2967,6 +3398,19 @@ class SuperAnki {
             if (file) { e.preventDefault(); this.editorRange = null; this.insertImage(file, area); }
         });
         document.addEventListener('keydown', e => this.onKey(e));
+        const tipAt = (e) => {
+            const t = e.target.closest && e.target.closest('[data-tip]');
+            if (!t) { this.hideTip(); return; }
+            this.showTip(t, e.clientX, e.clientY);
+        };
+        document.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') tipAt(e); }, { passive: true });
+        document.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') tipAt(e); }, { passive: true });
+        window.addEventListener('scroll', () => { if (this.tipEl && this.tipTouch) this.hideTip(); this.closePopover(); }, { passive: true });
+        let rz;
+        window.addEventListener('resize', () => {
+            clearTimeout(rz);
+            rz = setTimeout(() => { if (this.view === 'stats') this.drawCharts(); this.closePopover(); }, 150);
+        });
         matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if (this.data && this.data.settings.theme === 'auto') this.applySettings(); });
         const flush = () => { if (this.saveTimer) this.writeNow(); };
         window.addEventListener('pagehide', flush);
@@ -2983,6 +3427,11 @@ class SuperAnki {
             if (e.key === 'Escape') { e.preventDefault(); this.closeModal(top); }
             else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && top._save) { e.preventDefault(); top._save(); }
             return;
+        }
+        if (e.key === 'Escape' && this.popover) { this.closePopover(); return; }
+        if (e.target.id === 'card-search' && e.key === 'Escape') { e.preventDefault(); this.handleAction('clear-search'); return; }
+        if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') || (e.key === '/' && !typing && this.view !== 'session')) {
+            e.preventDefault(); this.handleAction('global-search'); return;
         }
         const s = this.session;
         if (this.view !== 'session') return;
@@ -3076,6 +3525,7 @@ class SuperAnki {
                 if (!ok) break;
                 const now = Date.now();
                 this.data.cards.forEach(c => Object.assign(c, { state: 'new', step: 0, interval: 0, ease: 2.5, due: now, reps: 0, lapses: 0, lastReview: null, errors: 0 }));
+                this.data.revlog = [];
                 this.data.stats.newSeen = { date: dayKey(), count: 0 };
                 this.save(); this.render();
                 this.toast('Progression remise à zéro', 'success');
@@ -3112,6 +3562,39 @@ class SuperAnki {
                 break;
             }
             case 'quiz-answer': this.quizAnswer(Number(ds.i), el); break;
+            case 'clear-search': {
+                this.ui.search = ''; this.ui.limit = 60;
+                const inp = $('#card-search');
+                if (inp) { inp.value = ''; inp.closest('.search-field').classList.remove('has-value'); inp.focus(); }
+                this.renderDeckSidebar(); this.renderDeckPanel();
+                break;
+            }
+            case 'global-search': {
+                if (this.view !== 'decks') this.go('decks');
+                const inp = $('#card-search');
+                if (inp) { inp.focus(); inp.select(); }
+                break;
+            }
+            case 'new-card-from-search': this.openCardModal(null, this.ui.deck !== 'all' && this.ui.deck !== 'errors' ? this.ui.deck : null, this.ui.search.trim()); break;
+            case 'stats-opt': {
+                const v = ds.value;
+                this.statsUi[ds.key] = v === 'true' ? true : v === 'false' ? false : isNaN(Number(v)) ? v : Number(v);
+                this.renderStats();
+                break;
+            }
+            case 'chart-toggle': {
+                const set = this.statsUi.hidden[ds.chart] || (this.statsUi.hidden[ds.chart] = new Set());
+                set.has(ds.key) ? set.delete(ds.key) : set.add(ds.key);
+                el.classList.toggle('off', set.has(ds.key));
+                this.drawCharts(ds.chart);
+                break;
+            }
+            case 'cal-year': this.statsUi.calYear += Number(ds.delta); this.renderStats(); break;
+            case 'stats-deck': this.statsUi.deck = ds.deck; this.renderStats(); window.scrollTo({ top: 0 }); break;
+            case 'pop-streak': this.togglePopover(el, () => this.streakPopoverHtml()); break;
+            case 'pop-sync': this.togglePopover(el, () => this.syncPopoverHtml()); break;
+            case 'go-stats': this.go('stats'); break;
+            case 'go-settings': this.go('settings'); break;
             case 'quiz-next': this.nextQuestion(); break;
             default: break;
         }
@@ -3186,6 +3669,571 @@ function parseImport(text) {
     });
     return rows;
 }
+
+
+/* ============================================================
+   Statistics, modelled on Anki's stats screen.
+   Charts are plain SVG drawn at the real container width,
+   with hover / tap tooltips and clickable legends.
+   Review log entry: [time, cardId, grade, type, ivl, lastIvl, ms]
+   type: 0 learning, 1 review, 2 relearning, 3 practice (quiz, chrono...)
+   ============================================================ */
+const YOUNG_COLOR = 'color-mix(in srgb, var(--mature) 45%, var(--surface))';
+const PRACTICE_COLOR = '#8b5cf6';
+const fmtNum = n => (Math.round(n * 10) / 10).toLocaleString('fr-FR');
+const pctStr = (a, b) => (b ? `${fmtNum(a / b * 100)} %` : 'N/A');
+const shortDate = t => new Date(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }).replace('.', '');
+/* Axis max = 4 "round" steps, so tick labels stay whole numbers for counts */
+function niceMax(v, minMax = 0) {
+    v = Math.max(v, minMax);
+    if (v <= 0) return 1;
+    const raw = v / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / p;
+    const step = (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 && p >= 10 ? 2.5 : n <= 5 ? 5 : 10) * p;
+    return step * 4;
+}
+function median(arr) {
+    if (!arr.length) return null;
+    const s = [...arr].sort((a, b) => a - b), m = Math.floor(s.length / 2);
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+function tipRows(title, rows, foot) {
+    return `<b>${title}</b>${rows.map(r => `<div class="tip-row"><span class="sw" style="background:${r.color}"></span>${r.label}<em>${r.value}</em></div>`).join('')}${foot ? `<div class="tip-foot">${foot}</div>` : ''}`;
+}
+function revKind(r) {
+    const t = r[3];
+    if (t === 0) return 'learn';
+    if (t === 2) return 'relearn';
+    if (t === 3) return 'cram';
+    return (r[5] || 0) >= MATURE_IVL ? 'mature' : 'young';
+}
+
+/* Generic stacked bar chart with optional secondary line */
+function barsSVG(W, o) {
+    const H = o.height || 230, padT = 14, padB = 28, padL = 42, padR = o.line ? 46 : 12;
+    const pw = Math.max(40, W - padL - padR), ph = H - padT - padB;
+    const hidden = o.hidden || new Set();
+    const vis = o.series.filter(s => !hidden.has(s.key));
+    const totals = Array.from({ length: o.n }, (_, i) => vis.reduce((a, s) => a + (s.values[i] || 0), 0));
+    const yMax = niceMax(Math.max(0, ...totals), o.minMax ?? 4);
+    const yFmt = o.yFmt || fmtNum;
+    const bw = pw / o.n, gap = bw > 8 ? Math.min(bw * 0.22, 8) : bw > 3 ? 1 : 0, w = Math.max(0.8, bw - gap);
+    let g = '';
+    for (let k = 0; k <= 4; k++) {
+        const v = yMax * k / 4, y = (padT + ph - (v / yMax) * ph).toFixed(1);
+        g += `<line class="grid" x1="${padL}" x2="${padL + pw}" y1="${y}" y2="${y}"/><text x="${padL - 7}" y="${(+y + 3.5).toFixed(1)}" text-anchor="end">${yFmt(v)}</text>`;
+    }
+    for (let i = 0; i < o.n; i++) {
+        let y = padT + ph;
+        const x = padL + i * bw + gap / 2;
+        vis.forEach(s => {
+            const v = s.values[i] || 0;
+            if (v <= 0) return;
+            const h = Math.max(1, v / yMax * ph);
+            y -= h;
+            g += `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}" ${w > 6 ? 'rx="2"' : ''} style="fill:${s.colorAt ? s.colorAt(i) : s.color}"/>`;
+        });
+    }
+    if (o.line && o.line.values.some(v => v !== null && v !== undefined)) {
+        const L = o.line, lMax = L.max ?? niceMax(Math.max(1, ...L.values.filter(v => v !== null && v !== undefined)), 1);
+        let d = '', started = false;
+        L.values.forEach((v, i) => {
+            if (v === null || v === undefined) { started = false; return; }
+            const x = padL + i * bw + bw / 2, y = padT + ph - (v / lMax) * ph;
+            d += `${started ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)} `;
+            started = true;
+        });
+        g += `<path d="${d}" fill="none" style="stroke:${L.color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>`;
+        for (let k = 0; k <= 4; k++) {
+            const v = lMax * k / 4, y = padT + ph - (v / lMax) * ph;
+            g += `<text x="${padL + pw + 7}" y="${(y + 3.5).toFixed(1)}" text-anchor="start" style="fill:${L.color}">${(L.fmt || fmtNum)(v)}</text>`;
+        }
+    }
+    const maxLabels = Math.max(2, Math.floor(pw / (o.labelWidth || 52)));
+    const step = Math.max(1, Math.ceil(o.n / maxLabels));
+    for (let i = 0; i < o.n; i++) {
+        const lab = o.xLabel(i, step);
+        if (lab === null || lab === undefined || (i % step && !o.allLabels)) continue;
+        g += `<text x="${(padL + i * bw + bw / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle">${esc(lab)}</text>`;
+    }
+    g += `<line class="axis" x1="${padL}" x2="${padL + pw}" y1="${padT + ph + .5}" y2="${padT + ph + .5}"/>`;
+    for (let i = 0; i < o.n; i++) {
+        const tip = o.tooltip ? o.tooltip(i) : '';
+        if (tip) g += `<rect class="hit" x="${(padL + i * bw).toFixed(2)}" y="${padT}" width="${bw.toFixed(2)}" height="${ph}" data-tip="${esc(tip)}"/>`;
+    }
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+}
+function donutSVGi(size, segs, centerTop, centerSub) {
+    const total = segs.reduce((a, s) => a + s.value, 0), c = size / 2, R = size / 2 - 14, r = R - 26;
+    let a0 = -Math.PI / 2, g = '';
+    if (!total) g = `<circle cx="${c}" cy="${c}" r="${(R + r) / 2}" fill="none" stroke-width="${R - r}" style="stroke:var(--surface-3)"/>`;
+    segs.forEach(s => {
+        if (!s.value) return;
+        const frac = s.value / total, a1 = a0 + frac * Math.PI * 2;
+        const tip = esc(tipRows(s.label, [{ label: 'Cartes', value: s.value, color: s.color }], `${fmtNum(frac * 100)} % du total`));
+        if (frac >= 0.9999) {
+            g += `<circle class="slice" cx="${c}" cy="${c}" r="${(R + r) / 2}" fill="none" stroke-width="${R - r}" style="stroke:${s.color}" data-tip="${tip}"/>`;
+        } else {
+            const large = frac > 0.5 ? 1 : 0;
+            const p = (ang, rad) => `${(c + rad * Math.cos(ang)).toFixed(2)} ${(c + rad * Math.sin(ang)).toFixed(2)}`;
+            g += `<path class="slice" d="M${p(a0, R)} A${R} ${R} 0 ${large} 1 ${p(a1, R)} L${p(a1, r)} A${r} ${r} 0 ${large} 0 ${p(a0, r)}Z" style="fill:${s.color}" data-tip="${tip}"/>`;
+        }
+        a0 = a1;
+    });
+    g += `<text x="${c}" y="${c - 2}" text-anchor="middle" class="donut-num">${centerTop}</text><text x="${c}" y="${c + 16}" text-anchor="middle">${centerSub}</text>`;
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${g}</svg>`;
+}
+
+Object.assign(SuperAnki.prototype, {
+    statsScope() {
+        const d = this.statsUi.deck;
+        if (d !== 'all' && !this.deck(d)) this.statsUi.deck = 'all';
+        if (this.statsUi.deck === 'all') return { cards: this.data.cards, revlog: this.data.revlog, all: true };
+        const cards = this.cardsOf(d), ids = new Set(cards.map(c => c.id));
+        return { cards, revlog: this.data.revlog.filter(r => ids.has(r[1])), all: false };
+    },
+    statSeg(key, options) {
+        const cur = this.statsUi[key];
+        return `<div class="segmented seg-sm">${options.map(([v, l]) => `<button class="${String(cur) === String(v) ? 'active' : ''}" data-action="stats-opt" data-key="${key}" data-value="${v}">${l}</button>`).join('')}</div>`;
+    },
+    legend(chartId, series) {
+        const hidden = this.statsUi.hidden[chartId] || new Set();
+        return `<div class="chart-legend">${series.map(s => `<button class="${hidden.has(s.key) ? 'off' : ''}" data-action="chart-toggle" data-chart="${chartId}" data-key="${s.key}" title="Afficher / masquer"><span class="sw" style="background:${s.color}"></span>${s.label}</button>`).join('')}</div>`;
+    },
+    chartBox(id, extraClass = '') { return `<div class="chart ${extraClass}" data-chart-box="${id}"></div>`; },
+
+    renderStats() {
+        const st = this.data.stats, ui = this.statsUi, today = dayKey();
+        const scope = this.statsScope();
+        this.chartDefs = {};
+        const errCount = this.errorCards().length;
+        const deckRows = this.sortedDecks().map(dk => {
+            const cs = this.cardsOf(dk.id), c = this.countStatuses(cs);
+            return { dk, c, n: cs.length, pct: cs.length ? Math.round(c.mature / cs.length * 100) : 0 };
+        }).sort((a, b) => b.pct - a.pct || a.dk.name.localeCompare(b.dk.name, 'fr'));
+
+        const sections = [
+            this.statToday(scope),
+            this.statForecast(scope),
+            this.statCalendar(scope),
+            this.statReviews(scope),
+            this.statCounts(scope),
+            this.statIntervals(scope),
+            this.statEase(scope),
+            this.statRetention(scope),
+            this.statHourly(scope),
+            this.statButtons(scope),
+            this.statAdded(scope)
+        ];
+        $('#view-stats').innerHTML = `
+        <div class="stack">
+            <div class="stats-head">
+                <div><h2 class="page-title">Statistiques</h2><p class="page-sub">Les mêmes analyses qu'Anki, en interactif : survole ou touche un graphique.</p></div>
+                <label class="stats-scope"><span class="sr-only">Paquet</span>
+                    <select class="select" data-input="stats-deck">
+                        <option value="all" ${ui.deck === 'all' ? 'selected' : ''}>📂 Collection (tous les paquets)</option>
+                        ${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${ui.deck === d.id ? 'selected' : ''}>${esc(d.emoji)} ${esc(d.name)}</option>`).join('')}
+                    </select>
+                </label>
+            </div>
+            <div class="kpi-grid">
+                <div class="panel kpi"><span>Série actuelle</span><b>🔥 ${st.streak} j</b><em>${ic('snow')} ${plural(st.freezes, 'gel')} de série</em></div>
+                <div class="panel kpi"><span>Record de série</span><b>${st.longestStreak} j</b><em>${plural(Object.keys(st.history).filter(k => st.history[k] > 0).length, 'jour actif', 'jours actifs')}</em></div>
+                <div class="panel kpi"><span>Aujourd'hui</span><b>${st.history[today] || 0}</b><em>${fmtDuration(st.timeByDay[today] || 0)} d'étude</em></div>
+                <div class="panel kpi"><span>Temps total</span><b>${fmtDuration(st.studySeconds)}</b><em>${plural(Object.values(st.history).reduce((a, b) => a + b, 0), 'révision')}</em></div>
+            </div>
+            <div class="stats-grid">${sections.join('')}</div>
+            <div class="panel panel-pad">
+                <div class="section-head" style="margin-bottom:6px">
+                    <h4 class="stat-title">${ic('target')} Mes erreurs</h4>
+                    ${errCount ? `<button class="btn btn-primary btn-sm" data-action="practice-errors">${ic('play')}Retravailler (${errCount})</button>` : ''}
+                </div>
+                <p class="small muted">${errCount ? `${plural(errCount, 'carte')} ratée${errCount > 1 ? 's' : ''} récemment. Elles sortent de la liste dès que tu les réussis.` : 'Aucune erreur en attente. Les cartes ratées en révision, en quiz ou au chrono apparaîtront ici.'}</p>
+            </div>
+            <div class="panel panel-pad">
+                <h4 class="stat-title" style="margin-bottom:8px">Maîtrise par paquet</h4>
+                ${deckRows.map(r => `
+                <button class="deck-progress-row" data-action="stats-deck" data-deck="${esc(r.dk.id)}" data-tip="${esc(tipRows(`${esc(r.dk.emoji)} ${esc(r.dk.name)}`, ['new', 'learn', 'due', 'mature'].map(k => ({ label: STATUS[k].label, value: r.c[k], color: STATUS[k].color }))))}">
+                    <span class="nm">${esc(r.dk.emoji)} ${esc(r.dk.name)}</span>
+                    <div class="progress"><i style="width:${r.n ? r.c.mature / r.n * 100 : 0}%;background:var(--mature)"></i><i style="width:${r.n ? r.c.learn / r.n * 100 : 0}%;background:var(--learn)"></i><i style="width:${r.n ? r.c.due / r.n * 100 : 0}%;background:var(--due)"></i></div>
+                    <b>${r.pct}%</b>
+                </button>`).join('') || '<p class="small muted">Aucun paquet.</p>'}
+            </div>
+        </div>`;
+        this.drawCharts();
+    },
+    drawCharts(onlyId) {
+        $$('[data-chart-box]').forEach(box => {
+            const id = box.dataset.chartBox, def = this.chartDefs && this.chartDefs[id];
+            if (!def || (onlyId && id !== onlyId)) return;
+            const W = Math.max(260, Math.floor(box.clientWidth));
+            box.innerHTML = def(W);
+        });
+    },
+
+    /* ---------- Aujourd'hui ---------- */
+    statToday({ revlog }) {
+        const t0 = startOfDay();
+        const today = revlog.filter(r => r[0] >= t0);
+        let body;
+        if (!today.length) body = `<p class="muted">Aucune carte étudiée aujourd'hui.</p>`;
+        else {
+            const secs = today.reduce((a, r) => a + (r[6] || 0), 0) / 1000;
+            const graded = today.filter(r => r[2]);
+            const again = graded.filter(r => r[2] === 1).length;
+            const k = { learn: 0, young: 0, mature: 0, relearn: 0, cram: 0 };
+            today.forEach(r => { k[revKind(r)]++; });
+            const mat = today.filter(r => r[3] === 1 && (r[5] || 0) >= MATURE_IVL);
+            const matOk = mat.filter(r => r[2] >= 2).length;
+            body = `<p>Étudié <b>${plural(today.length, 'carte')}</b> en <b>${fmtDuration(secs)}</b> aujourd'hui (${fmtNum(secs / today.length)} s/carte).</p>
+                <p>Nombre de « Raté » : <b>${again}</b> (${pctStr(graded.length - again, graded.length)} de réponses correctes).</p>
+                <p>Apprentissage : <b>${k.learn}</b> · Révision : <b>${k.young + k.mature}</b> · Réapprentissage : <b>${k.relearn}</b> · Entraînement : <b>${k.cram}</b></p>
+                ${mat.length ? `<p>Cartes matures : <b>${matOk}/${mat.length}</b> réussies (${pctStr(matOk, mat.length)}).</p>` : ''}`;
+        }
+        return `<section class="panel panel-pad stat-card"><h4 class="stat-title">Aujourd'hui</h4><div class="stat-text">${body}</div></section>`;
+    },
+
+    /* ---------- Charge de travail (prévisions) ---------- */
+    statForecast({ cards }) {
+        const ui = this.statsUi, today = dayKey(), todayStart = startOfDay();
+        const items = cards.filter(c => c.state !== 'new' && !c.suspended).map(c => {
+            const idx = Math.max(0, daysBetweenKeys(today, dayKey(c.due)));
+            const key = c.state === 'review' ? (c.interval >= MATURE_IVL ? 'mature' : 'young') : 'learn';
+            return { idx, key, overdue: c.due < todayStart, ivl: c.interval, review: c.state === 'review' };
+        });
+        const maxIdx = items.reduce((a, x) => Math.max(a, x.idx), 0);
+        const days = ui.fcRange === 'all' ? Math.max(31, maxIdx + 1) : Number(ui.fcRange);
+        const inRange = items.filter(x => x.idx < days);
+        const total = inRange.length, tomorrow = items.filter(x => x.idx === 1).length, overdue = items.filter(x => x.overdue).length;
+        const load = Math.round(items.filter(x => x.review).reduce((a, x) => a + 1 / Math.max(1, x.ivl), 0));
+        const series = [
+            { key: 'learn', label: 'En apprentissage', color: 'var(--learn)' },
+            { key: 'young', label: 'Récentes', color: YOUNG_COLOR },
+            { key: 'mature', label: 'Matures', color: 'var(--mature)' }
+        ];
+        this.chartDefs.forecast = W => {
+            const k = Math.max(1, Math.ceil(days / Math.floor((W - 90) / 5)));
+            const n = Math.ceil(days / k);
+            const hidden = ui.hidden.forecast || new Set();
+            const ser = series.map(s => ({ ...s, values: new Array(n).fill(0) }));
+            inRange.forEach(x => { ser.find(s => s.key === x.key).values[Math.floor(x.idx / k)]++; });
+            let run = 0;
+            const cumul = ui.fcCumul ? Array.from({ length: n }, (_, i) => (run += ser.filter(s => !hidden.has(s.key)).reduce((a, s) => a + s.values[i], 0))) : null;
+            const dayT = i => addDays(Date.now(), i * k);
+            return barsSVG(W, {
+                n, series: ser, hidden, minMax: 4,
+                line: cumul ? { values: cumul, color: 'var(--text-faint)', label: 'Cumul' } : null,
+                xLabel: i => (i === 0 ? 'Auj.' : k === 1 && days <= 31 ? shortDate(dayT(i)) : `+${i * k} j`),
+                tooltip: i => {
+                    const title = k === 1 ? (i === 0 ? "Aujourd'hui" : i === 1 ? 'Demain' : longDate(dayT(i))) : `Du ${shortDate(dayT(i))} au ${shortDate(dayT(i + 1) - DAY)}`;
+                    const tot = ser.reduce((a, s) => a + s.values[i], 0);
+                    return tipRows(title, ser.map(s => ({ label: s.label, value: s.values[i], color: s.color })), `Total : ${tot}${cumul ? ` · cumul : ${cumul[i]}` : ''}${i === 0 && overdue ? ` · dont ${overdue} en retard` : ''}`);
+                }
+            });
+        };
+        return `<section class="panel panel-pad stat-card wide">
+            <div class="stat-head"><div><h4 class="stat-title">Charge de travail</h4><p class="stat-sub">Nombre de cartes à réviser selon leur jour d'échéance et leur statut.</p></div>
+            <div class="stat-opts"><label class="check"><input type="checkbox" data-input="stats-check" data-key="fcCumul" ${ui.fcCumul ? 'checked' : ''}> cumul</label>${this.statSeg('fcRange', [[31, '1 mois'], [90, '3 mois'], [365, '1 an'], ['all', 'Tout']])}</div></div>
+            ${this.chartBox('forecast')}${this.legend('forecast', series)}
+            <dl class="stat-facts"><dt>Total</dt><dd>${plural(total, 'révision')}</dd><dt>Moyenne</dt><dd>${fmtNum(total / days)} révision/jour</dd><dt>Prévues pour demain</dt><dd>${plural(tomorrow, 'révision')}</dd><dt>Charge journalière</dt><dd>${load} révision/jour</dd>${overdue ? `<dt>En retard</dt><dd>${plural(overdue, 'carte')}</dd>` : ''}</dl>
+        </section>`;
+    },
+
+    /* ---------- Calendrier ---------- */
+    statCalendar({ revlog, all }) {
+        const ui = this.statsUi, year = ui.calYear;
+        const counts = {};
+        if (all) Object.assign(counts, this.data.stats.history);
+        else revlog.forEach(r => { const k = dayKey(r[0]); counts[k] = (counts[k] || 0) + 1; });
+        const vals = Object.values(counts).filter(v => v > 0).sort((a, b) => a - b);
+        const q = p => vals.length ? vals[Math.min(vals.length - 1, Math.floor(p * vals.length))] : 1;
+        const [q1, q2, q3] = [q(0.25), q(0.5), q(0.75)];
+        const first = new Date(year, 0, 1), lead = (first.getDay() + 6) % 7;
+        const today = dayKey();
+        let cells = '';
+        for (let i = 0; i < lead; i++) cells += '<i class="pad"></i>';
+        let yearTotal = 0, activeDays = 0;
+        for (let d = new Date(year, 0, 1); d.getFullYear() === year; d.setDate(d.getDate() + 1)) {
+            const k = dayKey(d.getTime()), v = counts[k] || 0;
+            yearTotal += v; if (v) activeDays++;
+            const lvl = !v ? '' : v <= q1 ? 'l1' : v <= q2 ? 'l2' : v <= q3 ? 'l3' : 'l4';
+            cells += `<i class="${lvl}${k === today ? ' today' : ''}${k > today ? ' future' : ''}" data-tip="${esc(`<b>${longDate(d.getTime())}</b><div>${v ? plural(v, 'révision') : 'Aucune révision'}</div>`)}"></i>`;
+        }
+        const years = Object.keys(counts).map(k => Number(k.slice(0, 4)));
+        const minYear = Math.min(new Date().getFullYear(), ...years);
+        return `<section class="panel panel-pad stat-card wide">
+            <div class="stat-head"><h4 class="stat-title">Calendrier</h4>
+                <div class="year-nav">
+                    <button class="icon-btn icon-btn-sm" data-action="cal-year" data-delta="-1" ${year <= minYear ? 'disabled' : ''} aria-label="Année précédente">${ic('arrowLeft')}</button>
+                    <b>${year}</b>
+                    <button class="icon-btn icon-btn-sm" data-action="cal-year" data-delta="1" ${year >= new Date().getFullYear() ? 'disabled' : ''} aria-label="Année suivante" style="transform:scaleX(-1)">${ic('arrowLeft')}</button>
+                </div>
+            </div>
+            <div class="cal-wrap">
+                <div class="cal-days"><span>L</span><span></span><span>M</span><span></span><span>V</span><span></span><span>D</span></div>
+                <div class="heatmap-scroll"><div class="heatmap year">${cells}</div></div>
+            </div>
+            <div class="cal-foot"><span class="small muted">${plural(yearTotal, 'révision')} · ${plural(activeDays, 'jour actif', 'jours actifs')} en ${year}</span>
+                <span class="cal-scale">Moins <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> Plus</span></div>
+        </section>`;
+    },
+
+    /* ---------- Révisions (passé) ---------- */
+    statReviews({ revlog, all }) {
+        const ui = this.statsUi, today = dayKey();
+        const history = this.data.stats.history;
+        const firstKeys = [...revlog.map(r => dayKey(r[0])), ...(all ? Object.keys(history) : [])].sort();
+        const span = firstKeys.length ? daysBetweenKeys(firstKeys[0], today) + 1 : 1;
+        const days = ui.rvRange === 'all' ? Math.max(31, span) : Number(ui.rvRange);
+        const useTime = ui.rvTime;
+        const series = [
+            { key: 'learn', label: 'Apprentissage', color: 'var(--learn)' },
+            { key: 'young', label: 'Récentes', color: YOUNG_COLOR },
+            { key: 'mature', label: 'Matures', color: 'var(--mature)' },
+            { key: 'relearn', label: 'Réapprentissage', color: 'var(--due)' },
+            { key: 'cram', label: 'Entraînement', color: PRACTICE_COLOR }
+        ];
+        const perDay = {}, logCount = {};
+        revlog.forEach(r => {
+            const k = dayKey(r[0]), ago = daysBetweenKeys(k, today);
+            if (ago < 0 || ago >= days) return;
+            (perDay[ago] = perDay[ago] || { learn: 0, young: 0, mature: 0, relearn: 0, cram: 0, legacy: 0 })[revKind(r)] += useTime ? (r[6] || 0) / 60000 : 1;
+            logCount[k] = (logCount[k] || 0) + 1;
+        });
+        let legacyTotal = 0;
+        if (all && !useTime) {
+            Object.entries(history).forEach(([k, v]) => {
+                const extra = v - (logCount[k] || 0), ago = daysBetweenKeys(k, today);
+                if (extra > 0 && ago >= 0 && ago < days) { (perDay[ago] = perDay[ago] || { learn: 0, young: 0, mature: 0, relearn: 0, cram: 0, legacy: 0 }).legacy += extra; legacyTotal += extra; }
+            });
+        }
+        const allSeries = legacyTotal ? [...series, { key: 'legacy', label: 'Avant le suivi détaillé', color: 'var(--text-faint)' }] : series;
+        const dayTotals = Object.values(perDay).map(o => Object.values(o).reduce((a, b) => a + b, 0));
+        const studied = dayTotals.filter(v => v > 0).length, total = dayTotals.reduce((a, b) => a + b, 0);
+        const unit = v => (useTime ? fmtDuration(v * 60) : plural(Math.round(v), 'révision'));
+        this.chartDefs.reviews = W => {
+            const k = Math.max(1, Math.ceil(days / Math.floor((W - 90) / 5)));
+            const n = Math.ceil(days / k), hidden = ui.hidden.reviews || new Set();
+            const ser = allSeries.map(s => ({ ...s, values: new Array(n).fill(0) }));
+            Object.entries(perDay).forEach(([ago, o]) => {
+                const b = n - 1 - Math.floor(Number(ago) / k);
+                if (b < 0) return;
+                ser.forEach(s => { s.values[b] += o[s.key] || 0; });
+            });
+            let run = 0;
+            const cumul = Array.from({ length: n }, (_, i) => (run += ser.filter(s => !hidden.has(s.key)).reduce((a, s) => a + s.values[i], 0)));
+            const dayT = i => addDays(Date.now(), -((n - 1 - i) * k));
+            return barsSVG(W, {
+                n, series: ser, hidden, minMax: useTime ? 5 : 4,
+                yFmt: v => (useTime ? `${fmtNum(v)} min` : fmtNum(v)),
+                line: { values: cumul, color: 'var(--text-faint)', fmt: v => (useTime ? `${Math.round(v)}m` : fmtNum(v)) },
+                xLabel: i => (i === n - 1 ? 'Auj.' : k === 1 && days <= 31 ? shortDate(dayT(i)) : `-${(n - 1 - i) * k} j`),
+                tooltip: i => {
+                    const title = k === 1 ? (i === n - 1 ? "Aujourd'hui" : longDate(dayT(i))) : `Du ${shortDate(dayT(i) - (k - 1) * DAY)} au ${shortDate(dayT(i))}`;
+                    const tot = ser.reduce((a, s) => a + s.values[i], 0);
+                    return tipRows(title, ser.filter(s => s.values[i] > 0).map(s => ({ label: s.label, value: useTime ? fmtDuration(s.values[i] * 60) : s.values[i], color: s.color })), `Total : ${unit(tot)}`);
+                }
+            });
+        };
+        return `<section class="panel panel-pad stat-card wide">
+            <div class="stat-head"><div><h4 class="stat-title">Révisions</h4><p class="stat-sub">Le nombre de révisions (ou le temps passé) par jour, selon le statut de la carte.</p></div>
+            <div class="stat-opts">${this.statSeg('rvTime', [[false, 'Nombre'], [true, 'Durée']])}${this.statSeg('rvRange', [[30, '1 mois'], [90, '3 mois'], [365, '1 an'], ['all', 'Tout']])}</div></div>
+            ${total ? this.chartBox('reviews') + this.legend('reviews', allSeries) : '<div class="no-data">Pas encore de données : révise quelques cartes !</div>'}
+            <dl class="stat-facts"><dt>Jours étudiés</dt><dd>${studied} sur ${days} (${pctStr(studied, days)})</dd><dt>Total</dt><dd>${unit(total)}</dd><dt>Moyenne (jours étudiés)</dt><dd>${unit(studied ? total / studied : 0)}/jour</dd><dt>Moyenne sur la période</dt><dd>${unit(total / days)}/jour</dd></dl>
+        </section>`;
+    },
+
+    /* ---------- Nombre de cartes ---------- */
+    statCounts({ cards }) {
+        const k = { new: 0, learning: 0, relearning: 0, young: 0, mature: 0, suspended: 0 };
+        cards.forEach(c => {
+            if (c.suspended) k.suspended++;
+            else if (c.state === 'review') k[c.interval >= MATURE_IVL ? 'mature' : 'young']++;
+            else k[c.state]++;
+        });
+        const segs = [
+            { key: 'new', label: 'Inédites', color: 'var(--new)', value: k.new },
+            { key: 'learning', label: 'À repasser', color: 'var(--learn)', value: k.learning },
+            { key: 'relearning', label: 'Réapprentissage', color: 'var(--due)', value: k.relearning },
+            { key: 'young', label: 'Récentes', color: YOUNG_COLOR, value: k.young },
+            { key: 'mature', label: 'Matures', color: 'var(--mature)', value: k.mature },
+            { key: 'suspended', label: 'Suspendues', color: '#eab308', value: k.suspended }
+        ];
+        const total = cards.length;
+        this.chartDefs.counts = W => donutSVGi(Math.min(210, W), segs, total, 'cartes');
+        return `<section class="panel panel-pad stat-card">
+            <h4 class="stat-title">Nombre de cartes</h4><p class="stat-sub">La répartition de tes cartes selon leur statut.</p>
+            <div class="donut-wrap">${this.chartBox('counts', 'donut')}
+                <table class="stat-table legend-table"><tbody>${segs.map(s => `<tr><td><span class="sw" style="background:${s.color}"></span>${s.label}</td><td>${s.value}</td><td>${total ? Math.round(s.value / total * 100) : 0}%</td></tr>`).join('')}
+                <tr class="total"><td>Total</td><td>${total}</td><td></td></tr></tbody></table>
+            </div>
+        </section>`;
+    },
+
+    /* ---------- Intervalles ---------- */
+    statIntervals({ cards }) {
+        const ui = this.statsUi;
+        const ivls = cards.filter(c => (c.state === 'review' || c.state === 'relearning') && !c.suspended).map(c => Math.max(1, c.interval)).sort((a, b) => a - b);
+        const med = median(ivls);
+        const sub = `<p class="stat-sub">Le nombre de cartes selon leur intervalle de révision (temps avant leur prochaine apparition).</p>`;
+        if (!ivls.length) return `<section class="panel panel-pad stat-card"><h4 class="stat-title">Intervalles de révision</h4>${sub}<div class="no-data">Pas encore de cartes en révision.</div></section>`;
+        const pctCut = p => ivls[Math.min(ivls.length - 1, Math.ceil(p * ivls.length) - 1)];
+        const maxIvl = ui.ivRange === '1m' ? 31 : ui.ivRange === 'p50' ? pctCut(0.5) : ui.ivRange === 'p95' ? pctCut(0.95) : ivls[ivls.length - 1];
+        this.chartDefs.intervals = W => {
+            const k = Math.max(1, Math.ceil((maxIvl + 1) / Math.min(60, Math.floor((W - 90) / 8))));
+            const n = Math.max(1, Math.ceil((maxIvl + 1) / k));
+            const vals = new Array(n).fill(0);
+            ivls.forEach(v => { if (v <= maxIvl) vals[Math.floor(v / k)]++; });
+            let run = 0;
+            const cum = vals.map(v => (run += v) / ivls.length * 100);
+            const range = i => (k === 1 ? fmtDays(i) : `${fmtDays(Math.max(1, i * k))} à ${fmtDays(i * k + k - 1)}`);
+            return barsSVG(W, {
+                n, series: [{ key: 'c', label: 'Cartes', color: 'var(--primary)', values: vals }], minMax: 4,
+                line: { values: cum, max: 100, color: 'var(--text-faint)', fmt: v => `${Math.round(v)}%` },
+                xLabel: i => (i === 0 && k === 1 ? '' : fmtDays(Math.max(1, i * k))),
+                tooltip: i => (vals[i] ? tipRows(range(i), [{ label: 'Cartes', value: vals[i], color: 'var(--primary)' }], `${fmtNum(cum[i])} % des cartes ont un intervalle plus court`) : '')
+            });
+        };
+        return `<section class="panel panel-pad stat-card">
+            <div class="stat-head"><div><h4 class="stat-title">Intervalles de révision</h4>${sub}</div>
+            <div class="stat-opts">${this.statSeg('ivRange', [['1m', '1 mois'], ['p50', '50%'], ['p95', '95%'], ['all', 'Tout']])}</div></div>
+            ${this.chartBox('intervals')}
+            <dl class="stat-facts"><dt>Intervalle médian</dt><dd>${fmtDays(Math.round(med))}</dd><dt>Intervalle le plus long</dt><dd>${fmtDays(ivls[ivls.length - 1])}</dd></dl>
+        </section>`;
+    },
+
+    /* ---------- Facilité ---------- */
+    statEase({ cards }) {
+        const eases = cards.filter(c => (c.state === 'review' || c.state === 'relearning') && !c.suspended).map(c => Math.round(c.ease * 100));
+        const sub = `<p class="stat-sub">Moins une carte est facile, plus souvent elle apparaîtra.</p>`;
+        if (!eases.length) return `<section class="panel panel-pad stat-card"><h4 class="stat-title">Facilité des cartes</h4>${sub}<div class="no-data">Pas encore de cartes en révision.</div></section>`;
+        const lo = 130, hi = Math.max(300, Math.ceil(Math.max(...eases) / 10) * 10 + 10), step = 10;
+        const n = (hi - lo) / step, vals = new Array(n).fill(0);
+        eases.forEach(e => { vals[clamp(Math.floor((e - lo) / step), 0, n - 1)]++; });
+        const color = i => `color-mix(in srgb, var(--due) ${Math.round(100 - i / (n - 1) * 100)}%, var(--mature))`;
+        this.chartDefs.ease = W => barsSVG(W, {
+            n, series: [{ key: 'c', label: 'Cartes', color: 'var(--primary)', values: vals, colorAt: color }], minMax: 4,
+            xLabel: i => `${lo + i * step}%`, labelWidth: 44,
+            tooltip: i => (vals[i] ? tipRows(`Facilité ${lo + i * step} à ${lo + i * step + step - 1} %`, [{ label: 'Cartes', value: vals[i], color: color(i) }]) : '')
+        });
+        return `<section class="panel panel-pad stat-card">
+            <h4 class="stat-title">Facilité des cartes</h4>${sub}
+            ${this.chartBox('ease')}
+            <dl class="stat-facts"><dt>Facilité médiane</dt><dd>${Math.round(median(eases))} %</dd><dt>Cartes « difficiles » (&lt; 200 %)</dt><dd>${eases.filter(e => e < 200).length}</dd></dl>
+        </section>`;
+    },
+
+    /* ---------- Rétention réelle ---------- */
+    statRetention({ revlog }) {
+        const reviews = revlog.filter(r => r[3] === 1 && r[2]);
+        const t0 = startOfDay();
+        const periods = [
+            ["Aujourd'hui", t0, Infinity], ['Hier', t0 - DAY, t0], ['Semaine dernière', t0 - 6 * DAY, Infinity],
+            ['Mois dernier', t0 - 29 * DAY, Infinity], ['Année passée', t0 - 364 * DAY, Infinity], ['Depuis le début', 0, Infinity]
+        ];
+        const rows = periods.map(([label, a, b]) => {
+            const inP = reviews.filter(r => r[0] >= a && r[0] < b);
+            const y = inP.filter(r => (r[5] || 0) < MATURE_IVL), m = inP.filter(r => (r[5] || 0) >= MATURE_IVL);
+            const ok = arr => arr.filter(r => r[2] >= 2).length;
+            return `<tr><th>${label}</th><td class="c-young">${pctStr(ok(y), y.length)}</td><td class="c-mature">${pctStr(ok(m), m.length)}</td><td>${pctStr(ok(inP), inP.length)}</td><td class="faint">${inP.length}</td></tr>`;
+        }).join('');
+        return `<section class="panel panel-pad stat-card">
+            <h4 class="stat-title">Rétention réelle</h4><p class="stat-sub">Taux de réussite des cartes révisées avec un intervalle ≥ 1 jour (tout sauf « Raté »).</p>
+            <div class="table-scroll"><table class="stat-table retention"><thead><tr><th></th><th class="c-young">Récentes</th><th class="c-mature">Matures</th><th>Total</th><th class="faint">Nombre</th></tr></thead><tbody>${rows}</tbody></table></div>
+        </section>`;
+    },
+
+    /* ---------- Répartition horaire ---------- */
+    statHourly({ revlog }) {
+        const ui = this.statsUi, since = startOfDay() - (Number(ui.hrRange) - 1) * DAY;
+        const cnt = new Array(24).fill(0), ok = new Array(24).fill(0);
+        revlog.forEach(r => {
+            if (r[0] < since || !r[2]) return;
+            const h = new Date(r[0]).getHours();
+            cnt[h]++; if (r[2] >= 2) ok[h]++;
+        });
+        const rate = cnt.map((c, i) => (c ? ok[i] / c * 100 : null));
+        const total = cnt.reduce((a, b) => a + b, 0);
+        const best = total ? cnt.map((c, i) => [c >= 3 ? rate[i] : -1, i]).sort((a, b) => b[0] - a[0])[0] : null;
+        this.chartDefs.hourly = W => barsSVG(W, {
+            n: 24, series: [{ key: 'c', label: 'Révisions', color: 'color-mix(in srgb, var(--primary) 55%, var(--surface))', values: cnt }], minMax: 4,
+            line: { values: rate, max: 100, color: 'var(--primary)', fmt: v => `${Math.round(v)}%` },
+            xLabel: i => `${i}h`, labelWidth: 30,
+            tooltip: i => tipRows(`De ${i}h à ${i + 1}h`, [{ label: 'Révisions', value: cnt[i], color: 'color-mix(in srgb, var(--primary) 55%, var(--surface))' }, { label: 'Réussite', value: rate[i] === null ? 'N/A' : `${fmtNum(rate[i])} %`, color: 'var(--primary)' }])
+        });
+        return `<section class="panel panel-pad stat-card">
+            <div class="stat-head"><div><h4 class="stat-title">Répartition horaire</h4><p class="stat-sub">Nombre de révisions (barres) et taux de réussite (ligne) selon l'heure.</p></div>
+            <div class="stat-opts">${this.statSeg('hrRange', [[30, '1 mois'], [90, '3 mois'], [365, '1 an']])}</div></div>
+            ${total ? this.chartBox('hourly') : '<div class="no-data">Pas de révision sur cette période.</div>'}
+            ${best && best[0] >= 0 ? `<p class="small muted" style="margin-top:8px">Ta meilleure heure : <b>${best[1]}h-${best[1] + 1}h</b> (${fmtNum(best[0])} % de réussite).</p>` : ''}
+        </section>`;
+    },
+
+    /* ---------- Boutons de réponse ---------- */
+    statButtons({ revlog }) {
+        const ui = this.statsUi, since = startOfDay() - (Number(ui.btRange) - 1) * DAY;
+        const groups = [['learn', 'À repasser'], ['young', 'Récentes'], ['mature', 'Matures']];
+        const c = { learn: [0, 0, 0, 0], young: [0, 0, 0, 0], mature: [0, 0, 0, 0] };
+        revlog.forEach(r => {
+            if (r[0] < since || r[3] === 3 || !r[2]) return;
+            const k = r[3] === 1 ? ((r[5] || 0) >= MATURE_IVL ? 'mature' : 'young') : 'learn';
+            c[k][r[2] - 1]++;
+        });
+        const btn = [['Raté', 'var(--again)'], ['Difficile', 'var(--hard)'], ['Bien', 'var(--good)'], ['Facile', 'var(--easy)']];
+        const vals = [], colors = [], tips = [];
+        groups.forEach(([k, label], gi) => {
+            const tot = c[k].reduce((a, b) => a + b, 0);
+            c[k].forEach((v, b) => { vals.push(v); colors.push(btn[b][1]); tips.push(tipRows(`${label} · ${btn[b][0]}`, [{ label: 'Réponses', value: v, color: btn[b][1] }], `${pctStr(v, tot)} des réponses ${label.toLowerCase()}`)); });
+            if (gi < 2) { vals.push(0); colors.push('transparent'); tips.push(''); }
+        });
+        const total = vals.reduce((a, b) => a + b, 0);
+        this.chartDefs.buttons = W => barsSVG(W, {
+            n: vals.length, series: [{ key: 'c', label: 'Réponses', color: 'var(--primary)', values: vals, colorAt: i => colors[i] }], minMax: 4,
+            xLabel: i => ({ 1: 'À repasser', 6: 'Récentes', 11: 'Matures' }[i] ?? null), allLabels: true, labelWidth: 20,
+            tooltip: i => tips[i]
+        });
+        const summary = groups.map(([k, label]) => {
+            const tot = c[k].reduce((a, b) => a + b, 0);
+            return `<dt>${label}</dt><dd>${tot ? `${pctStr(tot - c[k][0], tot)} correctes (${tot})` : 'N/A'}</dd>`;
+        }).join('');
+        return `<section class="panel panel-pad stat-card">
+            <div class="stat-head"><div><h4 class="stat-title">Boutons de réponse</h4><p class="stat-sub">Le choix des boutons selon l'ancienneté de la carte.</p></div>
+            <div class="stat-opts">${this.statSeg('btRange', [[30, '1 mois'], [90, '3 mois'], [365, '1 an']])}</div></div>
+            ${total ? this.chartBox('buttons') + `<div class="chart-legend static">${btn.map(b => `<span><span class="sw" style="background:${b[1]}"></span>${b[0]}</span>`).join('')}</div>` : '<div class="no-data">Pas de réponse sur cette période.</div>'}
+            <dl class="stat-facts">${summary}</dl>
+        </section>`;
+    },
+
+    /* ---------- Ajoutées ---------- */
+    statAdded({ cards }) {
+        const ui = this.statsUi, today = dayKey();
+        const created = cards.map(c => c.created).filter(t => t > 0);
+        const span = created.length ? daysBetweenKeys(dayKey(Math.min(...created)), today) + 1 : 1;
+        const days = ui.adRange === 'all' ? Math.max(31, span) : Number(ui.adRange);
+        const perAgo = {};
+        created.forEach(t => { const ago = daysBetweenKeys(dayKey(t), today); if (ago >= 0 && ago < days) perAgo[ago] = (perAgo[ago] || 0) + 1; });
+        const total = Object.values(perAgo).reduce((a, b) => a + b, 0);
+        this.chartDefs.added = W => {
+            const k = Math.max(1, Math.ceil(days / Math.floor((W - 90) / 5))), n = Math.ceil(days / k);
+            const vals = new Array(n).fill(0);
+            Object.entries(perAgo).forEach(([ago, v]) => { const b = n - 1 - Math.floor(Number(ago) / k); if (b >= 0) vals[b] += v; });
+            let run = 0;
+            const cum = vals.map(v => (run += v));
+            const dayT = i => addDays(Date.now(), -((n - 1 - i) * k));
+            return barsSVG(W, {
+                n, series: [{ key: 'c', label: 'Ajoutées', color: 'var(--new)', values: vals }], minMax: 4,
+                line: { values: cum, color: 'var(--text-faint)' },
+                xLabel: i => (i === n - 1 ? 'Auj.' : k === 1 && days <= 31 ? shortDate(dayT(i)) : `-${(n - 1 - i) * k} j`),
+                tooltip: i => tipRows(k === 1 ? longDate(dayT(i)) : `Du ${shortDate(dayT(i) - (k - 1) * DAY)} au ${shortDate(dayT(i))}`, [{ label: 'Cartes ajoutées', value: vals[i], color: 'var(--new)' }], `Cumul : ${cum[i]}`)
+            });
+        };
+        return `<section class="panel panel-pad stat-card wide">
+            <div class="stat-head"><div><h4 class="stat-title">Ajoutées</h4><p class="stat-sub">Le nombre de nouvelles cartes que tu as ajoutées.</p></div>
+            <div class="stat-opts">${this.statSeg('adRange', [[30, '1 mois'], [90, '3 mois'], [365, '1 an'], ['all', 'Tout']])}</div></div>
+            ${total ? this.chartBox('added') : '<div class="no-data">Aucune carte ajoutée sur cette période.</div>'}
+            <dl class="stat-facts"><dt>Total</dt><dd>${plural(total, 'carte')}</dd><dt>Moyenne</dt><dd>${fmtNum(total / days)} carte/jour</dd></dl>
+        </section>`;
+    }
+});
 
 const app = new SuperAnki();
 window.app = app;
