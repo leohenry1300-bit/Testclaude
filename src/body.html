@@ -1,0 +1,40 @@
+<header class="topbar">
+    <div class="topbar-inner">
+        <button class="brand" data-nav="dashboard" aria-label="Accueil">
+            <span class="logo-mark"><svg class="i" viewBox="0 0 24 24"><use href="#i-logo"/></svg></span>
+            <span>SuperAnki Pro<small>Répétition espacée</small></span>
+        </button>
+        <nav class="nav" aria-label="Navigation principale">
+            <button class="nav-btn" data-nav="dashboard"><svg class="i" viewBox="0 0 24 24"><use href="#i-home"/></svg>Accueil</button>
+            <button class="nav-btn" data-nav="decks"><svg class="i" viewBox="0 0 24 24"><use href="#i-layers"/></svg>Paquets &amp; Cartes</button>
+            <button class="nav-btn" data-nav="stats"><svg class="i" viewBox="0 0 24 24"><use href="#i-chart"/></svg>Statistiques</button>
+            <button class="nav-btn" data-nav="settings"><svg class="i" viewBox="0 0 24 24"><use href="#i-settings"/></svg>Paramètres</button>
+        </nav>
+        <div class="topbar-actions" style="margin-left:auto">
+            <button id="sync-indicator" class="sync-dot hidden" title="Synchronisation cloud" data-nav="settings"><svg class="i" viewBox="0 0 24 24"><use href="#i-cloud"/></svg></button>
+            <button id="streak-chip" class="streak-chip cold" data-nav="stats" title="Série actuelle">
+                <svg class="i" viewBox="0 0 24 24"><use href="#i-flame"/></svg><span id="streak-value">0</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="main" id="main">
+    <div id="boot" class="empty">Chargement de tes cartes...</div>
+    <section id="view-dashboard" class="view hidden" aria-label="Accueil"></section>
+    <section id="view-decks" class="view hidden" aria-label="Paquets et cartes"></section>
+    <section id="view-stats" class="view hidden" aria-label="Statistiques"></section>
+    <section id="view-settings" class="view hidden" aria-label="Paramètres"></section>
+    <section id="view-session" class="view hidden" aria-label="Session"></section>
+</main>
+
+<nav class="bottom-nav" aria-label="Navigation">
+    <button data-nav="dashboard"><svg class="i" viewBox="0 0 24 24"><use href="#i-home"/></svg>Accueil</button>
+    <button data-nav="decks"><svg class="i" viewBox="0 0 24 24"><use href="#i-layers"/></svg>Paquets</button>
+    <button data-nav="stats"><svg class="i" viewBox="0 0 24 24"><use href="#i-chart"/></svg>Stats</button>
+    <button data-nav="settings"><svg class="i" viewBox="0 0 24 24"><use href="#i-settings"/></svg>Réglages</button>
+</nav>
+
+<div id="modal-root"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<input type="file" id="hidden-file" class="hidden">
