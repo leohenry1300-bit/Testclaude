@@ -1,0 +1,38 @@
+import type { Frequency, Goal, Level } from "./types";
+
+export const GOAL_LABELS: Record<Goal, string> = {
+  aisance: "Être plus à l'aise à l'oral",
+  entretiens: "Réussir mes entretiens",
+  presentations: "Améliorer mes présentations",
+  convaincre: "Être plus convaincant",
+  improviser: "Mieux improviser",
+  concours: "Préparer un concours ou un examen",
+};
+
+export const LEVEL_LABELS: Record<Level, string> = {
+  debutant: "Débutant",
+  intermediaire: "Intermédiaire",
+  a_l_aise: "À l'aise",
+  tres_a_l_aise: "Très à l'aise",
+};
+
+export const LEVEL_HINTS: Record<Level, string> = {
+  debutant: "Je redoute de prendre la parole",
+  intermediaire: "Je me débrouille, avec du stress",
+  a_l_aise: "Je parle volontiers, je veux m'affiner",
+  tres_a_l_aise: "Je cherche l'excellence",
+};
+
+export const FREQUENCY_LABELS: Record<Frequency, string> = {
+  "5": "5 min / jour",
+  "10": "10 min / jour",
+  "15": "15 min / jour",
+  semaine: "Quelques fois par semaine",
+};
+
+export const FREQUENCY_HINTS: Record<Frequency, string> = {
+  "5": "Une session rapide, chaque jour",
+  "10": "Le bon équilibre pour progresser",
+  "15": "Pour un objectif proche",
+  semaine: "À ton rythme",
+};

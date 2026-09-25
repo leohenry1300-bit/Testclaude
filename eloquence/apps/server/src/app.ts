@@ -1,0 +1,435 @@
+import express, { type NextFunction, type Request, type Response } from "express";
+import cors from "cors";
+import multer from "multer";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { z } from "zod";
+import {
+  DEFAULT_SETTINGS, FREE_DAILY_COACH_MESSAGES, analyzeSpeech, buildSessionResult,
+  canStartExercise, generateProgram, getExercise, isPremium, markProgramProgress,
+  ruleBasedCoachReply, summarize, uid, weakestDimension,
+  type AccountState, type Session, type User,
+} from "@eloquence/core";
+import type { Config } from "./config";
+import { Store, type UserRecord } from "./db";
+import {
+  hashPassword, newResetToken, rateLimit, requireAuth, sha256, signAudio, signToken,
+  verifyAudio, verifyPassword,
+} from "./auth";
+import type { SttProvider } from "./providers/stt";
+import type { LlmProvider } from "./providers/llm";
+import { verifyGoogleCredential, type AudioStorage, type Mailer } from "./providers/services";
+
+export interface Deps {
+  config: Config;
+  store: Store;
+  stt: SttProvider;
+  llm: LlmProvider;
+  storage: AudioStorage;
+  mailer: Mailer;
+  /** Injected in tests to avoid network calls. */
+  verifyGoogle?: typeof verifyGoogleCredential;
+}
+
+class HttpError extends Error {
+  constructor(public status: number, public code: string, message: string) {
+    super(message);
+  }
+}
+
+const wrap = (fn: (req: Request, res: Response) => Promise<unknown>) =>
+  (req: Request, res: Response, next: NextFunction) => fn(req, res).catch(next);
+
+// ---- Validation schemas ----------------------------------------------------
+
+const Profile = z.object({
+  goal: z.enum(["aisance", "entretiens", "presentations", "convaincre", "improviser", "concours"]).optional(),
+  goalText: z.string().max(300).nullable().optional(),
+  level: z.enum(["debutant", "intermediaire", "a_l_aise", "tres_a_l_aise"]).optional(),
+  frequency: z.enum(["5", "10", "15", "semaine"]).optional(),
+});
+
+const ImportState = z.object({
+  sessions: z.array(z.any()).max(500).optional(),
+  coach: z.array(z.any()).max(1000).optional(),
+  program: z.any().nullable().optional(),
+  badges: z.array(z.object({ id: z.string(), earnedAt: z.string() })).max(100).optional(),
+}).optional();
+
+const Signup = z.object({
+  firstName: z.string().trim().min(1).max(40),
+  email: z.email().max(200),
+  password: z.string().min(8, "8 caractères minimum").max(200),
+  profile: Profile.optional(),
+  importState: ImportState,
+});
+
+const Capture = z.object({
+  transcript: z.string().max(30_000),
+  durationSec: z.number().min(0).max(900),
+  segments: z.array(z.object({ text: z.string().max(5000), start: z.number(), end: z.number() })).max(2000).optional(),
+  silences: z.array(z.object({ start: z.number(), end: z.number() })).max(2000).optional(),
+  volume: z.array(z.number()).max(12_000).optional(),
+  source: z.enum(["speech", "text", "server-stt"]),
+});
+
+const SessionMeta = z.object({
+  exerciseId: z.string(),
+  onboarding: z.boolean().optional(),
+  capture: Capture,
+});
+
+const MePatch = Profile.extend({
+  firstName: z.string().trim().min(1).max(40).optional(),
+  avatar: z.string().max(400_000).nullable().optional(),
+  settings: z.object({
+    notifications: z.boolean(),
+    reminderHour: z.number().int().min(0).max(23),
+    sessionSeconds: z.number().int().min(30).max(300),
+    language: z.enum(["fr-FR", "fr-CA", "fr-BE", "fr-CH"]),
+    theme: z.enum(["system", "light", "dark"]),
+    saveAudio: z.boolean(),
+    shareAnonymousStats: z.boolean(),
+  }).partial().optional(),
+});
+
+// ---- Helpers -------------------------------------------------------------
+
+function publicUser(u: UserRecord): User {
+  const { passwordHash: _p, googleSub: _g, ...rest } = u;
+  return rest;
+}
+
+/** Start of the user's current day, from the browser's timezone offset. */
+function startOfUserDay(req: Request): string {
+  const offsetMin = Number(req.headers["x-tz-offset"] ?? 0) || 0;
+  const local = new Date(Date.now() - offsetMin * 60_000);
+  local.setUTCHours(0, 0, 0, 0);
+  return new Date(local.getTime() + offsetMin * 60_000).toISOString();
+}
+
+export function createApp(deps: Deps) {
+  const { config, store, stt, llm, storage, mailer } = deps;
+  const app = express();
+  const auth = requireAuth(config.jwtSecret);
+  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
+  const authLimiter = rateLimit(20, 60_000);
+
+  app.set("trust proxy", 1);
+  app.use(cors());
+  app.use(express.json({ limit: "5mb" }));
+
+  const withAudio = (s: Session & { audioKey?: string | null }): Session => {
+    const { audioKey, ...rest } = s;
+    return { ...rest, audioUrl: audioKey ? signAudio(config.jwtSecret, audioKey) : null };
+  };
+
+  const stateFor = (userId: string): AccountState => {
+    const user = store.userById(userId);
+    if (!user) throw new HttpError(401, "unauthorized", "Compte introuvable.");
+    return {
+      user: publicUser(user),
+      sessions: store.sessions(userId).map(withAudio),
+      program: store.program(userId),
+      coach: store.coach(userId),
+      badges: store.badges(userId),
+    };
+  };
+
+  const createAccount = (base: Partial<UserRecord> & { firstName: string }, profile?: z.infer<typeof Profile>): UserRecord =>
+    store.createUser({
+      id: uid("u_"),
+      email: null,
+      avatar: null,
+      passwordHash: null,
+      googleSub: null,
+      goal: profile?.goal ?? "aisance",
+      goalText: profile?.goalText ?? null,
+      level: profile?.level ?? "intermediaire",
+      frequency: profile?.frequency ?? "10",
+      plan: "free",
+      premiumUntil: null,
+      createdAt: new Date().toISOString(),
+      settings: { ...DEFAULT_SETTINGS },
+      ...base,
+    });
+
+  // ---- Public ------------------------------------------------------------
+
+  app.get("/api/health", (_req, res) => { res.json({ ok: true }); });
+
+  app.get("/api/config", (_req, res) => {
+    res.json({
+      googleClientId: config.googleClientId,
+      stt: stt.name,
+      llm: llm.name,
+      billing: config.billing.provider,
+      mail: mailer.name,
+    });
+  });
+
+  // ---- Auth -------------------------------------------------------------
+
+  app.post("/api/auth/signup", authLimiter, wrap(async (req, res) => {
+    const body = Signup.parse(req.body);
+    const email = body.email.toLowerCase();
+    if (store.userByEmail(email)) throw new HttpError(409, "email_taken", "Un compte existe déjà avec cet e-mail. Connecte-toi.");
+    const user = createAccount({ firstName: body.firstName, email, passwordHash: await hashPassword(body.password) }, body.profile);
+    if (body.importState) store.importState(user.id, body.importState as Partial<AccountState>);
+    res.status(201).json({ token: signToken(config.jwtSecret, user.id), state: stateFor(user.id) });
+  }));
+
+  app.post("/api/auth/login", authLimiter, wrap(async (req, res) => {
+    const body = z.object({ email: z.string(), password: z.string() }).parse(req.body);
+    const user = store.userByEmail(body.email.trim());
+    if (!user || !(await verifyPassword(body.password, user.passwordHash))) {
+      throw new HttpError(401, "bad_credentials", "E-mail ou mot de passe incorrect.");
+    }
+    res.json({ token: signToken(config.jwtSecret, user.id), state: stateFor(user.id) });
+  }));
+
+  app.post("/api/auth/google", authLimiter, wrap(async (req, res) => {
+    if (!config.googleClientId) throw new HttpError(501, "google_disabled", "La connexion Google n'est pas configurée sur ce serveur.");
+    const body = z.object({ credential: z.string(), profile: Profile.optional(), importState: ImportState }).parse(req.body);
+    const identity = await (deps.verifyGoogle ?? verifyGoogleCredential)(body.credential, config.googleClientId);
+    if (!identity) throw new HttpError(401, "google_invalid", "La connexion Google a échoué. Réessaie.");
+    let user = store.userByGoogle(identity.sub) ?? store.userByEmail(identity.email);
+    let created = false;
+    if (!user) {
+      user = createAccount({ firstName: identity.firstName, email: identity.email, googleSub: identity.sub, avatar: identity.picture }, body.profile);
+      created = true;
+    } else if (!user.googleSub) {
+      user = store.updateUser(user.id, { googleSub: identity.sub });
+    }
+    if (created && body.importState) store.importState(user.id, body.importState as Partial<AccountState>);
+    res.status(created ? 201 : 200).json({ token: signToken(config.jwtSecret, user.id), state: stateFor(user.id) });
+  }));
+
+  app.post("/api/auth/forgot", authLimiter, wrap(async (req, res) => {
+    const { email } = z.object({ email: z.string() }).parse(req.body);
+    const user = store.userByEmail(email.trim());
+    let devResetUrl: string | undefined;
+    if (user) {
+      const { token, hash } = newResetToken();
+      store.saveReset(hash, user.id, new Date(Date.now() + 60 * 60 * 1000).toISOString());
+      const url = `${config.publicUrl}/reinitialiser?token=${token}`;
+      await mailer.send(user.email!, "Réinitialise ton mot de passe Éloquence",
+        `Bonjour ${user.firstName},\n\nPour choisir un nouveau mot de passe, ouvre ce lien (valable 1 heure) :\n${url}\n\nSi tu n'es pas à l'origine de cette demande, ignore simplement cet e-mail.`);
+      // Without a real mail provider, expose the link so the flow stays testable.
+      if (mailer.name === "console") devResetUrl = url;
+    }
+    // Same answer whether or not the account exists (no e-mail enumeration).
+    res.json({ ok: true, devResetUrl });
+  }));
+
+  app.post("/api/auth/reset", authLimiter, wrap(async (req, res) => {
+    const body = z.object({ token: z.string(), password: z.string().min(8, "8 caractères minimum").max(200) }).parse(req.body);
+    const userId = store.consumeReset(sha256(body.token));
+    if (!userId) throw new HttpError(400, "reset_invalid", "Ce lien a expiré ou a déjà été utilisé. Refais une demande.");
+    store.updateUser(userId, { passwordHash: await hashPassword(body.password) });
+    res.json({ token: signToken(config.jwtSecret, userId), state: stateFor(userId) });
+  }));
+
+  // ---- Account ---------------------------------------------------------
+
+  app.get("/api/state", auth, (req, res) => { res.json(stateFor(req.userId!)); });
+
+  app.patch("/api/me", auth, (req, res) => {
+    const body = MePatch.parse(req.body);
+    const cur = store.userById(req.userId!)!;
+    const user = store.updateUser(req.userId!, { ...body, settings: { ...cur.settings, ...(body.settings ?? {}) } } as Partial<UserRecord>);
+    res.json({ user: publicUser(user) });
+  });
+
+  app.get("/api/me/export", auth, (req, res) => {
+    res.setHeader("Content-Disposition", "attachment; filename=eloquence-export.json");
+    res.json(stateFor(req.userId!));
+  });
+
+  app.delete("/api/me", auth, wrap(async (req, res) => {
+    for (const s of store.sessions(req.userId!)) if (s.audioKey) await storage.delete(s.audioKey);
+    store.deleteUser(req.userId!);
+    res.json({ ok: true });
+  }));
+
+  // ---- Sessions ------------------------------------------------------------
+
+  app.post("/api/sessions", auth, upload.single("audio"), wrap(async (req, res) => {
+    const meta = SessionMeta.parse(JSON.parse(String(req.body.meta ?? "{}")));
+    const user = store.userById(req.userId!)!;
+    const exercise = getExercise(meta.exerciseId);
+    if (!exercise) throw new HttpError(404, "exercise_not_found", "Exercice introuvable.");
+    const previous = store.sessions(user.id);
+    const gate = canStartExercise(user, exercise, store.countToday(user.id, startOfUserDay(req)), {
+      onboarding: meta.onboarding && previous.length === 0,
+    });
+    if (!gate.ok) throw new HttpError(402, gate.reason, gate.message);
+
+    const capture = { ...meta.capture };
+    const audio = req.file;
+    if (audio && audio.size > 0) {
+      try {
+        const out = await stt.transcribe(audio.buffer, audio.mimetype || "audio/webm", user.settings.language);
+        if (out && out.transcript) Object.assign(capture, { transcript: out.transcript, segments: out.segments, source: "server-stt" });
+      } catch (e) {
+        console.error("[stt]", (e as Error).message);
+        if (!capture.transcript.trim()) {
+          throw new HttpError(502, "stt_failed", "La transcription a échoué. Réessaie dans un instant.");
+        }
+      }
+    }
+    if (!capture.transcript.trim() && !(capture.segments ?? []).some((s) => s.text.trim())) {
+      throw new HttpError(422, "empty_transcript", "Nous n'avons rien entendu. Vérifie ton micro et parle un peu plus fort.");
+    }
+    if (!capture.transcript.trim()) capture.transcript = (capture.segments ?? []).map((s) => s.text).join(" ");
+
+    const analysis = analyzeSpeech(capture, { exercise });
+    if (analysis.metrics.wordCount >= 8) {
+      try {
+        const fb = await llm.feedback({ analysis, transcript: capture.transcript, exercise, firstName: user.firstName });
+        if (fb) { analysis.feedback = fb; analysis.engine = "llm"; }
+      } catch (e) {
+        console.error("[llm feedback]", (e as Error).message);
+      }
+    }
+
+    let audioKey: string | null = null;
+    if (audio && audio.size > 0 && user.settings.saveAudio) {
+      const ext = audio.mimetype.includes("mp4") ? "m4a" : audio.mimetype.includes("ogg") ? "ogg" : "webm";
+      audioKey = `${uid()}.${ext}`;
+      await storage.put(audioKey, audio.buffer, audio.mimetype);
+    }
+
+    const result = buildSessionResult({
+      userId: user.id, exercise, analysis, transcript: capture.transcript,
+      durationSec: analysis.metrics.durationSec, audioUrl: null, previous, badges: store.badges(user.id),
+    });
+    store.insertSession(result.session, audioKey);
+    store.addBadges(user.id, result.newBadges.map((b) => ({ id: b.id, earnedAt: result.session.createdAt })));
+    const program = store.program(user.id);
+    if (program) store.saveProgram(user.id, markProgramProgress(program, exercise.id));
+    store.refreshProgress(user.id);
+
+    res.status(201).json({ ...result, session: withAudio({ ...result.session, audioKey }) });
+  }));
+
+  app.delete("/api/sessions/:id", auth, wrap(async (req, res) => {
+    const owner = store.sessionOwner(String(req.params.id));
+    if (!owner || owner.userId !== req.userId) throw new HttpError(404, "not_found", "Session introuvable.");
+    if (owner.audioKey) await storage.delete(owner.audioKey);
+    store.deleteSession(String(req.params.id));
+    store.refreshProgress(req.userId!);
+    res.json({ ok: true });
+  }));
+
+  app.get("/api/audio/:key", wrap(async (req, res) => {
+    const key = String(req.params.key);
+    if (!verifyAudio(config.jwtSecret, key, String(req.query.exp ?? ""), String(req.query.sig ?? ""))) {
+      throw new HttpError(403, "forbidden", "Lien audio expiré.");
+    }
+    const file = await storage.get(key);
+    if (!file) throw new HttpError(404, "not_found", "Enregistrement introuvable.");
+    res.setHeader("Content-Type", file.mime);
+    res.setHeader("Cache-Control", "private, max-age=3600");
+    res.send(file.data);
+  }));
+
+  // ---- Program -----------------------------------------------------------
+
+  app.post("/api/program", auth, (req, res) => {
+    const { goalText } = z.object({ goalText: z.string().trim().min(3).max(300) }).parse(req.body);
+    const user = store.userById(req.userId!)!;
+    const sessions = store.sessions(user.id);
+    const weakest = weakestDimension(summarize(sessions, []).current);
+    const program = generateProgram(goalText, user.goal, weakest);
+    store.saveProgram(user.id, program);
+    store.updateUser(user.id, { goalText });
+    res.status(201).json({ program });
+  });
+
+  app.delete("/api/program", auth, (req, res) => {
+    store.saveProgram(req.userId!, null);
+    res.json({ ok: true });
+  });
+
+  // ---- Coach ---------------------------------------------------------------
+
+  app.post("/api/coach", auth, wrap(async (req, res) => {
+    const { text } = z.object({ text: z.string().trim().min(1).max(2000) }).parse(req.body);
+    const user = store.userById(req.userId!)!;
+    if (!isPremium(user) && store.countCoachSince(user.id, startOfUserDay(req)) >= FREE_DAILY_COACH_MESSAGES) {
+      throw new HttpError(402, "coach_limit", `Tu as utilisé tes ${FREE_DAILY_COACH_MESSAGES} messages gratuits du jour. Le coach illimité fait partie de Premium.`);
+    }
+    const history = store.coach(user.id, 30);
+    const sessions = store.sessions(user.id);
+    const ctx = {
+      user,
+      summary: summarize(sessions, store.badges(user.id)),
+      lastSession: sessions[0] ?? null,
+      history,
+    };
+    const userMessage = { id: uid("m_"), role: "user" as const, text, createdAt: new Date().toISOString() };
+    let reply;
+    try {
+      reply = await llm.coach(text, ctx);
+    } catch (e) {
+      console.error("[llm coach]", (e as Error).message);
+      reply = ruleBasedCoachReply(text, ctx);
+    }
+    // Guarantee ordering even when both are created within the same millisecond.
+    reply.createdAt = new Date(Math.max(Date.now(), new Date(userMessage.createdAt).getTime() + 1)).toISOString();
+    store.addCoach(user.id, userMessage);
+    store.addCoach(user.id, reply);
+    res.json({ userMessage, reply });
+  }));
+
+  app.delete("/api/coach", auth, (req, res) => {
+    store.clearCoach(req.userId!);
+    res.json({ ok: true });
+  });
+
+  // ---- Billing (development provider) ------------------------------------
+
+  app.post("/api/billing/checkout", auth, (req, res) => {
+    const { plan } = z.object({ plan: z.enum(["monthly", "yearly"]) }).parse(req.body);
+    // The dev provider grants a 7-day trial immediately. A real provider
+    // (Stripe, RevenueCat…) would return a checkout URL and confirm by webhook.
+    const until = new Date(Date.now() + 7 * 86_400_000).toISOString();
+    const user = store.updateUser(req.userId!, { plan: "premium", premiumUntil: until });
+    res.json({ user: publicUser(user), plan, trialDays: 7 });
+  });
+
+  app.post("/api/billing/cancel", auth, (req, res) => {
+    const user = store.updateUser(req.userId!, { plan: "free", premiumUntil: null });
+    res.json({ user: publicUser(user) });
+  });
+
+  // ---- Static web app ----------------------------------------------------
+
+  if (existsSync(config.webDist)) {
+    app.use(express.static(config.webDist, { index: false, maxAge: "1h" }));
+    app.get(/^\/(?!api\/).*/, (_req, res) => { res.sendFile(path.join(config.webDist, "index.html")); });
+  }
+
+  app.use("/api", (_req, res) => { res.status(404).json({ error: "not_found", message: "Route inconnue." }); });
+
+  // ---- Errors --------------------------------------------------------------
+
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    if (err instanceof HttpError) {
+      res.status(err.status).json({ error: err.code, message: err.message });
+    } else if (err instanceof z.ZodError) {
+      const first = err.issues[0];
+      res.status(400).json({ error: "invalid_request", message: first?.message && !first.message.startsWith("Invalid") ? first.message : "Certaines informations sont invalides." , issues: err.issues });
+    } else if (err instanceof SyntaxError) {
+      res.status(400).json({ error: "invalid_json", message: "Requête illisible." });
+    } else if ((err as { code?: string }).code === "LIMIT_FILE_SIZE") {
+      res.status(413).json({ error: "too_large", message: "Enregistrement trop volumineux." });
+    } else {
+      console.error(err);
+      res.status(500).json({ error: "server_error", message: "Une erreur inattendue est survenue. Réessaie." });
+    }
+  });
+
+  return app;
+}
