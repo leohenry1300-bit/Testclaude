@@ -3,7 +3,10 @@
   "private": true,
   "version": "1.0.0",
   "description": "Éloquence — coach de prise de parole propulsé par l'IA",
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "dev": "npm run dev -w @eloquence/server & npm run dev -w @eloquence/web",
     "dev:web": "npm run dev -w @eloquence/web",
@@ -12,5 +15,8 @@
     "start": "npm run start -w @eloquence/server",
     "test": "npm test -w @eloquence/core && npm test -w @eloquence/server",
     "typecheck": "npm run typecheck -w @eloquence/core && npm run typecheck -w @eloquence/server && npm run typecheck -w @eloquence/web"
+  },
+  "engines": {
+    "node": ">=22.13.0"
   }
 }

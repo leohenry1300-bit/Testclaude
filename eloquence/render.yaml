@@ -1,0 +1,20 @@
+# Déploiement en un clic sur Render (render.com).
+# Render détecte ce fichier automatiquement quand on connecte le dépôt.
+services:
+  - type: web
+    name: eloquence
+    runtime: node
+    plan: free
+    rootDir: eloquence
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.13.0
+      - key: PUBLIC_URL
+        sync: false
+    # Sur le plan gratuit, pas de disque persistant : les comptes créés et les
+    # enregistrements sont réinitialisés à chaque redéploiement ou redémarrage
+    # après inactivité. Passer sur un plan payant et ajouter un `disk` monté
+    # sur DATA_DIR pour conserver les données durablement.
