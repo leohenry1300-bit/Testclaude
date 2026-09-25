@@ -144,6 +144,8 @@ export interface Metrics {
   accelerations: number;
   slowdowns: number;
   volumeStability: number | null;
+  /** True when the answer was typed: pace and pauses aren't measured. */
+  typed?: boolean;
 }
 
 export interface Feedback {

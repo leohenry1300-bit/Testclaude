@@ -1,0 +1,282 @@
+import { useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Bell, Camera, ChevronRight, Clock, CloudUpload, Crown, Download, Flame, Globe, LogOut, Moon, Pencil,
+  ShieldCheck, Target, Trash2, Trophy,
+} from "lucide-react";
+import {
+  GOAL_LABELS, LEVEL_LABELS, isPremium, levelFor, planLabel,
+  type Goal, type Level, type UserSettings,
+} from "@eloquence/core";
+import { useAccount } from "../lib/store";
+import { http } from "../lib/http";
+import { nf, shortDay, spokenTime } from "../lib/format";
+import { Avatar, Sheet, Switch } from "../components/ui";
+
+const LANGS: { id: UserSettings["language"]; label: string }[] = [
+  { id: "fr-FR", label: "Français (France)" },
+  { id: "fr-BE", label: "Français (Belgique)" },
+  { id: "fr-CH", label: "Français (Suisse)" },
+  { id: "fr-CA", label: "Français (Canada)" },
+];
+
+async function resizeImage(file: File, size = 256): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const s = Math.min(bitmap.width, bitmap.height);
+  ctx.drawImage(bitmap, (bitmap.width - s) / 2, (bitmap.height - s) / 2, s, s, 0, 0, size, size);
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
+
+export function Profile() {
+  const { account, summary, mode, updateMe, logout, deleteAccount, cancelPremium, openPaywall, toast } = useAccount();
+  const { user } = account;
+  const nav = useNavigate();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [editing, setEditing] = useState(false);
+  const premium = isPremium(user);
+  const level = levelFor(summary.xp);
+
+  const save = async (patch: Parameters<typeof updateMe>[0], msg?: string) => {
+    try {
+      await updateMe(patch);
+      if (msg) toast(msg, "success");
+    } catch (e) {
+      toast((e as Error).message, "error");
+    }
+  };
+  const setSetting = <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => save({ settings: { [key]: value } });
+
+  const toggleNotifications = async (on: boolean) => {
+    if (on && "Notification" in window && Notification.permission !== "granted") {
+      const p = await Notification.requestPermission();
+      if (p !== "granted") {
+        toast("Notifications bloquées par le navigateur. Autorise-les dans ses réglages.", "error");
+        return;
+      }
+    }
+    await setSetting("notifications", on);
+  };
+
+  const exportData = async () => {
+    try {
+      const data = mode === "account" ? await http("GET", "/api/me/export") : account;
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "eloquence-mes-donnees.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (e) {
+      toast((e as Error).message, "error");
+    }
+  };
+
+  const onAvatar = async (file?: File) => {
+    if (!file) return;
+    try {
+      await save({ avatar: await resizeImage(file) }, "Photo mise à jour.");
+    } catch {
+      toast("Image illisible. Essaie un autre fichier.", "error");
+    }
+  };
+
+  return (
+    <div className="page">
+      <header className="card center stack" style={{ alignItems: "center", paddingTop: 28 }}>
+        <div style={{ position: "relative" }}>
+          <Avatar name={user.firstName} src={user.avatar} size={88} />
+          <button className="icon-btn" onClick={() => fileRef.current?.click()} aria-label="Changer de photo"
+            style={{ position: "absolute", right: -6, bottom: -6, width: 36, height: 36, background: "var(--surface)", boxShadow: "var(--shadow)", borderRadius: "50%" }}>
+            <Camera size={17} />
+          </button>
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => void onAvatar(e.target.files?.[0])} />
+        </div>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 650 }}>{user.firstName}</h1>
+          <p className="small muted">{user.email ?? (mode === "demo" ? "Profil de démonstration" : "Profil local, sans compte")}</p>
+        </div>
+        <div className="row" style={{ flexWrap: "wrap", justifyContent: "center" }}>
+          <span className="pill primary">Niveau {level.level} · {level.name}</span>
+          <span className={`pill ${premium ? "success" : ""}`}>{premium ? <Crown size={13} /> : null}{planLabel(premium ? "premium" : "free")}</span>
+        </div>
+        <button className="btn btn-outline btn-sm" onClick={() => setEditing(true)}><Pencil size={15} />Modifier le profil</button>
+      </header>
+
+      <div className="grid-3">
+        <div className="stat-tile" style={{ gap: 4 }}><div className="stat"><span className="v row" style={{ gap: 4 }}>{summary.streak}<Flame size={16} color="var(--warning)" /></span><span className="l">Série</span></div></div>
+        <div className="stat-tile" style={{ gap: 4 }}><div className="stat"><span className="v">{summary.sessionCount}</span><span className="l">Sessions</span></div></div>
+        <div className="stat-tile" style={{ gap: 4 }}><div className="stat"><span className="v">{spokenTime(summary.totalSec)}</span><span className="l">Parlé</span></div></div>
+      </div>
+
+      {mode !== "account" && (
+        <div className="card" style={{ background: "var(--primary-soft)", boxShadow: "none" }}>
+          <div className="row" style={{ alignItems: "flex-start" }}>
+            <CloudUpload size={22} color="var(--primary-ink)" style={{ flexShrink: 0 }} />
+            <div className="stack" style={{ gap: 10 }}>
+              <strong>{mode === "demo" ? "Tu explores la démo" : "Tes données restent sur cet appareil"}</strong>
+              <span className="small muted">{mode === "demo" ? "Crée ton profil pour t'entraîner avec tes propres sessions." : "Crée un compte gratuit pour les sauvegarder et les retrouver partout."}</span>
+              <div>
+                {mode === "demo"
+                  ? <button className="btn btn-primary btn-sm" onClick={async () => { await logout(); nav("/bienvenue"); }}>Créer mon profil</button>
+                  : <Link to="/inscription" className="btn btn-primary btn-sm">Créer mon compte</Link>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <section className="stack">
+        <h2 className="section-title">Objectif</h2>
+        <div className="list">
+          <button className="list-item" onClick={() => setEditing(true)}>
+            <span className="li-icon"><Target size={18} /></span>
+            <span className="grow"><span className="li-title">{GOAL_LABELS[user.goal]}</span><br /><span className="li-sub">{LEVEL_LABELS[user.level]} · depuis le {shortDay(user.createdAt)}</span></span>
+            <ChevronRight size={18} className="li-end" />
+          </button>
+          <Link to="/programme" className="list-item">
+            <span className="li-icon"><Clock size={18} /></span>
+            <span className="grow"><span className="li-title">Programme personnalisé</span><br /><span className="li-sub">{account.program ? `« ${account.program.goalText} »` : "Construire un programme de 14 jours"}</span></span>
+            <ChevronRight size={18} className="li-end" />
+          </Link>
+          <Link to="/badges" className="list-item">
+            <span className="li-icon"><Trophy size={18} /></span>
+            <span className="grow"><span className="li-title">Badges</span><br /><span className="li-sub">{summary.badges.length} débloqué{summary.badges.length > 1 ? "s" : ""} · {nf.format(summary.xp)} XP</span></span>
+            <ChevronRight size={18} className="li-end" />
+          </Link>
+        </div>
+      </section>
+
+      <section className="stack">
+        <h2 className="section-title">Paramètres</h2>
+        <div className="list">
+          <div className="list-item">
+            <span className="li-icon"><Bell size={18} /></span>
+            <span className="grow"><span className="li-title">Rappel quotidien</span><br /><span className="li-sub">Si ta session du jour n'est pas faite à {user.settings.reminderHour} h</span></span>
+            <Switch checked={user.settings.notifications} onChange={(v) => void toggleNotifications(v)} label="Rappel quotidien" />
+          </div>
+          {user.settings.notifications && (
+            <div className="list-item">
+              <span className="li-icon" />
+              <label htmlFor="hour" className="grow li-title">Heure du rappel</label>
+              <select id="hour" className="select" style={{ width: 110, minHeight: 40 }} value={user.settings.reminderHour} onChange={(e) => void setSetting("reminderHour", Number(e.target.value))}>
+                {Array.from({ length: 16 }, (_, i) => i + 7).map((h) => <option key={h} value={h}>{h} h</option>)}
+              </select>
+            </div>
+          )}
+          <div className="list-item">
+            <span className="li-icon"><Clock size={18} /></span>
+            <label htmlFor="dur" className="grow"><span className="li-title">Durée des improvisations</span><br /><span className="li-sub">Temps de parole par défaut</span></label>
+            <select id="dur" className="select" style={{ width: 110, minHeight: 40 }} value={user.settings.sessionSeconds} onChange={(e) => void setSetting("sessionSeconds", Number(e.target.value))}>
+              {[30, 45, 60, 90, 120, 180].map((s) => <option key={s} value={s}>{s < 60 ? `${s} s` : `${s / 60} min${s % 60 ? " 30" : ""}`}</option>)}
+            </select>
+          </div>
+          <div className="list-item">
+            <span className="li-icon"><Globe size={18} /></span>
+            <label htmlFor="lang" className="grow"><span className="li-title">Langue de la voix</span><br /><span className="li-sub">Pour la reconnaissance vocale</span></label>
+            <select id="lang" className="select" style={{ width: 170, minHeight: 40 }} value={user.settings.language} onChange={(e) => void setSetting("language", e.target.value as UserSettings["language"])}>
+              {LANGS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+            </select>
+          </div>
+          <div className="list-item" style={{ flexWrap: "wrap" }}>
+            <span className="li-icon"><Moon size={18} /></span>
+            <span className="grow li-title">Thème</span>
+            <div className="segmented" role="group" aria-label="Thème" style={{ minWidth: 230 }}>
+              {(["system", "light", "dark"] as const).map((t) => (
+                <button key={t} aria-pressed={user.settings.theme === t} onClick={() => void setSetting("theme", t)}>
+                  {t === "system" ? "Auto" : t === "light" ? "Clair" : "Sombre"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="stack">
+        <h2 className="section-title">Confidentialité</h2>
+        <div className="list">
+          <div className="list-item">
+            <span className="li-icon"><ShieldCheck size={18} /></span>
+            <span className="grow"><span className="li-title">Conserver mes enregistrements</span><br /><span className="li-sub">Pour les réécouter. Sinon, seule la transcription est gardée.</span></span>
+            <Switch checked={user.settings.saveAudio} onChange={(v) => void setSetting("saveAudio", v)} label="Conserver mes enregistrements" />
+          </div>
+          <button className="list-item" onClick={() => void exportData()}>
+            <span className="li-icon"><Download size={18} /></span>
+            <span className="grow li-title">Exporter mes données</span>
+            <ChevronRight size={18} className="li-end" />
+          </button>
+          <button className="list-item" onClick={async () => {
+            if (!window.confirm(mode === "account" ? "Supprimer définitivement ton compte, tes sessions et tes enregistrements ?" : "Effacer toutes les données de cet appareil ?")) return;
+            try { await deleteAccount(); nav("/bienvenue", { replace: true }); } catch (e) { toast((e as Error).message, "error"); }
+          }}>
+            <span className="li-icon tone-danger"><Trash2 size={18} /></span>
+            <span className="grow li-title" style={{ color: "var(--danger)" }}>{mode === "account" ? "Supprimer mon compte" : "Effacer mes données"}</span>
+          </button>
+        </div>
+      </section>
+
+      <section className="stack">
+        <h2 className="section-title">Abonnement</h2>
+        <div className="card">
+          <div className="row-between">
+            <div>
+              <div className="strong row" style={{ gap: 6 }}>{premium && <Crown size={16} color="var(--primary-ink)" />}Éloquence {planLabel(premium ? "premium" : "free")}</div>
+              <div className="small muted">{premium ? (user.premiumUntil ? `Essai jusqu'au ${shortDay(user.premiumUntil)}` : "Actif") : "3 exercices par jour, analyse essentielle"}</div>
+            </div>
+            {premium
+              ? mode !== "demo" && <button className="btn btn-ghost btn-sm" onClick={async () => { if (window.confirm("Revenir à la version gratuite ?")) await cancelPremium(); }}>Résilier</button>
+              : <button className="btn btn-primary btn-sm" onClick={() => openPaywall("profile")}>Passer Premium</button>}
+          </div>
+        </div>
+      </section>
+
+      <button className="btn btn-outline btn-block" onClick={async () => { await logout(); nav("/bienvenue", { replace: true }); }}>
+        <LogOut size={17} />{mode === "account" ? "Se déconnecter" : mode === "demo" ? "Quitter la démo" : "Changer de profil"}
+      </button>
+      <p className="tiny faint center">Éloquence · v1.0</p>
+
+      {editing && <EditProfile onClose={() => setEditing(false)} />}
+    </div>
+  );
+}
+
+function EditProfile({ onClose }: { onClose: () => void }) {
+  const { account, updateMe, toast } = useAccount();
+  const [firstName, setFirstName] = useState(account.user.firstName);
+  const [goal, setGoal] = useState<Goal>(account.user.goal);
+  const [level, setLevel] = useState<Level>(account.user.level);
+  const [busy, setBusy] = useState(false);
+  const submit = async () => {
+    setBusy(true);
+    try {
+      await updateMe({ firstName: firstName.trim(), goal, level });
+      toast("Profil mis à jour.", "success");
+      onClose();
+    } catch (e) {
+      toast((e as Error).message, "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Sheet onClose={onClose} label="Modifier le profil">
+      <form className="stack-lg" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
+        <h2 style={{ fontSize: 22 }}>Modifier le profil</h2>
+        <div className="field"><label htmlFor="efn">Prénom</label>
+          <input id="efn" className="input" value={firstName} maxLength={40} onChange={(e) => setFirstName(e.target.value)} /></div>
+        <div className="field"><label htmlFor="egoal">Objectif principal</label>
+          <select id="egoal" className="select" value={goal} onChange={(e) => setGoal(e.target.value as Goal)}>
+            {(Object.keys(GOAL_LABELS) as Goal[]).map((g) => <option key={g} value={g}>{GOAL_LABELS[g]}</option>)}
+          </select></div>
+        <div className="field"><label htmlFor="elevel">Niveau à l'oral</label>
+          <select id="elevel" className="select" value={level} onChange={(e) => setLevel(e.target.value as Level)}>
+            {(Object.keys(LEVEL_LABELS) as Level[]).map((l) => <option key={l} value={l}>{LEVEL_LABELS[l]}</option>)}
+          </select></div>
+        <button className="btn btn-primary btn-lg btn-block" disabled={busy || !firstName.trim()}>{busy && <span className="spinner" />}Enregistrer</button>
+      </form>
+    </Sheet>
+  );
+}

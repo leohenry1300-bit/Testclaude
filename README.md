@@ -13,3 +13,9 @@ Après une modification, régénérer le fichier final :
 ```
 python3 build.py
 ```
+
+---
+
+## Éloquence — coach de prise de parole
+
+Le dossier [`eloquence/`](eloquence/README.md) contient une application distincte : un coach de prise de parole propulsé par l'IA (web app React + API Node/SQLite). Voir son README pour la lancer.
