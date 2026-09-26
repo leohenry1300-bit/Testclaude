@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import {
-  Check, Lightbulb, Lock, Pause, RotateCcw, Sparkles, Target, TrendingUp, Volume2,
+  Check, ChevronDown, Eye, Lightbulb, Pause, RotateCcw, Sparkles, Target, TrendingUp, Wand2,
 } from "lucide-react";
 import type { Analysis, Issue, Session } from "@eloquence/core";
 import { DIMENSION_HINTS, DIMENSION_LABELS, DIMENSIONS } from "@eloquence/core";
 import { loadClip } from "../lib/audioStore";
+import { useAccount } from "../lib/store";
 import { DimensionBars } from "./ui";
 import { PaceChart } from "./charts";
 
@@ -14,6 +14,8 @@ const KIND_LABEL: Record<string, string> = {
   repetition: "Répétition",
   hedge: "Formule d'excuse",
   vague: "Mot flou",
+  grammar: "Tournure fautive",
+  forbidden: "Mot interdit",
 };
 
 export function Transcript({ analysis }: { analysis: Analysis }) {
@@ -52,7 +54,7 @@ export function Transcript({ analysis }: { analysis: Analysis }) {
       <div className="hl-legend" aria-label="Légende">
         <span><i style={{ background: "var(--hl-filler-bg)" }} />Mots parasites</span>
         <span><i style={{ background: "var(--hl-rep-bg)" }} />Répétitions</span>
-        <span><i style={{ background: "var(--hl-hedge-bg)" }} />Formulations floues</span>
+        <span><i style={{ background: "var(--hl-hedge-bg)" }} />Formulations floues / grammaire</span>
         <span><i style={{ background: "transparent", borderBottom: "2px dotted var(--hl-long)", borderRadius: 0 }} />Phrases trop longues</span>
         <span><Pause size={12} aria-hidden="true" />Longues pauses</span>
       </div>
@@ -80,6 +82,17 @@ export function IssueList({ issues, limit }: { issues: Issue[]; limit?: number }
   );
 }
 
+export function ConstraintBanner({ analysis }: { analysis: Analysis }) {
+  const cr = analysis.constraintResult;
+  if (!cr) return null;
+  return (
+    <div className={`banner ${cr.passed ? "demo" : "warn"}`} role="status">
+      {cr.passed ? <Check size={18} /> : <Target size={18} />}
+      <span className="grow"><strong>{cr.passed ? "Défi réussi." : "Défi non réussi."}</strong> {cr.detail}</span>
+    </div>
+  );
+}
+
 export function CoachFeedback({ analysis, onRetry }: { analysis: Analysis; onRetry?: () => void }) {
   const f = analysis.feedback;
   return (
@@ -91,19 +104,35 @@ export function CoachFeedback({ analysis, onRetry }: { analysis: Analysis; onRet
       <div className="stack" style={{ gap: 16 }}>
         <div className="feedback-block">
           <span className="fb-icon tone-success"><Check size={18} /></span>
-          <div><h3>Ce que tu fais bien</h3><p>{f.strengths}</p></div>
+          <div>
+            <h3>Ce que tu fais bien</h3>
+            <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 4 }}>{f.strengths.map((s, i) => <li key={i}><p style={{ display: "inline" }}>{s}</p></li>)}</ul>
+          </div>
         </div>
         <div className="feedback-block">
           <span className="fb-icon tone-warning"><TrendingUp size={18} /></span>
-          <div><h3>Ce qui peut être amélioré</h3><p>{f.improvements}</p></div>
+          <div>
+            <h3>Ce qui te pénalise</h3>
+            <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 4 }}>{f.weaknesses.map((s, i) => <li key={i}><p style={{ display: "inline" }}>{s}</p></li>)}</ul>
+          </div>
         </div>
+        {f.example && (
+          <div className="feedback-block">
+            <span className="fb-icon tone-neutral"><Eye size={18} /></span>
+            <div>
+              <h3>Exemple, dans ce que tu as dit</h3>
+              <p style={{ fontStyle: "italic" }}>« {f.example.text} »</p>
+              <p className="small muted" style={{ marginTop: 6 }}>{f.why}</p>
+            </div>
+          </div>
+        )}
         <div className="feedback-block">
           <span className="fb-icon tone-primary"><Lightbulb size={18} /></span>
-          <div><h3>Ton conseil du jour</h3><p>{f.tip}</p></div>
+          <div><h3>Comment corriger</h3><p>{f.howToFix}</p></div>
         </div>
         <div className="feedback-block">
           <span className="fb-icon tone-neutral"><Target size={18} /></span>
-          <div><h3>À refaire</h3><p>{f.retry}</p></div>
+          <div><h3>Objectif pour la prochaine fois</h3><p>{f.goal}</p></div>
         </div>
       </div>
       {onRetry && (
@@ -125,55 +154,48 @@ export function ScoresCard({ analysis, deltas }: { analysis: Analysis; deltas?: 
         <ul className="small muted" style={{ paddingLeft: 18, marginTop: 8, display: "grid", gap: 4 }}>
           {DIMENSIONS.map((d) => <li key={d}><strong>{DIMENSION_LABELS[d]}</strong> : {DIMENSION_HINTS[d]}</li>)}
         </ul>
+        <p className="tiny faint" style={{ marginTop: 8 }}>Ce sont des indicateurs d'entraînement calculés à partir de ta voix et de ton texte — pas une mesure scientifique exacte, et jamais une lecture de ton état intérieur.</p>
       </details>
     </section>
   );
 }
 
-export function AdvancedMetrics({ analysis, locked, onUnlock }: { analysis: Analysis; locked: boolean; onUnlock: () => void }) {
+export function AdvancedMetrics({ analysis }: { analysis: Analysis }) {
   const m = analysis.metrics;
-  const content = (
-    <div className="stack-lg">
-      <div className="grid-3">
-        <div className="stat"><span className="v">{m.typed ? "—" : m.wpm}</span><span className="l">mots / min</span></div>
-        <div className="stat"><span className="v">{m.wordCount}</span><span className="l">mots</span></div>
-        <div className="stat"><span className="v">{m.fillerPer100.toString().replace(".", ",")}</span><span className="l">parasites / 100 mots</span></div>
-        <div className="stat"><span className="v">{m.pauseCount}</span><span className="l">pauses notables</span></div>
-        <div className="stat"><span className="v">{m.avgSentenceWords.toString().replace(".", ",")}</span><span className="l">mots / phrase</span></div>
-        <div className="stat"><span className="v">{Math.round(m.lexicalDiversity * 100)} %</span><span className="l">diversité lexicale</span></div>
-      </div>
-      {m.pace.length >= 2 && (
-        <div className="stack" style={{ gap: 8 }}>
-          <div className="row-between"><span className="strong small">Débit au fil de ta réponse</span><span className="tiny faint">zone verte : 130–160</span></div>
-          <PaceChart samples={m.pace} />
-        </div>
-      )}
-      {m.connectors.length > 0 && (
-        <div className="stack" style={{ gap: 8 }}>
-          <span className="strong small">Mots de liaison utilisés</span>
-          <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>{m.connectors.map((c) => <span key={c} className="pill">{c}</span>)}</div>
-        </div>
-      )}
-      <div className="stack" style={{ gap: 4 }}>
-        <span className="strong small">Tous les points relevés</span>
-        <IssueList issues={analysis.issues} />
-      </div>
-    </div>
-  );
   return (
     <section className="card" aria-labelledby="adv-title">
-      <div className="row-between" style={{ marginBottom: 16 }}>
-        <h2 id="adv-title" style={{ fontSize: 18 }}>Analyse avancée</h2>
-        {locked && <span className="pill primary"><Lock size={12} />Premium</span>}
-      </div>
-      {locked ? (
-        <div className="locked">
-          <div className="locked-content" aria-hidden="true">{content}</div>
-          <div className="locked-cta">
-            <button className="btn btn-primary" onClick={onUnlock}><Lock size={16} />Débloquer l'analyse avancée</button>
-          </div>
+      <h2 id="adv-title" style={{ fontSize: 18, marginBottom: 16 }}>Analyse avancée</h2>
+      <div className="stack-lg">
+        <div className="grid-3">
+          <div className="stat"><span className="v">{m.typed ? "—" : m.wpm}</span><span className="l">mots / min</span></div>
+          <div className="stat"><span className="v">{m.wordCount}</span><span className="l">mots</span></div>
+          <div className="stat"><span className="v">{m.fillerPer100.toString().replace(".", ",")}</span><span className="l">parasites / 100 mots</span></div>
+          <div className="stat"><span className="v">{m.pauseCount}</span><span className="l">pauses notables</span></div>
+          <div className="stat"><span className="v">{m.avgSentenceWords.toString().replace(".", ",")}</span><span className="l">mots / phrase</span></div>
+          <div className="stat"><span className="v">{Math.round(m.lexicalDiversity * 100)} %</span><span className="l">diversité lexicale</span></div>
         </div>
-      ) : content}
+        {m.pace.length >= 2 && (
+          <div className="stack" style={{ gap: 8 }}>
+            <div className="row-between"><span className="strong small">Débit au fil de ta réponse</span><span className="tiny faint">zone verte : 130–160</span></div>
+            <PaceChart samples={m.pace} />
+          </div>
+        )}
+        {m.connectors.length > 0 && (
+          <div className="stack" style={{ gap: 8 }}>
+            <span className="strong small">Mots de liaison utilisés</span>
+            <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>{m.connectors.map((c) => <span key={c} className="pill">{c}</span>)}</div>
+          </div>
+        )}
+        <div className="row" style={{ gap: 16, flexWrap: "wrap" }}>
+          <span className="pill">{m.exampleMarkers} exemple(s) concret(s)</span>
+          <span className="pill">{m.counterArgumentMarkers} nuance/contre-argument</span>
+          {m.grammarFlags.length > 0 && <span className="pill warning">{m.grammarFlags.length} tournure(s) à revoir</span>}
+        </div>
+        <div className="stack" style={{ gap: 4 }}>
+          <span className="strong small">Tous les points relevés</span>
+          <IssueList issues={analysis.issues} />
+        </div>
+      </div>
     </section>
   );
 }
@@ -199,8 +221,7 @@ export function AudioPlayer({ session }: { session: Session }) {
   return (
     <section className="card tight" aria-label="Réécouter ta réponse">
       <div className="row" style={{ marginBottom: 10 }}>
-        <Volume2 size={18} className="faint" aria-hidden="true" />
-        <span className="strong small">Réécoute-toi</span>
+        <span className="strong small">🔊 Réécoute-toi</span>
         <span className="tiny faint" style={{ marginLeft: "auto" }}>C'est là qu'on progresse le plus</span>
       </div>
       {src ? <audio controls src={src} style={{ width: "100%" }} preload="metadata" /> : <div className="skeleton" style={{ height: 40 }} />}
@@ -208,6 +229,98 @@ export function AudioPlayer({ session }: { session: Session }) {
   );
 }
 
-export function RetryLink({ exerciseId }: { exerciseId: string }) {
-  return <Link to={`/exercice/${exerciseId}`} className="btn btn-outline btn-block"><RotateCcw size={16} />Refaire cet exercice</Link>;
+const REWRITE_TABS = [
+  { id: "clair", label: "Plus clair" },
+  { id: "concis", label: "Plus concis" },
+  { id: "pro", label: "Plus pro" },
+  { id: "persuasif", label: "Plus persuasif" },
+] as const;
+
+export function ImproveAnswer({ session }: { session: Session }) {
+  const { rewrite, toast } = useAccount();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{ clair: string; concis: string; pro: string; persuasif: string | null } | null>(null);
+  const [tab, setTab] = useState<(typeof REWRITE_TABS)[number]["id"]>("clair");
+
+  const load = async () => {
+    setOpen(true);
+    if (result) return;
+    setBusy(true);
+    try {
+      setResult(await rewrite(session.id, session.transcript));
+    } catch (e) {
+      toast((e as Error).message, "error");
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="card">
+      <button className="row-between" style={{ width: "100%", background: "none", border: 0, cursor: "pointer", padding: 0 }} onClick={() => (open ? setOpen(false) : void load())}>
+        <span className="row" style={{ gap: 10 }}><Wand2 size={18} /><span className="strong">Améliorer ma réponse</span></span>
+        <ChevronDown size={18} style={{ transform: open ? "rotate(180deg)" : undefined, transition: "transform .2s" }} />
+      </button>
+      {open && (
+        <div className="stack" style={{ marginTop: 16 }}>
+          {busy && <div className="skeleton" style={{ height: 100 }} />}
+          {result && (
+            <>
+              <div className="segmented" role="tablist">
+                {REWRITE_TABS.filter((t) => t.id !== "persuasif" || result.persuasif).map((t) => (
+                  <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)}>{t.label}</button>
+                ))}
+              </div>
+              <p style={{ lineHeight: 1.6 }}>{result[tab] ?? "Non disponible sans coach IA configuré."}</p>
+              {!result.persuasif && <p className="tiny faint">La version persuasive et les reformulations les plus fines demandent le coach IA (clé Anthropic côté serveur). En local, ces versions restent mécaniques : elles retirent tes propres tics sans jamais inventer de contenu.</p>}
+            </>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+export function ModelAnswer({ session }: { session: Session }) {
+  const { modelAnswer, toast } = useAccount();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [answer, setAnswer] = useState<string | null | undefined>(undefined);
+
+  const load = async () => {
+    setOpen(true);
+    if (answer !== undefined) return;
+    setBusy(true);
+    try {
+      setAnswer(await modelAnswer(session));
+    } catch (e) {
+      toast((e as Error).message, "error");
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="card">
+      <button className="row-between" style={{ width: "100%", background: "none", border: 0, cursor: "pointer", padding: 0 }} onClick={() => (open ? setOpen(false) : void load())}>
+        <span className="row" style={{ gap: 10 }}><Sparkles size={18} /><span className="strong">Voir une réponse modèle</span></span>
+        <ChevronDown size={18} style={{ transform: open ? "rotate(180deg)" : undefined, transition: "transform .2s" }} />
+      </button>
+      {open && (
+        <div className="stack" style={{ marginTop: 16 }}>
+          {busy && <div className="skeleton" style={{ height: 100 }} />}
+          {answer === null && <p className="muted small">Disponible avec le coach IA (clé Anthropic configurée côté serveur). En local, utilise plutôt « Améliorer ma réponse », toujours disponible.</p>}
+          {answer && (
+            <>
+              <p className="tiny faint">Une bonne façon d'y répondre — pas « la » seule bonne réponse.</p>
+              <p style={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{answer}</p>
+            </>
+          )}
+        </div>
+      )}
+    </section>
+  );
 }

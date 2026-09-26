@@ -1,22 +1,21 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   createDemoAccount, DEFAULT_SETTINGS, summarize, uid,
-  type AccountState, type Frequency, type Goal, type Level, type ProgressSummary, type SessionResult,
+  type AccountState, type DiagnosticStepResult, type Frequency, type Goal, type Level, type ProgressSummary,
+  type SessionResult, type WeeklyGoals,
 } from "@eloquence/core";
 import { ApiError, fetchServerConfig, getToken, http, setToken, type ServerConfig } from "./http";
-import { LocalBackend, RemoteBackend, type Backend, type SubmitInput, type UserPatch } from "./backend";
+import { LocalBackend, RemoteBackend, type Backend, type RewriteResult, type SubmitInput, type UserPatch } from "./backend";
 import { clearClips } from "./audioStore";
 
 export type Mode = "none" | "guest" | "demo" | "account";
 
 export interface OnboardingProfile {
   firstName: string;
-  goal: Goal;
+  goals: Goal[];
   level: Level;
   frequency: Frequency;
 }
-
-export type PaywallReason = "premium_exercise" | "daily_limit" | "coach_limit" | "history" | "advanced" | "program" | "profile";
 
 interface Toast { id: string; text: string; tone: "info" | "success" | "error" }
 
@@ -27,7 +26,6 @@ interface Ctx {
   account: AccountState | null;
   summary: ProgressSummary | null;
   server: ServerConfig | null;
-  paywall: PaywallReason | null;
   toasts: Toast[];
   retryBoot(): void;
   startGuest(profile: OnboardingProfile): void;
@@ -44,12 +42,14 @@ interface Ctx {
   sendCoach(text: string): Promise<void>;
   clearCoach(): Promise<void>;
   updateMe(patch: UserPatch): Promise<void>;
-  createProgram(goalText: string): Promise<void>;
+  createProgramFromGoal(goalText: string): Promise<void>;
+  createProgramFromTemplate(templateId: string): Promise<void>;
   deleteProgram(): Promise<void>;
-  checkout(plan: "monthly" | "yearly"): Promise<void>;
-  cancelPremium(): Promise<void>;
-  openPaywall(reason: PaywallReason): void;
-  closePaywall(): void;
+  finalizeDiagnostic(steps: DiagnosticStepResult[]): Promise<void>;
+  markLibraryRead(lessonId: string): Promise<void>;
+  rewrite(sessionId: string, transcript: string): Promise<RewriteResult>;
+  modelAnswer(session: AccountState["sessions"][number]): Promise<string | null>;
+  weeklyGoals(): Promise<WeeklyGoals>;
   toast(text: string, tone?: Toast["tone"]): void;
   setGuestTheme(theme: "system" | "light" | "dark"): void;
 }
@@ -81,7 +81,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<Mode>("none");
   const [account, setAccount] = useState<AccountState | null>(null);
   const [server, setServer] = useState<ServerConfig | null>(null);
-  const [paywall, setPaywall] = useState<PaywallReason | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [guestTheme, setGuestThemeState] = useState<"system" | "light" | "dark">(() => {
     try { return (localStorage.getItem(THEME_KEY) as "light" | "dark" | null) ?? "system"; } catch { return "system"; }
@@ -127,14 +126,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
     const saved = readLocal();
     if (saved) {
-      // Demo data is regenerated each day so it always looks current.
       if (saved.mode === "demo") {
         const fresh = createDemoAccount();
         const lastDemo = saved.account.sessions.find((s) => s.id.startsWith("demo_"));
         const isStale = !lastDemo || new Date(lastDemo.createdAt).toDateString() !== new Date(fresh.sessions[0].createdAt).toDateString();
         const own = saved.account.sessions.filter((s) => !s.id.startsWith("demo_"));
         const account = isStale
-          ? { ...fresh, user: { ...fresh.user, ...saved.account.user, premiumUntil: fresh.user.premiumUntil }, sessions: [...own, ...fresh.sessions].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), coach: saved.account.coach }
+          ? { ...fresh, user: { ...fresh.user, ...saved.account.user, isDemo: true }, sessions: [...own, ...fresh.sessions].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), coach: saved.account.coach }
           : saved.account;
         setAccount(account);
         writeLocal("demo", account);
@@ -190,19 +188,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         firstName: p.firstName,
         email: null,
         avatar: null,
-        goal: p.goal,
+        goals: p.goals.length ? p.goals : ["aisance"],
         goalText: null,
         level: p.level,
         frequency: p.frequency,
-        plan: "free",
-        premiumUntil: null,
         createdAt: new Date().toISOString(),
         settings: { ...DEFAULT_SETTINGS, theme: guestTheme, sessionSeconds: p.frequency === "5" ? 45 : 60 },
+        diagnosticDone: false,
       },
       sessions: [],
       program: null,
       coach: [],
       badges: [],
+      diagnostic: null,
     };
     modeRef.current = "guest";
     writeLocal("guest", account);
@@ -222,8 +220,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const a = accountRef.current;
     if (modeRef.current !== "guest" || !a) return { profile: undefined, importState: undefined };
     return {
-      profile: { goal: a.user.goal, goalText: a.user.goalText, level: a.user.level, frequency: a.user.frequency },
-      importState: { sessions: a.sessions, coach: a.coach, program: a.program, badges: a.badges },
+      profile: { goals: a.user.goals, goalText: a.user.goalText, level: a.user.level, frequency: a.user.frequency },
+      importState: { sessions: a.sessions, coach: a.coach, program: a.program, badges: a.badges, diagnostic: a.diagnostic },
     };
   };
 
@@ -284,7 +282,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const apply = (s: AccountState) => { accountRef.current = s; setAccount(s); };
 
   const ctx: Ctx = {
-    status, bootError, mode, account, server, paywall, toasts,
+    status, bootError, mode, account, server, toasts,
     summary: account ? summarize(account.sessions, account.badges) : null,
     retryBoot: () => void boot(),
     startGuest, startDemo, signup, login, googleSignIn, forgotPassword, resetPassword, logout, deleteAccount,
@@ -295,7 +293,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }),
     deleteSession: (id) => withAccount(async (b, s) => apply(await b.deleteSession(s, id))),
     sendCoach: (text) => withAccount(async (b, s) => {
-      // Optimistic: show the user's message right away.
       const pending = { id: uid("pending_"), role: "user" as const, text, createdAt: new Date().toISOString() };
       setAccount({ ...s, coach: [...s.coach, pending] });
       try {
@@ -307,12 +304,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }),
     clearCoach: () => withAccount(async (b, s) => apply(await b.clearCoach(s))),
     updateMe: (patch) => withAccount(async (b, s) => apply(await b.updateMe(s, patch))),
-    createProgram: (goalText) => withAccount(async (b, s) => apply(await b.createProgram(s, goalText))),
+    createProgramFromGoal: (goalText) => withAccount(async (b, s) => apply(await b.createProgramFromGoal(s, goalText))),
+    createProgramFromTemplate: (templateId) => withAccount(async (b, s) => apply(await b.createProgramFromTemplate(s, templateId))),
     deleteProgram: () => withAccount(async (b, s) => apply(await b.deleteProgram(s))),
-    checkout: (plan) => withAccount(async (b, s) => apply(await b.checkout(s, plan))),
-    cancelPremium: () => withAccount(async (b, s) => apply(await b.cancelPremium(s))),
-    openPaywall: setPaywall,
-    closePaywall: () => setPaywall(null),
+    finalizeDiagnostic: (steps) => withAccount(async (b, s) => apply(await b.finalizeDiagnostic(s, steps))),
+    markLibraryRead: (lessonId) => withAccount(async (b, s) => apply(await b.markLibraryRead(s, lessonId))),
+    rewrite: (sessionId, transcript) => withAccount((b) => b.rewrite(sessionId, transcript)),
+    modelAnswer: (session) => withAccount((b) => b.modelAnswer(session)),
+    weeklyGoals: () => withAccount((b, s) => b.weeklyGoals(s)),
     toast,
     setGuestTheme,
   };

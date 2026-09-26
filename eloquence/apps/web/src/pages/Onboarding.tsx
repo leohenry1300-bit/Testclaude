@@ -1,26 +1,22 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Check, Clock, Mic, Sparkles } from "lucide-react";
 import {
-  ArrowLeft, Briefcase, Check, Clock, GraduationCap, Handshake, Mic, Presentation, Smile, Sparkles, Zap,
-} from "lucide-react";
-import {
-  FREQUENCY_HINTS, FREQUENCY_LABELS, GOAL_LABELS, LEVEL_HINTS, LEVEL_LABELS, ONBOARDING_EXERCISE_ID, getExercise,
-  type Frequency, type Goal, type Level,
+  FREQUENCY_HINTS, FREQUENCY_LABELS, GOAL_GROUPS, GOAL_LABELS, LEVEL_HINTS, LEVEL_LABELS, ONBOARDING_EXERCISE_ID,
+  getExercise, type Frequency, type Goal, type Level,
 } from "@eloquence/core";
 import { useStore } from "../lib/store";
+import { useLaunchActivity } from "../lib/launch";
 import { Wordmark } from "../components/ui";
-
-const GOAL_ICONS: Record<Goal, typeof Smile> = {
-  aisance: Smile, entretiens: Briefcase, presentations: Presentation, convaincre: Handshake, improviser: Zap, concours: GraduationCap,
-};
 
 const STEPS = 6;
 
 export function Onboarding() {
   const { startGuest, startDemo } = useStore();
   const nav = useNavigate();
+  const launch = useLaunchActivity();
   const [step, setStep] = useState(0);
-  const [goal, setGoal] = useState<Goal | null>(null);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [level, setLevel] = useState<Level | null>(null);
   const [frequency, setFrequency] = useState<Frequency | null>(null);
   const [firstName, setFirstName] = useState("");
@@ -28,7 +24,8 @@ export function Onboarding() {
 
   const next = () => setStep((s) => Math.min(STEPS - 1, s + 1));
   const back = () => setStep((s) => Math.max(0, s - 1));
-  const profile = () => ({ firstName: firstName.trim() || "toi", goal: goal ?? "aisance", level: level ?? "intermediaire", frequency: frequency ?? "10" });
+  const profile = () => ({ firstName: firstName.trim() || "toi", goals: goals.length ? goals : ["aisance" as Goal], level: level ?? "intermediaire", frequency: frequency ?? "10" });
+  const toggleGoal = (g: Goal) => setGoals((gs) => (gs.includes(g) ? gs.filter((x) => x !== g) : [...gs, g]));
 
   if (step === 0) {
     return (
@@ -41,7 +38,7 @@ export function Onboarding() {
             ))}
           </div>
           <h1>Parle avec plus <em>d'aisance.</em></h1>
-          <p>Entraîne-toi quelques minutes par jour et améliore ta clarté, ton assurance et ton impact.</p>
+          <p>Ton coach personnel de prise de parole : exercices, jeux, simulations, culture générale et programmes, sans aucune limite.</p>
         </div>
         <div className="onb-foot">
           <button className="btn btn-primary btn-lg btn-block" onClick={next}>Commencer</button>
@@ -65,13 +62,28 @@ export function Onboarding() {
       </div>
 
       {step === 1 && (
-        <Choices
-          title="Quel est ton objectif principal ?"
-          sub="On adapte tes exercices en conséquence."
-          options={(Object.keys(GOAL_LABELS) as Goal[]).map((g) => ({ id: g, title: GOAL_LABELS[g], Icon: GOAL_ICONS[g] }))}
-          value={goal}
-          onPick={(g) => { setGoal(g); setTimeout(next, 180); }}
-        />
+        <div className="onb-body">
+          <div>
+            <h1>Quels sont tes objectifs ?</h1>
+            <p className="muted" style={{ marginTop: 8 }}>Choisis-en autant que tu veux. Ton programme s'adapte à tout ça.</p>
+          </div>
+          <div className="stack-lg" role="group" aria-label="Objectifs">
+            {GOAL_GROUPS.map((grp) => (
+              <div key={grp.title} className="stack" style={{ gap: 8 }}>
+                <span className="section-title">{grp.title}</span>
+                <div className="choice-list">
+                  {grp.goals.map((g) => (
+                    <button key={g} className="choice" role="checkbox" aria-checked={goals.includes(g)} onClick={() => toggleGoal(g)} style={{ padding: "12px 14px" }}>
+                      <span className="choice-title small">{GOAL_LABELS[g]}</span>
+                      <Check size={18} className="check" aria-hidden="true" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="btn btn-primary btn-lg btn-block" disabled={goals.length === 0} onClick={next}>Continuer ({goals.length} sélectionné{goals.length > 1 ? "s" : ""})</button>
+        </div>
       )}
       {step === 2 && (
         <Choices
@@ -108,9 +120,9 @@ export function Onboarding() {
       {step === 5 && (
         <div className="onb-body">
           <div>
-            <span className="pill success"><Check size={13} />Gratuit, sans compte</span>
+            <span className="pill success"><Check size={13} />Tout est gratuit et sans limite</span>
             <h1 style={{ marginTop: 14 }}>{firstName.trim()}, fais ton premier test oral.</h1>
-            <p className="muted" style={{ marginTop: 10 }}>60 secondes pour mesurer ton point de départ. Tu reçois ensuite une analyse complète : clarté, fluidité, mots parasites, débit… et les conseils de ton coach.</p>
+            <p className="muted" style={{ marginTop: 10 }}>60 secondes pour mesurer ton point de départ. Tu pourras ensuite faire le diagnostic complet en 8 étapes, si tu veux un bilan détaillé.</p>
           </div>
           <div className="card">
             <div className="eyebrow">Ton sujet</div>
@@ -122,7 +134,7 @@ export function Onboarding() {
           </div>
           <div style={{ flex: 1 }} />
           <div className="onb-foot">
-            <button className="btn btn-primary btn-lg btn-block" onClick={() => { startGuest(profile()); nav(`/exercice/${exercise.id}?onboarding=1`, { replace: true }); }}>
+            <button className="btn btn-primary btn-lg btn-block" onClick={() => { startGuest(profile()); launch(exercise, { onboarding: true, source: "catalogue" }); }}>
               <Mic size={18} />Lancer mon premier test
             </button>
             <button className="btn btn-ghost btn-block" onClick={() => { startGuest(profile()); nav("/", { replace: true }); }}>Plus tard</button>
@@ -136,7 +148,7 @@ export function Onboarding() {
 function Choices<T extends string>({ title, sub, options, value, onPick }: {
   title: string;
   sub: string;
-  options: { id: T; title: string; sub?: string; Icon?: typeof Smile }[];
+  options: { id: T; title: string; sub?: string; Icon?: typeof Clock }[];
   value: T | null;
   onPick: (v: T) => void;
 }) {

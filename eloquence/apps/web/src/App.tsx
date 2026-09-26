@@ -3,12 +3,17 @@ import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "rea
 import { RefreshCw } from "lucide-react";
 import { dayKey } from "@eloquence/core";
 import { StoreProvider, useStore } from "./lib/store";
-import { AppShell, PaywallSheet } from "./components/shell";
+import { AppShell } from "./components/shell";
 import { FullScreenLoader, Toasts, Wordmark } from "./components/ui";
 import { Onboarding } from "./pages/Onboarding";
 import { ForgotPassword, Login, ResetPassword, Signup } from "./pages/Auth";
 import { Home } from "./pages/Home";
 import { Train } from "./pages/Train";
+import { Games } from "./pages/Games";
+import { Topics } from "./pages/Topics";
+import { Simulations } from "./pages/Simulations";
+import { Library, LibraryCourse, LessonDetail } from "./pages/Library";
+import { Diagnostic, DiagnosticReportPage } from "./pages/Diagnostic";
 import { Exercise } from "./pages/Exercise";
 import { SessionResult } from "./pages/SessionResult";
 import { Progress } from "./pages/Progress";
@@ -93,6 +98,14 @@ function Root() {
             <Route path="/coach" element={<Coach />} />
             <Route path="/profil" element={<Profile />} />
           </Route>
+          <Route path="/jeux" element={<Games />} />
+          <Route path="/sujets" element={<Topics />} />
+          <Route path="/simulations" element={<Simulations />} />
+          <Route path="/bibliotheque" element={<Library />} />
+          <Route path="/bibliotheque/lecon/:lessonId" element={<LessonDetail />} />
+          <Route path="/bibliotheque/:courseId" element={<LibraryCourse />} />
+          <Route path="/diagnostic" element={<Diagnostic />} />
+          <Route path="/diagnostic/bilan" element={<DiagnosticReportPage />} />
           <Route path="/exercice/:id" element={<Exercise />} />
           <Route path="/session/:id" element={<SessionResult />} />
           <Route path="/historique" element={<History />} />
@@ -101,7 +114,6 @@ function Root() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <PaywallSheet />
       <Toasts />
     </>
   );

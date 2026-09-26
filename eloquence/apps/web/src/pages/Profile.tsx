@@ -1,16 +1,13 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Bell, Camera, ChevronRight, Clock, CloudUpload, Crown, Download, Flame, Globe, LogOut, Moon, Pencil,
-  ShieldCheck, Target, Trash2, Trophy,
+  Bell, Camera, ChevronRight, Clock, ClipboardCheck, CloudUpload, Download, Globe, LogOut, Moon,
+  Pencil, ShieldCheck, Target, Trash2, Trophy,
 } from "lucide-react";
-import {
-  GOAL_LABELS, LEVEL_LABELS, isPremium, levelFor, planLabel,
-  type Goal, type Level, type UserSettings,
-} from "@eloquence/core";
+import { GOAL_GROUPS, GOAL_LABELS, LEVEL_LABELS, levelFor, type Goal, type Level, type UserSettings } from "@eloquence/core";
 import { useAccount } from "../lib/store";
 import { http } from "../lib/http";
-import { nf, shortDay, spokenTime } from "../lib/format";
+import { nf, spokenTime } from "../lib/format";
 import { Avatar, Sheet, Switch } from "../components/ui";
 
 const LANGS: { id: UserSettings["language"]; label: string }[] = [
@@ -32,12 +29,11 @@ async function resizeImage(file: File, size = 256): Promise<string> {
 }
 
 export function Profile() {
-  const { account, summary, mode, updateMe, logout, deleteAccount, cancelPremium, openPaywall, toast } = useAccount();
+  const { account, summary, mode, updateMe, logout, deleteAccount, toast } = useAccount();
   const { user } = account;
   const nav = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
   const [editing, setEditing] = useState(false);
-  const premium = isPremium(user);
   const level = levelFor(summary.xp);
 
   const save = async (patch: Parameters<typeof updateMe>[0], msg?: string) => {
@@ -99,15 +95,12 @@ export function Profile() {
           <h1 style={{ fontSize: 24, fontWeight: 650 }}>{user.firstName}</h1>
           <p className="small muted">{user.email ?? (mode === "demo" ? "Profil de démonstration" : "Profil local, sans compte")}</p>
         </div>
-        <div className="row" style={{ flexWrap: "wrap", justifyContent: "center" }}>
-          <span className="pill primary">Niveau {level.level} · {level.name}</span>
-          <span className={`pill ${premium ? "success" : ""}`}>{premium ? <Crown size={13} /> : null}{planLabel(premium ? "premium" : "free")}</span>
-        </div>
+        <span className="pill primary">Niveau {level.level} · {level.name}</span>
         <button className="btn btn-outline btn-sm" onClick={() => setEditing(true)}><Pencil size={15} />Modifier le profil</button>
       </header>
 
       <div className="grid-3">
-        <div className="stat-tile" style={{ gap: 4 }}><div className="stat"><span className="v row" style={{ gap: 4 }}>{summary.streak}<Flame size={16} color="var(--warning)" /></span><span className="l">Série</span></div></div>
+        <div className="stat-tile" style={{ gap: 4 }}><div className="stat"><span className="v row" style={{ gap: 4 }}>{summary.streak}🔥</span><span className="l">Série</span></div></div>
         <div className="stat-tile" style={{ gap: 4 }}><div className="stat"><span className="v">{summary.sessionCount}</span><span className="l">Sessions</span></div></div>
         <div className="stat-tile" style={{ gap: 4 }}><div className="stat"><span className="v">{spokenTime(summary.totalSec)}</span><span className="l">Parlé</span></div></div>
       </div>
@@ -130,16 +123,21 @@ export function Profile() {
       )}
 
       <section className="stack">
-        <h2 className="section-title">Objectif</h2>
+        <h2 className="section-title">Objectifs & niveau</h2>
         <div className="list">
           <button className="list-item" onClick={() => setEditing(true)}>
             <span className="li-icon"><Target size={18} /></span>
-            <span className="grow"><span className="li-title">{GOAL_LABELS[user.goal]}</span><br /><span className="li-sub">{LEVEL_LABELS[user.level]} · depuis le {shortDay(user.createdAt)}</span></span>
+            <span className="grow"><span className="li-title">{user.goals.length} objectif{user.goals.length > 1 ? "s" : ""}</span><br /><span className="li-sub">{user.goals.map((g) => GOAL_LABELS[g]).join(", ")}</span></span>
             <ChevronRight size={18} className="li-end" />
           </button>
+          <Link to="/diagnostic" className="list-item">
+            <span className="li-icon"><ClipboardCheck size={18} /></span>
+            <span className="grow"><span className="li-title">Diagnostic initial</span><br /><span className="li-sub">{user.diagnosticDone ? "Terminé — le refaire" : "Pas encore fait"}</span></span>
+            <ChevronRight size={18} className="li-end" />
+          </Link>
           <Link to="/programme" className="list-item">
             <span className="li-icon"><Clock size={18} /></span>
-            <span className="grow"><span className="li-title">Programme personnalisé</span><br /><span className="li-sub">{account.program ? `« ${account.program.goalText} »` : "Construire un programme de 14 jours"}</span></span>
+            <span className="grow"><span className="li-title">Programme</span><br /><span className="li-sub">{account.program ? account.program.title : "Aucun programme actif"}</span></span>
             <ChevronRight size={18} className="li-end" />
           </Link>
           <Link to="/badges" className="list-item">
@@ -218,25 +216,10 @@ export function Profile() {
         </div>
       </section>
 
-      <section className="stack">
-        <h2 className="section-title">Abonnement</h2>
-        <div className="card">
-          <div className="row-between">
-            <div>
-              <div className="strong row" style={{ gap: 6 }}>{premium && <Crown size={16} color="var(--primary-ink)" />}Éloquence {planLabel(premium ? "premium" : "free")}</div>
-              <div className="small muted">{premium ? (user.premiumUntil ? `Essai jusqu'au ${shortDay(user.premiumUntil)}` : "Actif") : "3 exercices par jour, analyse essentielle"}</div>
-            </div>
-            {premium
-              ? mode !== "demo" && <button className="btn btn-ghost btn-sm" onClick={async () => { if (window.confirm("Revenir à la version gratuite ?")) await cancelPremium(); }}>Résilier</button>
-              : <button className="btn btn-primary btn-sm" onClick={() => openPaywall("profile")}>Passer Premium</button>}
-          </div>
-        </div>
-      </section>
-
       <button className="btn btn-outline btn-block" onClick={async () => { await logout(); nav("/bienvenue", { replace: true }); }}>
         <LogOut size={17} />{mode === "account" ? "Se déconnecter" : mode === "demo" ? "Quitter la démo" : "Changer de profil"}
       </button>
-      <p className="tiny faint center">Éloquence · v1.0</p>
+      <p className="tiny faint center">Éloquence · gratuit, sans limite, pour ton usage personnel.</p>
 
       {editing && <EditProfile onClose={() => setEditing(false)} />}
     </div>
@@ -246,13 +229,15 @@ export function Profile() {
 function EditProfile({ onClose }: { onClose: () => void }) {
   const { account, updateMe, toast } = useAccount();
   const [firstName, setFirstName] = useState(account.user.firstName);
-  const [goal, setGoal] = useState<Goal>(account.user.goal);
+  const [goals, setGoals] = useState<Goal[]>(account.user.goals);
   const [level, setLevel] = useState<Level>(account.user.level);
   const [busy, setBusy] = useState(false);
+  const toggle = (g: Goal) => setGoals((gs) => (gs.includes(g) ? gs.filter((x) => x !== g) : [...gs, g]));
   const submit = async () => {
+    if (goals.length === 0) { toast("Choisis au moins un objectif.", "error"); return; }
     setBusy(true);
     try {
-      await updateMe({ firstName: firstName.trim(), goal, level });
+      await updateMe({ firstName: firstName.trim(), goals, level });
       toast("Profil mis à jour.", "success");
       onClose();
     } catch (e) {
@@ -267,14 +252,21 @@ function EditProfile({ onClose }: { onClose: () => void }) {
         <h2 style={{ fontSize: 22 }}>Modifier le profil</h2>
         <div className="field"><label htmlFor="efn">Prénom</label>
           <input id="efn" className="input" value={firstName} maxLength={40} onChange={(e) => setFirstName(e.target.value)} /></div>
-        <div className="field"><label htmlFor="egoal">Objectif principal</label>
-          <select id="egoal" className="select" value={goal} onChange={(e) => setGoal(e.target.value as Goal)}>
-            {(Object.keys(GOAL_LABELS) as Goal[]).map((g) => <option key={g} value={g}>{GOAL_LABELS[g]}</option>)}
-          </select></div>
         <div className="field"><label htmlFor="elevel">Niveau à l'oral</label>
           <select id="elevel" className="select" value={level} onChange={(e) => setLevel(e.target.value as Level)}>
             {(Object.keys(LEVEL_LABELS) as Level[]).map((l) => <option key={l} value={l}>{LEVEL_LABELS[l]}</option>)}
           </select></div>
+        <div className="stack" style={{ gap: 10 }}>
+          <span className="strong small">Objectifs ({goals.length})</span>
+          {GOAL_GROUPS.map((grp) => (
+            <div key={grp.title} className="stack" style={{ gap: 6 }}>
+              <span className="tiny faint strong">{grp.title.toUpperCase()}</span>
+              <div className="chips" style={{ margin: 0, padding: 0, flexWrap: "wrap" }}>
+                {grp.goals.map((g) => <button key={g} type="button" className="chip" aria-pressed={goals.includes(g)} onClick={() => toggle(g)}>{GOAL_LABELS[g]}</button>)}
+              </div>
+            </div>
+          ))}
+        </div>
         <button className="btn btn-primary btn-lg btn-block" disabled={busy || !firstName.trim()}>{busy && <span className="spinner" />}Enregistrer</button>
       </form>
     </Sheet>

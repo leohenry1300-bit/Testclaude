@@ -48,7 +48,6 @@ export interface ServerConfig {
   googleClientId: string | null;
   stt: "client" | "openai";
   llm: "heuristic" | "anthropic";
-  billing: "dev";
   mail: "console" | "resend";
 }
 

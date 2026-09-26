@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Flame, History, Lock, Mic, Trophy } from "lucide-react";
-import {
-  BADGES, DIMENSION_POSSESSIVE, FREE_HISTORY_DAYS, LEVELS, isPremium, scoreSeries, strongestDimension,
-  weakestDimension, weekActivity,
-} from "@eloquence/core";
+import { ChevronRight, Flame, History, Mic, Trophy } from "lucide-react";
+import { BADGES, CATEGORY_LABELS, DIMENSION_POSSESSIVE, LEVELS, scoreSeries, strongestDimension, weakestDimension, weekActivity } from "@eloquence/core";
 import { useAccount } from "../lib/store";
-import { nf, relativeDay, spokenTime } from "../lib/format";
+import { nf, spokenTime } from "../lib/format";
 import { DimensionBars, EmptyState, Icon } from "../components/ui";
 import { ScoreLineChart, WeekBars } from "../components/charts";
 
@@ -17,14 +14,14 @@ const RANGES = [
 ] as const;
 
 export function Progress() {
-  const { account, summary, mode, openPaywall } = useAccount();
+  const { account, summary } = useAccount();
   const [range, setRange] = useState<7 | 30 | 90>(30);
-  const premium = isPremium(account.user) || mode === "demo";
   const series = scoreSeries(account.sessions, range);
   const week = weekActivity(account.sessions);
   const strong = strongestDimension(summary.current);
   const weak = weakestDimension(summary.current);
   const earned = new Set(summary.badges.map((b) => b.id));
+  const categories = Object.entries(summary.byCategory).sort((a, b) => (b[1]?.count ?? 0) - (a[1]?.count ?? 0));
 
   if (account.sessions.length === 0) {
     return (
@@ -58,24 +55,12 @@ export function Progress() {
         <div className="row-between" style={{ marginBottom: 14, flexWrap: "wrap" }}>
           <h2 id="curve-title" style={{ fontSize: 18 }}>Score global</h2>
           <div className="segmented" role="group" aria-label="Période" style={{ flex: "1 1 240px", maxWidth: 320 }}>
-            {RANGES.map((r) => (
-              <button key={r.id} aria-pressed={range === r.id}
-                onClick={() => (r.id === 90 && !premium ? openPaywall("history") : setRange(r.id))}>
-                {r.label}{r.id === 90 && !premium ? <Lock size={11} style={{ marginLeft: 4, verticalAlign: -1 }} /> : null}
-              </button>
-            ))}
+            {RANGES.map((r) => <button key={r.id} aria-pressed={range === r.id} onClick={() => setRange(r.id)}>{r.label}</button>)}
           </div>
         </div>
         {series.length > 0 ? <ScoreLineChart points={series} /> : (
           <p className="muted small center" style={{ padding: "40px 0" }}>Aucune session sur cette période.</p>
         )}
-        <details style={{ marginTop: 12 }}>
-          <summary className="small muted" style={{ cursor: "pointer" }}>Voir les données</summary>
-          <table className="compare" style={{ marginTop: 8 }}>
-            <thead><tr><th>Jour</th><th>Score</th><th>Sessions</th></tr></thead>
-            <tbody>{series.map((p) => <tr key={p.date}><td>{relativeDay(p.date + "T12:00:00").replace(/, \d\d:\d\d$/, "")}</td><td>{p.score}</td><td>{p.sessions}</td></tr>)}</tbody>
-          </table>
-        </details>
       </section>
 
       <div className="grid-2">
@@ -84,9 +69,9 @@ export function Progress() {
         <Stat label="Mots prononcés" value={nf.format(summary.totalWords)} />
         <Stat label="Score moyen" value={`${summary.averageScore}`} />
         <Stat label="Meilleur score" value={`${summary.bestScore}`} />
+        <Stat label="Sujets distincts" value={nf.format(summary.distinctTopics)} />
         <Stat label="Série actuelle" value={`${summary.streak} j`} icon={<Flame size={16} color="var(--warning)" />} />
         <Stat label="Série record" value={`${summary.bestStreak} j`} icon={<Trophy size={16} color="var(--primary-ink)" />} />
-        <Stat label="Parasites évités" value={nf.format(summary.fillersRemoved)} />
       </div>
 
       <section className="card" aria-labelledby="week-title">
@@ -104,6 +89,21 @@ export function Progress() {
             {strong && weak ? `Point fort : ${DIMENSION_POSSESSIVE[strong]}. Levier principal : ${DIMENSION_POSSESSIVE[weak]}.` : ""}
           </p>
           <DimensionBars scores={summary.current} />
+        </section>
+      )}
+
+      {categories.length > 0 && (
+        <section className="card" aria-labelledby="cat-title">
+          <h2 id="cat-title" style={{ fontSize: 18, marginBottom: 4 }}>Profil par catégorie</h2>
+          <p className="small muted" style={{ marginBottom: 16 }}>Ta moyenne réelle dans chaque type d'exercice — pas un score inventé.</p>
+          <div className="stack" style={{ gap: 10 }}>
+            {categories.map(([cat, v]) => (
+              <div key={cat} className="row-between small">
+                <span>{CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS] ?? cat} <span className="faint">· {v?.count} session{(v?.count ?? 0) > 1 ? "s" : ""}</span></span>
+                <span className="strong tabular">{v?.average}</span>
+              </div>
+            ))}
+          </div>
         </section>
       )}
 
@@ -127,7 +127,7 @@ export function Progress() {
       <Link to="/historique" className="list card" style={{ textDecoration: "none", color: "inherit" }}>
         <span className="list-item">
           <span className="li-icon"><History size={18} /></span>
-          <span className="grow"><span className="li-title">Historique des sessions</span><br /><span className="li-sub">{premium ? "Toutes tes sessions" : `${FREE_HISTORY_DAYS} derniers jours en version gratuite`}</span></span>
+          <span className="grow"><span className="li-title">Historique des sessions</span><br /><span className="li-sub">Recherche dans toutes tes sessions</span></span>
           <ChevronRight size={18} className="li-end" />
         </span>
       </Link>

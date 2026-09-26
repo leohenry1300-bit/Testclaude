@@ -1,27 +1,32 @@
 import {
-  analyzeSpeech, buildSessionResult, canStartExercise, dayKey, generateProgram, getExercise,
-  isPremium, markProgramProgress, ruleBasedCoachReply, summarize, uid, weakestDimension,
-  FREE_DAILY_COACH_MESSAGES,
-  type AccountState, type CoachMessage, type Program, type SessionResult, type SpeechCapture, type User,
+  analyzeSpeech, buildDiagnosticReport, buildSessionResult, dayKey, generateProgram, buildTemplateProgram,
+  markProgramProgress, ruleBasedCoachReply, summarize, uid, weakestDimension, heuristicRewrite,
+  computeWeeklyGoals, categoryProfile,
+  type AccountState, type CoachMessage, type DiagnosticStepResult, type Exercise, type GameConstraint,
+  type Program, type SessionResult, type SpeechCapture, type User, type WeeklyGoals,
 } from "@eloquence/core";
 import { ApiError, http } from "./http";
 import { deleteClip, saveClip } from "./audioStore";
 
 export interface SubmitInput {
-  exerciseId: string;
+  exercise: Exercise;
+  source: "catalogue" | "jeu" | "sujet" | "simulation" | "diagnostic" | "libre" | "programme";
   capture: SpeechCapture;
   audio: Blob | null;
+  constraint?: GameConstraint;
   onboarding?: boolean;
 }
 
-export type UserPatch = Partial<Pick<User, "firstName" | "avatar" | "goal" | "goalText" | "level" | "frequency">> & {
+export interface RewriteResult { clair: string; concis: string; pro: string; persuasif: string | null }
+
+export type UserPatch = Partial<Pick<User, "firstName" | "avatar" | "goals" | "goalText" | "level" | "frequency">> & {
   settings?: Partial<User["settings"]>;
 };
 
 /**
  * Everything the UI can do to an account. Two implementations: the API
  * (signed-in users) and the device (guest & demo), which runs the exact same
- * analysis engine locally.
+ * analysis engine locally. Nothing here is gated: this is a personal app.
  */
 export interface Backend {
   readonly kind: "local" | "remote";
@@ -30,10 +35,14 @@ export interface Backend {
   sendCoach(state: AccountState, text: string): Promise<AccountState>;
   clearCoach(state: AccountState): Promise<AccountState>;
   updateMe(state: AccountState, patch: UserPatch): Promise<AccountState>;
-  createProgram(state: AccountState, goalText: string): Promise<AccountState>;
+  createProgramFromGoal(state: AccountState, goalText: string): Promise<AccountState>;
+  createProgramFromTemplate(state: AccountState, templateId: string): Promise<AccountState>;
   deleteProgram(state: AccountState): Promise<AccountState>;
-  checkout(state: AccountState, plan: "monthly" | "yearly"): Promise<AccountState>;
-  cancelPremium(state: AccountState): Promise<AccountState>;
+  finalizeDiagnostic(state: AccountState, steps: DiagnosticStepResult[]): Promise<AccountState>;
+  markLibraryRead(state: AccountState, lessonId: string): Promise<AccountState>;
+  rewrite(sessionId: string, transcript: string): Promise<RewriteResult>;
+  modelAnswer(session: AccountState["sessions"][number]): Promise<string | null>;
+  weeklyGoals(state: AccountState): Promise<WeeklyGoals>;
   refresh(state: AccountState): Promise<AccountState>;
 }
 
@@ -46,7 +55,7 @@ export class RemoteBackend implements Backend {
 
   async submitSession(state: AccountState, input: SubmitInput) {
     const form = new FormData();
-    form.append("meta", JSON.stringify({ exerciseId: input.exerciseId, capture: input.capture, onboarding: input.onboarding }));
+    form.append("meta", JSON.stringify({ exercise: input.exercise, source: input.source, constraint: input.constraint, capture: input.capture, onboarding: input.onboarding }));
     if (input.audio) form.append("audio", input.audio, `speech.${input.audio.type.includes("mp4") ? "m4a" : "webm"}`);
     const result = await http<SessionResult>("POST", "/api/sessions", form, 120_000);
     const fresh = await http<AccountState>("GET", "/api/state").catch(() => null);
@@ -73,9 +82,14 @@ export class RemoteBackend implements Backend {
     return merge(state, r.user);
   }
 
-  async createProgram(state: AccountState, goalText: string) {
+  async createProgramFromGoal(state: AccountState, goalText: string) {
     const r = await http<{ program: Program }>("POST", "/api/program", { goalText });
     return { ...state, program: r.program, user: { ...state.user, goalText } };
+  }
+
+  async createProgramFromTemplate(state: AccountState, templateId: string) {
+    const r = await http<{ program: Program }>("POST", "/api/program", { templateId });
+    return { ...state, program: r.program };
   }
 
   async deleteProgram(state: AccountState) {
@@ -83,14 +97,27 @@ export class RemoteBackend implements Backend {
     return { ...state, program: null };
   }
 
-  async checkout(state: AccountState, plan: "monthly" | "yearly") {
-    const r = await http<{ user: User }>("POST", "/api/billing/checkout", { plan });
-    return merge(state, r.user);
+  async finalizeDiagnostic(state: AccountState, steps: DiagnosticStepResult[]) {
+    const r = await http<{ diagnostic: AccountState["diagnostic"] }>("POST", "/api/diagnostic", { steps });
+    return { ...state, diagnostic: r.diagnostic, user: { ...state.user, diagnosticDone: true } };
   }
 
-  async cancelPremium(state: AccountState) {
-    const r = await http<{ user: User }>("POST", "/api/billing/cancel");
-    return merge(state, r.user);
+  async markLibraryRead(state: AccountState, lessonId: string) {
+    await http("POST", `/api/library/${lessonId}/read`);
+    return state;
+  }
+
+  async rewrite(sessionId: string) {
+    return http<RewriteResult>("POST", `/api/sessions/${sessionId}/rewrite`);
+  }
+
+  async modelAnswer(session: AccountState["sessions"][number]) {
+    const r = await http<{ answer: string | null }>("POST", `/api/sessions/${session.id}/model-answer`);
+    return r.answer;
+  }
+
+  async weeklyGoals() {
+    return http<WeeklyGoals>("GET", "/api/weekly");
   }
 
   async refresh() {
@@ -110,32 +137,26 @@ export class LocalBackend implements Backend {
   }
 
   async submitSession(state: AccountState, input: SubmitInput) {
-    const exercise = getExercise(input.exerciseId);
-    if (!exercise) throw new ApiError(404, "exercise_not_found", "Exercice introuvable.");
-    const today = dayKey(new Date());
-    const todayCount = state.sessions.filter((s) => dayKey(s.createdAt) === today).length;
-    const gate = canStartExercise(state.user, exercise, todayCount, { onboarding: input.onboarding && state.sessions.length === 0 });
-    if (!gate.ok) throw new ApiError(402, gate.reason, gate.message);
-
     const capture = { ...input.capture };
     if (!capture.transcript.trim()) capture.transcript = (capture.segments ?? []).map((s) => s.text).join(" ");
     if (!capture.transcript.trim()) {
       throw new ApiError(422, "empty_transcript", "Nous n'avons rien entendu. Vérifie ton micro et parle un peu plus fort.");
     }
-    const analysis = analyzeSpeech(capture, { exercise });
+    const analysis = analyzeSpeech(capture, { exercise: input.exercise, constraint: input.constraint });
     const id = uid("s_");
     let audioUrl: string | null = null;
     if (input.audio && state.user.settings.saveAudio && (await saveClip(id, input.audio))) audioUrl = `idb:${id}`;
 
     const result = buildSessionResult({
-      userId: state.user.id, exercise, analysis, transcript: capture.transcript,
+      userId: state.user.id, exercise: input.exercise, source: input.source, analysis, transcript: capture.transcript,
       durationSec: analysis.metrics.durationSec, audioUrl, previous: state.sessions, badges: state.badges, id,
+      badgeContext: { diagnosticDone: !!state.user.diagnosticDone, distinctGames: distinctGameTitles(state), distinctSimulations: distinctCompletedSimulations(state), libraryRead: 0 },
     });
     const next: AccountState = {
       ...state,
       sessions: [result.session, ...state.sessions],
       badges: [...state.badges, ...result.newBadges.map((b) => ({ id: b.id, earnedAt: result.session.createdAt }))],
-      program: state.program ? markProgramProgress(state.program, exercise.id) : null,
+      program: state.program ? markProgramProgress(state.program, input.exercise.id) : null,
     };
     return { state: this.save(next), result };
   }
@@ -146,11 +167,6 @@ export class LocalBackend implements Backend {
   }
 
   async sendCoach(state: AccountState, text: string) {
-    const today = dayKey(new Date());
-    const used = state.coach.filter((m) => m.role === "user" && dayKey(m.createdAt) === today).length;
-    if (!isPremium(state.user) && used >= FREE_DAILY_COACH_MESSAGES) {
-      throw new ApiError(402, "coach_limit", `Tu as utilisé tes ${FREE_DAILY_COACH_MESSAGES} messages gratuits du jour. Le coach illimité fait partie de Premium.`);
-    }
     const userMessage: CoachMessage = { id: uid("m_"), role: "user", text, createdAt: new Date().toISOString() };
     const reply = ruleBasedCoachReply(text, {
       user: state.user,
@@ -158,8 +174,7 @@ export class LocalBackend implements Backend {
       lastSession: state.sessions[0] ?? null,
       history: state.coach.slice(-30),
     });
-    // A short, natural delay: the reply shouldn't feel pre-canned.
-    await new Promise((r) => setTimeout(r, 500 + Math.min(1200, reply.text.length * 3)));
+    await new Promise((r) => setTimeout(r, 450 + Math.min(1100, reply.text.length * 3)));
     return this.save({ ...state, coach: [...state.coach, userMessage, reply] });
   }
 
@@ -172,26 +187,57 @@ export class LocalBackend implements Backend {
     return this.save({ ...state, user });
   }
 
-  async createProgram(state: AccountState, goalText: string) {
-    const weakest = weakestDimension(summarize(state.sessions, []).current);
-    const program = generateProgram(goalText, state.user.goal, weakest);
+  async createProgramFromGoal(state: AccountState, goalText: string) {
+    const summary = summarize(state.sessions, []);
+    const weakest = weakestDimension(summary.current);
+    const program = generateProgram(goalText, state.user.goals, weakest, summary.recurringIssue, 21);
     return this.save({ ...state, program, user: { ...state.user, goalText } });
+  }
+
+  async createProgramFromTemplate(state: AccountState, templateId: string) {
+    const program = buildTemplateProgram(templateId);
+    if (!program) throw new ApiError(404, "template_not_found", "Programme introuvable.");
+    return this.save({ ...state, program });
   }
 
   async deleteProgram(state: AccountState) {
     return this.save({ ...state, program: null });
   }
 
-  async checkout(state: AccountState) {
-    const until = new Date(Date.now() + 7 * 86_400_000).toISOString();
-    return this.save({ ...state, user: { ...state.user, plan: "premium", premiumUntil: until } });
+  async finalizeDiagnostic(state: AccountState, steps: DiagnosticStepResult[]) {
+    const report = buildDiagnosticReport(steps);
+    return this.save({ ...state, diagnostic: report, user: { ...state.user, diagnosticDone: true, level: report.level } });
   }
 
-  async cancelPremium(state: AccountState) {
-    return this.save({ ...state, user: { ...state.user, plan: "free", premiumUntil: null } });
+  async markLibraryRead(state: AccountState) {
+    return state;
+  }
+
+  async rewrite(_sessionId: string, transcript: string) {
+    return { clair: heuristicRewrite(transcript, "clair"), concis: heuristicRewrite(transcript, "concis"), pro: heuristicRewrite(transcript, "pro"), persuasif: null };
+  }
+
+  async modelAnswer() {
+    return null;
+  }
+
+  async weeklyGoals(state: AccountState) {
+    const summary = summarize(state.sessions, state.badges);
+    return computeWeeklyGoals(state.sessions, summary);
   }
 
   async refresh(state: AccountState) {
     return state;
   }
 }
+
+function distinctGameTitles(state: AccountState): number {
+  return new Set(state.sessions.filter((s) => s.source === "jeu").map((s) => s.exerciseTitle)).size;
+}
+function distinctCompletedSimulations(state: AccountState): number {
+  const done = new Set<string>();
+  for (const m of state.coach) if (m.interview?.simulationId && m.interview.step >= m.interview.total) done.add(m.interview.simulationId);
+  return done.size;
+}
+
+export { categoryProfile, dayKey };

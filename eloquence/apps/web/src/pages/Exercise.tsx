@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
-  AlertTriangle, Check, Keyboard, Lock, Mic, MicOff, Pause, Play, RotateCcw, Square, X,
+  AlertTriangle, Check, Keyboard, Mic, MicOff, Pause, Play, RotateCcw, Square, X,
 } from "lucide-react";
-import {
-  canStartExercise, getCategory, getExercise, type SpeechCapture,
-} from "@eloquence/core";
+import { getCategory, getExercise, type ActivitySource, type Exercise as ExerciseT, type GameConstraint, type SpeechCapture } from "@eloquence/core";
 import { useAccount } from "../lib/store";
 import { ApiError } from "../lib/http";
 import { MIC_ERROR_TEXT, micSupport, useRecorder, type RecorderResult } from "../lib/recorder";
@@ -14,14 +12,27 @@ import { Icon } from "../components/ui";
 
 type Phase = "prep" | "live" | "text" | "analyzing" | "failed" | "empty";
 
+export interface ExerciseNavState {
+  activity?: ExerciseT;
+  constraint?: GameConstraint;
+  source?: ActivitySource;
+  onboarding?: boolean;
+  /** Set while running the initial diagnostic battery. */
+  diagnostic?: { stepId: string; title: string; index: number; total: number };
+  /** Set while running a "session rapide" queue item. */
+  quickReturn?: boolean;
+}
+
 const STEPS = ["Transcription de ta voix", "Rythme et pauses", "Mots parasites et répétitions", "Retour de ton coach"];
 
 export function Exercise() {
   const { id = "" } = useParams();
-  const [params] = useSearchParams();
-  const onboarding = params.get("onboarding") === "1";
-  const exercise = getExercise(id);
-  const { account, summary, server, mode, submitSession, openPaywall } = useAccount();
+  const location = useLocation();
+  const navState = (location.state ?? {}) as ExerciseNavState;
+  const exercise = navState.activity ?? getExercise(id);
+  const source: ActivitySource = navState.source ?? (navState.activity ? "libre" : "catalogue");
+  const onboarding = !!navState.onboarding;
+  const { account, server, mode, submitSession } = useAccount();
   const nav = useNavigate();
 
   const [phase, setPhase] = useState<Phase>("prep");
@@ -31,37 +42,34 @@ export function Exercise() {
   const [step, setStep] = useState(0);
   const finishRef = useRef<() => void>(() => undefined);
 
-  // Improvisations follow the user's preferred length; other formats keep theirs.
-  const duration = exercise?.category === "improvisation" ? account.user.settings.sessionSeconds : exercise?.durationSec ?? 60;
+  const duration = exercise?.category === "improvisation" && !navState.activity ? account.user.settings.sessionSeconds : exercise?.durationSec ?? 60;
   const rec = useRecorder({
     language: account.user.settings.language,
     maxSeconds: duration,
     onAutoStop: () => finishRef.current(),
   });
 
-  const gate = exercise
-    ? canStartExercise(account.user, exercise, summary.todayCount, { onboarding: onboarding && account.sessions.length === 0 })
-    : { ok: true as const };
   const serverTranscribes = mode === "account" && server?.stt === "openai";
 
-  useEffect(() => { if (!gate.ok) openPaywall(gate.reason); }, [gate.ok]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const submit = useCallback(async (capture: SpeechCapture, audio: Blob | null) => {
+    if (!exercise) return;
     setPhase("analyzing");
     setStep(0);
     const timer = window.setInterval(() => setStep((s) => Math.min(STEPS.length - 1, s + 1)), 650);
     const minDelay = new Promise((r) => setTimeout(r, 2600));
     try {
-      const [result] = await Promise.all([submitSession({ exerciseId: exercise!.id, capture, audio, onboarding }), minDelay]);
+      const [result] = await Promise.all([
+        submitSession({ exercise, source: navState.diagnostic ? "diagnostic" : source, capture, audio, constraint: navState.constraint, onboarding }),
+        minDelay,
+      ]);
       window.clearInterval(timer);
+      if (navState.diagnostic) {
+        nav("/diagnostic", { replace: true, state: { stepResult: { stepId: navState.diagnostic.stepId, title: navState.diagnostic.title, sessionId: result.session.id, scores: result.session.analysis.scores } } });
+        return;
+      }
       nav(`/session/${result.session.id}`, { replace: true, state: { result, onboarding } });
     } catch (e) {
       window.clearInterval(timer);
-      if (e instanceof ApiError && e.status === 402) {
-        openPaywall(e.code === "premium_exercise" ? "premium_exercise" : "daily_limit");
-        setPhase("prep");
-        return;
-      }
       if (e instanceof ApiError && e.code === "empty_transcript") {
         setPhase("empty");
         return;
@@ -69,7 +77,7 @@ export function Exercise() {
       setFailure((e as Error).message);
       setPhase("failed");
     }
-  }, [exercise, nav, onboarding, openPaywall, submitSession]);
+  }, [exercise, nav, onboarding, source, submitSession, navState.constraint, navState.diagnostic]);
 
   const finish = useCallback(async () => {
     if (rec.status !== "recording" && rec.status !== "paused") return;
@@ -88,12 +96,11 @@ export function Exercise() {
     if (await rec.start()) setPhase("live");
   };
 
-  // Space bar toggles recording (outside text fields).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== "Space" || (e.target as HTMLElement).closest("input, textarea, button, a")) return;
       e.preventDefault();
-      if (phase === "prep" && gate.ok) void begin();
+      if (phase === "prep") void begin();
       else if (phase === "live") void finish();
     };
     window.addEventListener("keydown", onKey);
@@ -138,11 +145,12 @@ export function Exercise() {
   return (
     <div className="run">
       <Header
-        category={<><Icon name={cat.icon} size={14} />{cat.title}</>}
+        category={navState.diagnostic ? <><Icon name="ClipboardCheck" size={14} />Diagnostic {navState.diagnostic.index}/{navState.diagnostic.total}</> : <><Icon name={cat.icon} size={14} />{cat.title}</>}
         onClose={() => {
           if (phase === "live" && !window.confirm("Arrêter l'exercice ? Ta réponse ne sera pas analysée.")) return;
           rec.reset();
           if (onboarding) nav("/");
+          else if (navState.diagnostic) nav("/diagnostic");
           else nav(-1);
         }}
       />
@@ -163,23 +171,15 @@ export function Exercise() {
           </div>
         )}
 
-        {!gate.ok && (
-          <div className="card center stack" style={{ alignItems: "center" }}>
-            <span className="pill primary"><Lock size={13} />{gate.reason === "premium_exercise" ? "Premium" : "Limite du jour"}</span>
-            <p className="muted">{gate.message}</p>
-            <button className="btn btn-primary" onClick={() => openPaywall(gate.reason)}>Voir Premium</button>
-          </div>
-        )}
-
-        {gate.ok && (phase === "prep" || phase === "live") && rec.status !== "error" && (
+        {(phase === "prep" || phase === "live") && rec.status !== "error" && (
           <LiveRecorder rec={rec} remaining={remaining} duration={duration} onStart={begin} onFinish={() => void finish()} />
         )}
 
-        {gate.ok && phase === "prep" && (rec.status === "error" || !support.ok) && (
+        {phase === "prep" && (rec.status === "error" || !support.ok) && (
           <MicErrorCard error={rec.error ?? (support.ok ? "unknown" : support.error)} onRetry={() => { rec.reset(); void begin(); }} onText={() => setPhase("text")} />
         )}
 
-        {gate.ok && phase === "prep" && support.ok && rec.status !== "error" && !rec.speechAvailable && !serverTranscribes && (
+        {phase === "prep" && support.ok && rec.status !== "error" && !rec.speechAvailable && !serverTranscribes && (
           <div className="banner warn" role="note">
             <AlertTriangle size={18} aria-hidden="true" />
             <span className="grow">Ton navigateur ne transcrit pas la voix. Utilise Chrome ou Edge, ou réponds par écrit.</span>
@@ -225,7 +225,7 @@ export function Exercise() {
         )}
       </div>
 
-      {phase === "prep" && gate.ok && support.ok && rec.status !== "error" && (
+      {phase === "prep" && support.ok && rec.status !== "error" && (
         <button className="btn btn-ghost btn-block btn-wrap" onClick={() => setPhase("text")}><Keyboard size={16} />Pas de micro ? Réponds par écrit</button>
       )}
     </div>
@@ -364,7 +364,6 @@ function Waveform({ analyser, paused }: { analyser: RefObject<AnalyserNode | nul
     const gap = 4 * dpr;
     const bw = (w - gap * (bars - 1)) / bars;
     for (let i = 0; i < bars; i++) {
-      // Mirror around the centre for a calm, symmetric shape.
       const idx = Math.floor((Math.abs(i - bars / 2) / (bars / 2)) * 90) + 2;
       const v = data[idx] / 255;
       const bh = Math.max(3 * dpr, v * h * 0.95);

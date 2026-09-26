@@ -1,8 +1,14 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, AudioLines, Award, Briefcase, Check, CircleAlert, Compass, Eraser, Flame, Info,
-  Layers, Mic, Presentation, Rocket, Scale, Sparkles, Target, Timer, TrendingUp, Trophy, Users,
+  AlertTriangle, ArrowLeft, AudioLines, Award, Baby, Ban, BookMarked, BookOpen, BrainCircuit, Briefcase,
+  CalendarCheck, Check, CheckCircle2, CircleAlert, ClipboardCheck, Coffee, Compass, Cpu, Dices, Drama,
+  Eraser, Eye, FileText, Flame, FlaskConical, Frown, Gamepad2, Gauge, Gavel, GraduationCap, Globe,
+  Handshake, HelpCircle, Hourglass, Info, Landmark, Layers, ListTree, Mic, MessageCircle,
+  MessageCircleQuestion, MessageSquareText, MessageSquareWarning, Moon, Palette, Presentation, Puzzle,
+  RefreshCcw, Repeat, Rocket, Scale, ShieldAlert, ShieldCheck, ShoppingCart, Shuffle, Sparkles, SpellCheck,
+  Sunrise, Swords, Target, Timer, TrendingDown, TrendingUp, Trophy, Type, UserPlus, Users, VolumeX, Wallet,
+  Wand2, Zap,
   type LucideIcon,
 } from "lucide-react";
 import { DIMENSION_LABELS, type Dimension } from "@eloquence/core";
@@ -12,6 +18,12 @@ import { useStore } from "../lib/store";
 export const ICONS: Record<string, LucideIcon> = {
   Sparkles, Briefcase, Rocket, Presentation, Scale, Users, AudioLines,
   Mic, Layers, Award, Timer, Flame, Trophy, Eraser, Target, TrendingUp, Compass,
+  Dices, Zap, Hourglass, Ban, VolumeX, Gauge, Shuffle, Wand2, Baby, GraduationCap, Swords, ShieldAlert,
+  RefreshCcw, HelpCircle, Puzzle, MessageSquareWarning, FileText, Repeat, SpellCheck, Type, ListTree,
+  MessageCircleQuestion, Landmark, BrainCircuit, Globe, Cpu, FlaskConical, Palette, Coffee, MessageCircle,
+  MessageSquareText, TrendingDown, Gamepad2, Drama, ClipboardCheck, CalendarCheck, CheckCircle2, Sunrise,
+  Moon, Eye, BookOpen, BookMarked, Handshake, ShieldCheck, Frown, Wallet, ShoppingCart, Gavel, UserPlus,
+  AlertTriangle,
 };
 
 export function Icon({ name, size = 20 }: { name: string; size?: number }) {

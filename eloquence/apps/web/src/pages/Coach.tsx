@@ -1,46 +1,54 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowUp, Mic, RotateCcw, Sparkles } from "lucide-react";
-import { COACH_SUGGESTIONS, FREE_DAILY_COACH_MESSAGES, dayKey, isPremium } from "@eloquence/core";
+import { COACH_SUGGESTIONS, getSimulation } from "@eloquence/core";
 import { useAccount } from "../lib/store";
-import { ApiError } from "../lib/http";
 
 export function Coach() {
-  const { account, server, mode, sendCoach, clearCoach, openPaywall, toast } = useAccount();
+  const { account, server, mode, sendCoach, clearCoach, toast } = useAccount();
+  const [params, setParams] = useSearchParams();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messages = account.coach;
-  const premium = isPremium(account.user);
-  const usedToday = messages.filter((m) => m.role === "user" && dayKey(m.createdAt) === dayKey(new Date())).length;
   const aiPowered = mode === "account" && server?.llm === "anthropic";
+  const startedRef = useRef(false);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [messages.length, busy]);
 
   const send = async (value: string) => {
     const t = value.trim();
     if (!t || busy) return;
-    if (!premium && usedToday >= FREE_DAILY_COACH_MESSAGES) { openPaywall("coach_limit"); return; }
     setBusy(true);
     setText("");
     try {
       await sendCoach(t);
     } catch (e) {
       setText(t);
-      if (e instanceof ApiError && e.status === 402) openPaywall("coach_limit");
-      else toast((e as Error).message, "error");
+      toast((e as Error).message, "error");
     } finally {
       setBusy(false);
       inputRef.current?.focus();
     }
   };
 
+  useEffect(() => {
+    const simId = params.get("start");
+    if (simId && !startedRef.current) {
+      startedRef.current = true;
+      const sim = getSimulation(simId);
+      if (sim) void send(`Fais-moi une simulation : ${sim.title.toLowerCase()}.`);
+      setParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
+
   return (
     <div className="page" style={{ paddingBottom: "calc(var(--nav-h) + var(--safe-b) + 110px)" }}>
       <header className="row-between">
         <div>
-          <h1 className="page-title">Coach IA</h1>
+          <h1 className="page-title">Coach</h1>
           <p className="page-sub">{aiPowered ? "Personnalisé avec tes résultats" : "Des conseils précis, basés sur tes sessions"}</p>
         </div>
         {messages.length > 0 && (
@@ -57,7 +65,7 @@ export function Coach() {
             <span className="avatar" style={{ width: 44, height: 44 }}><Sparkles size={20} /></span>
             <div>
               <div className="strong">Bonjour {account.user.firstName}.</div>
-              <div className="small muted">Pose-moi une question sur ta prise de parole, demande un exercice ou une simulation d'entretien.</div>
+              <div className="small muted">Pose-moi une question sur ta prise de parole, demande un exercice ou une simulation. Aucune limite de messages.</div>
             </div>
           </div>
           <div className="stack" style={{ gap: 8 }}>
@@ -99,11 +107,6 @@ export function Coach() {
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(text); } }} />
           <button className="send" disabled={!text.trim() || busy} aria-label="Envoyer"><ArrowUp size={20} /></button>
         </form>
-        {!premium && (
-          <p className="tiny faint center" style={{ marginTop: 6 }}>
-            {Math.max(0, FREE_DAILY_COACH_MESSAGES - usedToday)} message{FREE_DAILY_COACH_MESSAGES - usedToday > 1 ? "s" : ""} gratuit{FREE_DAILY_COACH_MESSAGES - usedToday > 1 ? "s" : ""} aujourd'hui
-          </p>
-        )}
       </div>
     </div>
   );

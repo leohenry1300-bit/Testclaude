@@ -1,24 +1,25 @@
 import { useMemo } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { Award, ChevronRight, Cloud, Home as HomeIcon, Lock, Sparkles, Trash2, TrendingDown, TrendingUp, Zap } from "lucide-react";
-import {
-  DIMENSION_LABELS, DIMENSIONS, FREE_HISTORY_DAYS, compareAttempts, getBadge, isPremium,
-  type Comparison, type SessionResult as Result,
-} from "@eloquence/core";
+import { ChevronRight, Cloud, Home as HomeIcon, Sparkles, Trash2, TrendingDown, TrendingUp, Zap } from "lucide-react";
+import { DIMENSION_LABELS, DIMENSIONS, buildGameActivity, compareAttempts, getBadge, getExercise, getGame, type Comparison, type SessionResult as Result } from "@eloquence/core";
 import { useAccount } from "../lib/store";
+import { useLaunchActivity } from "../lib/launch";
 import { longDay, signed } from "../lib/format";
 import { EmptyState, Icon, ScoreRing, TopBar } from "../components/ui";
 import { CompareBars } from "../components/charts";
-import { AdvancedMetrics, AudioPlayer, CoachFeedback, IssueList, ScoresCard, Transcript } from "../components/analysis";
+import {
+  AdvancedMetrics, AudioPlayer, CoachFeedback, ConstraintBanner, ImproveAnswer, IssueList, ModelAnswer,
+  ScoresCard, Transcript,
+} from "../components/analysis";
 
 export function SessionResult() {
   const { id = "" } = useParams();
   const location = useLocation() as { state?: { result?: Result; onboarding?: boolean } };
-  const { account, mode, openPaywall, deleteSession, toast } = useAccount();
+  const { account, deleteSession, toast } = useAccount();
+  const launch = useLaunchActivity();
   const nav = useNavigate();
   const fresh = location.state?.result?.session.id === id ? location.state.result : undefined;
   const session = account.sessions.find((s) => s.id === id) ?? fresh?.session;
-  const premium = isPremium(account.user);
 
   const comparison: Comparison | null = useMemo(() => {
     if (fresh) return fresh.comparison;
@@ -41,12 +42,15 @@ export function SessionResult() {
   }
 
   const a = session.analysis;
-  const ageDays = (Date.now() - new Date(session.createdAt).getTime()) / 86_400_000;
-  const historyLocked = !premium && ageDays > FREE_HISTORY_DAYS && mode !== "demo";
-  const retry = () => nav(`/exercice/${session.exerciseId}`);
+  const catalogExercise = getExercise(session.exerciseId);
+  const retry = () => {
+    if (catalogExercise) launch(catalogExercise, { source: session.source });
+    else toast("Cet exercice a été généré au tirage : relance-le depuis Jeux, Sujets ou Simulations pour un nouveau tirage.", "info");
+  };
   const topIssues = a.issues.filter((i) => i.kind === "filler" || i.kind === "repetition").slice(0, 2);
   const deltas = comparison?.dimensions;
   const xpTotal = fresh?.xp.reduce((n, l) => n + l.xp, 0) ?? 0;
+  const recurring = fresh?.recurringChallenge;
 
   const remove = async () => {
     if (!window.confirm("Supprimer cette session et son enregistrement ? Cette action est définitive.")) return;
@@ -79,6 +83,10 @@ export function SessionResult() {
         )}
       </section>
 
+      {a.constraintResult && (
+        <div style={{ marginTop: -4 }}><ConstraintBanner analysis={a} /></div>
+      )}
+
       {fresh && (xpTotal > 0 || fresh.newBadges.length > 0) && (
         <section className="card celebrate" aria-labelledby="xp-title">
           <div className="row-between">
@@ -100,6 +108,40 @@ export function SessionResult() {
         </section>
       )}
 
+      {fresh && recurring && (
+        <section className="card" style={{ background: "var(--warning-soft)", boxShadow: "none" }}>
+          <div className="row" style={{ alignItems: "flex-start" }}>
+            <span style={{ fontSize: 20 }}>🔁</span>
+            <div className="stack" style={{ gap: 8 }}>
+              <strong>{recurring.label} revient souvent</strong>
+              <span className="small">Détecté sur {recurring.sessionsAffected} de tes dernières sessions. Un défi ciblé peut le faire disparaître en quelques jours.</span>
+              <button className="btn btn-sm btn-primary" style={{ alignSelf: "flex-start" }}
+                onClick={() => { const g = getGame(recurring.suggestedGameId); if (g) { const built = buildGameActivity(g); launch(built.exercise, { source: "jeu", constraint: built.constraint }); } }}>
+                Relever le défi
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {account.user.email === null && !account.user.isDemo && (
+        <section className="card" style={{ background: "var(--primary-soft)", boxShadow: "none" }} aria-labelledby="save-title">
+          <div className="row" style={{ alignItems: "flex-start" }}>
+            <Cloud size={22} color="var(--primary-ink)" style={{ flexShrink: 0, marginTop: 2 }} />
+            <div className="stack" style={{ gap: 10 }}>
+              <h2 id="save-title" style={{ fontSize: 17 }}>Sauvegarde ta progression</h2>
+              <p className="small muted">Crée ton compte gratuit pour retrouver tes sessions, ton score et ta série sur tous tes appareils.</p>
+              <div className="row" style={{ flexWrap: "wrap" }}>
+                <Link to="/inscription" className="btn btn-primary btn-sm">Créer mon compte</Link>
+                {fresh && <Link to="/" className="btn btn-ghost btn-sm">Continuer sans compte</Link>}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <ScoresCard analysis={a} deltas={deltas} />
+
       {comparison && (
         <section className="card" aria-labelledby="cmp-title">
           <h2 id="cmp-title" style={{ fontSize: 18 }}>Avant / après</h2>
@@ -120,55 +162,30 @@ export function SessionResult() {
         </section>
       )}
 
-      {mode === "guest" && (
-        <section className="card" style={{ background: "var(--primary-soft)", boxShadow: "none" }} aria-labelledby="save-title">
-          <div className="row" style={{ alignItems: "flex-start" }}>
-            <Cloud size={22} color="var(--primary-ink)" style={{ flexShrink: 0, marginTop: 2 }} />
-            <div className="stack" style={{ gap: 10 }}>
-              <h2 id="save-title" style={{ fontSize: 17 }}>Sauvegarde ta progression</h2>
-              <p className="small muted">Crée ton compte gratuit pour retrouver tes sessions, ton score et ta série sur tous tes appareils.</p>
-              <div className="row" style={{ flexWrap: "wrap" }}>
-                <Link to="/inscription" className="btn btn-primary btn-sm">Créer mon compte</Link>
-                {fresh && <Link to="/" className="btn btn-ghost btn-sm">Continuer sans compte</Link>}
-              </div>
-            </div>
+      <section className="card" aria-labelledby="tr-title">
+        <h2 id="tr-title" style={{ fontSize: 18, marginBottom: 14 }}>Ta réponse</h2>
+        <Transcript analysis={a} />
+        {topIssues.length > 0 && (
+          <div className="card soft tight" style={{ marginTop: 18 }}>
+            <div className="section-title" style={{ marginBottom: 2 }}>À améliorer</div>
+            <IssueList issues={topIssues} />
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
-      {historyLocked ? (
-        <section className="card center stack" style={{ alignItems: "center" }}>
-          <Lock size={22} className="faint" />
-          <p className="muted">Les sessions de plus de {FREE_HISTORY_DAYS} jours sont réservées à Premium.</p>
-          <button className="btn btn-primary" onClick={() => openPaywall("history")}>Débloquer l'historique complet</button>
-        </section>
-      ) : (
-        <>
-          <ScoresCard analysis={a} deltas={deltas} />
+      <AudioPlayer session={session} />
 
-          <section className="card" aria-labelledby="tr-title">
-            <h2 id="tr-title" style={{ fontSize: 18, marginBottom: 14 }}>Ta réponse</h2>
-            <Transcript analysis={a} />
-            {topIssues.length > 0 && (
-              <div className="card soft tight" style={{ marginTop: 18 }}>
-                <div className="section-title" style={{ marginBottom: 2 }}>À améliorer</div>
-                <IssueList issues={topIssues} />
-              </div>
-            )}
-          </section>
+      <CoachFeedback analysis={a} onRetry={retry} />
 
-          <AudioPlayer session={session} />
+      <ImproveAnswer session={session} />
+      <ModelAnswer session={session} />
 
-          <CoachFeedback analysis={a} onRetry={retry} />
-
-          <AdvancedMetrics analysis={a} locked={!premium} onUnlock={() => openPaywall("advanced")} />
-        </>
-      )}
+      <AdvancedMetrics analysis={a} />
 
       <div className="stack">
         {fresh && (
           <Link to="/progression" className="list-item card" style={{ padding: "14px 16px" }}>
-            <span className="li-icon"><Award size={18} /></span>
+            <span className="li-icon"><Icon name="Trophy" size={18} /></span>
             <span className="grow li-title">Voir ma progression</span>
             <ChevronRight size={18} className="faint" />
           </Link>

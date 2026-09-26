@@ -1,22 +1,35 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarCheck, ChevronRight, Clock, Flame, Mic, Sparkles, Target, Timer, TrendingUp } from "lucide-react";
+import { CalendarCheck, ChevronRight, Clock, ClipboardCheck, Flame, Mic, Repeat, Sparkles, Target, Timer, TrendingUp } from "lucide-react";
 import {
-  DIMENSION_POSSESSIVE, FREE_DAILY_EXERCISES, dailyExercise, getCategory, isPremium, nextProgramDay,
-  weakestDimension, formatDuration,
+  DIMENSION_POSSESSIVE, dailyExercise, getCategory, getGame, nextProgramDay, weakestDimension,
+  buildQuickSession, buildGameActivity, getExercise, formatDuration, type WeeklyGoals,
 } from "@eloquence/core";
 import { useAccount } from "../lib/store";
+import { useLaunchActivity } from "../lib/launch";
 import { greeting, relativeDay, spokenTime } from "../lib/format";
 import { Avatar, DimensionBars, EmptyState, Icon, ScoreRing } from "../components/ui";
 
 export function Home() {
-  const { account, summary, mode } = useAccount();
+  const { account, summary, weeklyGoals } = useAccount();
   const { user, sessions, program } = account;
+  const launch = useLaunchActivity();
   const weak = weakestDimension(summary.current);
   const today = dailyExercise(new Date(), weak);
   const programDay = nextProgramDay(program);
-  const premium = isPremium(user);
   const doneToday = summary.todayCount > 0;
-  const remaining = Math.max(0, FREE_DAILY_EXERCISES - summary.todayCount);
+  const recurring = summary.recurringIssue;
+  const [weekly, setWeekly] = useState<WeeklyGoals | null>(null);
+
+  useEffect(() => { void weeklyGoals().then(setWeekly).catch(() => setWeekly(null)); }, [weeklyGoals, sessions.length]);
+
+  const startQuick = (minutes: 5 | 15 | 30) => {
+    const queue = buildQuickSession(minutes, weak, recurring);
+    const first = queue[0];
+    if (!first) return;
+    if (first.kind === "game") { const g = getGame(first.id); if (g) { const built = buildGameActivity(g); launch(built.exercise, { source: "jeu", constraint: built.constraint }); } }
+    else { const ex = getExercise(first.id); if (ex) launch(ex, { source: "catalogue" }); }
+  };
 
   return (
     <div className="page">
@@ -28,18 +41,66 @@ export function Home() {
         <Link to="/profil" aria-label="Mon profil"><Avatar name={user.firstName} src={user.avatar} /></Link>
       </header>
 
+      {!user.diagnosticDone && (
+        <Link to="/diagnostic" className="card card-link" style={{ background: "var(--primary-soft)", boxShadow: "none" }}>
+          <div className="row">
+            <span className="stat-tile" style={{ padding: 0, boxShadow: "none", background: "transparent" }}><span className="icon tone-primary" style={{ width: 44, height: 44, borderRadius: 14 }}><ClipboardCheck size={20} /></span></span>
+            <div className="grow">
+              <div className="strong">Fais ton diagnostic complet</div>
+              <div className="small muted">8 tests courts pour un bilan précis de ton niveau de départ</div>
+            </div>
+            <ChevronRight size={20} className="faint" />
+          </div>
+        </Link>
+      )}
+
       <section className="hero-card" aria-labelledby="today-title">
         <div className="row-between">
           <span className="eyebrow">Session du jour</span>
           <span className="pill glass"><Icon name={getCategory(today.category).icon} size={13} />{getCategory(today.category).title}</span>
         </div>
-        <h2 id="today-title">« {today.prompt === "Défends ou contredis cette position." ? today.stance : today.prompt} »</h2>
+        <h2 id="today-title">« {today.stance ?? today.prompt} »</h2>
         <div className="meta">
           <span><Clock size={15} aria-hidden="true" />{formatDuration(today.durationSec)}</span>
           {weak && today.focus === weak && <span><Target size={15} aria-hidden="true" />Cible {DIMENSION_POSSESSIVE[weak]}</span>}
         </div>
-        <Link to={`/exercice/${today.id}`} className="btn btn-light btn-lg btn-block"><Mic size={18} />Commencer</Link>
+        <button className="btn btn-light btn-lg btn-block" onClick={() => launch(today, { source: "catalogue" })}><Mic size={18} />Commencer</button>
       </section>
+
+      <div className="grid-3">
+        {([5, 15, 30] as const).map((m) => (
+          <button key={m} className="stat-tile" style={{ cursor: "pointer", textAlign: "left" }} onClick={() => startQuick(m)}>
+            <span className="icon tone-primary"><Timer size={18} /></span>
+            <div className="stat"><span className="v">{m} min</span><span className="l">Session rapide</span></div>
+          </button>
+        ))}
+      </div>
+
+      {recurring && (
+        <button className="card card-link" style={{ width: "100%", textAlign: "left", border: 0, background: "var(--warning-soft)", boxShadow: "none" }}
+          onClick={() => { const g = getGame(recurring.suggestedGameId); if (g) { const built = buildGameActivity(g); launch(built.exercise, { source: "jeu", constraint: built.constraint }); } }}>
+          <div className="row">
+            <Repeat size={20} />
+            <div className="grow"><div className="strong">{recurring.label} revient souvent</div><div className="small muted">Sur {recurring.sessionsAffected} sessions récentes — un défi ciblé peut le faire disparaître</div></div>
+            <ChevronRight size={20} className="faint" />
+          </div>
+        </button>
+      )}
+
+      {weekly && (
+        <section className="card" aria-labelledby="weekly-title">
+          <div className="row-between" style={{ marginBottom: 12 }}>
+            <h2 id="weekly-title" style={{ fontSize: 18 }}>Cette semaine</h2>
+            {weekly.recap && <span className={`pill ${weekly.recap.scoreDelta >= 0 ? "success" : "warning"}`}>{weekly.recap.scoreDelta >= 0 ? "+" : ""}{weekly.recap.scoreDelta} pts</span>}
+          </div>
+          <div className="stack" style={{ gap: 10 }}>
+            <div className="row"><Target size={16} className="faint" /><span className="small"><strong>Objectif principal :</strong> {weekly.principal.label}</span></div>
+            {weekly.secondary && <div className="row"><Target size={16} className="faint" /><span className="small"><strong>Objectif secondaire :</strong> {weekly.secondary.label}</span></div>}
+            <div className="row"><Sparkles size={16} className="faint" /><span className="small"><strong>Culturel :</strong> {weekly.culturel.done}/{weekly.culturel.target} nouveaux sujets</span></div>
+          </div>
+          {weekly.recap && <p className="small muted" style={{ marginTop: 10 }}>{weekly.recap.message}</p>}
+        </section>
+      )}
 
       <div className="grid-2">
         <div className="stat-tile">
@@ -51,10 +112,6 @@ export function Home() {
           <div className="stat"><span className="v">{spokenTime(summary.weekSec)}</span><span className="l">Cette semaine</span></div>
         </div>
       </div>
-
-      {!premium && mode !== "demo" && (
-        <p className="small muted center">{remaining > 0 ? `${remaining} exercice${remaining > 1 ? "s" : ""} gratuit${remaining > 1 ? "s" : ""} restant${remaining > 1 ? "s" : ""} aujourd'hui` : "Exercices gratuits du jour terminés. À demain !"}</p>
-      )}
 
       {programDay && program && (
         <Link to="/programme" className="card card-link">
@@ -89,11 +146,11 @@ export function Home() {
                 )}
               </div>
             </div>
-            <DimensionBars scores={summary.current} />
+            <DimensionBars scores={summary.current} dims={["clarte", "fluidite", "structure", "argumentation", "vocabulaire", "parasites"]} />
           </div>
         ) : (
           <EmptyState icon={<Sparkles size={24} />} title="Ton tableau de bord t'attend"
-            action={<Link to={`/exercice/${today.id}`} className="btn btn-primary">Faire ma première session</Link>}>
+            action={<button className="btn btn-primary" onClick={() => launch(today, { source: "catalogue" })}>Faire ma première session</button>}>
             Après ta première session, tu verras ici tes scores de clarté, fluidité, confiance et plus encore.
           </EmptyState>
         )}
