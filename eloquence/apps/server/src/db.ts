@@ -1,11 +1,13 @@
 import { DatabaseSync } from "node:sqlite";
 import type {
-  AccountState, CoachMessage, EarnedBadge, Program, Session, User, UserSettings,
+  AccountState, CoachMessage, DiagnosticReport, EarnedBadge, Program, Session, User, UserSettings,
 } from "@eloquence/core";
 import { DEFAULT_SETTINGS, DIMENSIONS, summarize, scoreSeries } from "@eloquence/core";
 
 // Persistence layer. SQLite (built into Node) keeps the project dependency-free;
 // every query lives here so swapping to Postgres only touches this file.
+// This is a personal, single-user app: there is no plan/premium column
+// anywhere in this schema, on purpose.
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS users (
@@ -15,12 +17,12 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT,
   google_sub TEXT UNIQUE,
   avatar TEXT,
-  goal TEXT NOT NULL,
+  goals TEXT NOT NULL,
   goal_text TEXT,
   level TEXT NOT NULL,
   frequency TEXT NOT NULL,
-  plan TEXT NOT NULL DEFAULT 'free',
-  premium_until TEXT,
+  diagnostic_done INTEGER NOT NULL DEFAULT 0,
+  model_answer_seen INTEGER NOT NULL DEFAULT 0,
   settings TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
@@ -30,6 +32,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   exercise_id TEXT NOT NULL,
   exercise_title TEXT NOT NULL,
   category TEXT NOT NULL,
+  source TEXT NOT NULL DEFAULT 'catalogue',
   created_at TEXT NOT NULL,
   duration_sec INTEGER NOT NULL,
   audio_key TEXT,
@@ -48,6 +51,10 @@ CREATE TABLE IF NOT EXISTS analyses (
   vocabulaire INTEGER NOT NULL,
   debit INTEGER NOT NULL,
   parasites INTEGER NOT NULL,
+  argumentation INTEGER NOT NULL DEFAULT 0,
+  grammaire INTEGER NOT NULL DEFAULT 0,
+  persuasion INTEGER NOT NULL DEFAULT 0,
+  concision INTEGER NOT NULL DEFAULT 0,
   feedback TEXT NOT NULL,
   engine TEXT NOT NULL,
   details TEXT NOT NULL
@@ -71,6 +78,16 @@ CREATE TABLE IF NOT EXISTS badges (
 CREATE TABLE IF NOT EXISTS programs (
   user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   data TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS diagnostics (
+  user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  data TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS library_reads (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  lesson_id TEXT NOT NULL,
+  read_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, lesson_id)
 );
 CREATE TABLE IF NOT EXISTS coach_messages (
   id TEXT PRIMARY KEY,
@@ -128,26 +145,25 @@ export class Store {
       firstName: r.first_name as string,
       email: (r.email as string) ?? null,
       avatar: (r.avatar as string) ?? null,
-      goal: r.goal as User["goal"],
+      goals: JSON.parse(r.goals as string) as User["goals"],
       goalText: (r.goal_text as string) ?? null,
       level: r.level as User["level"],
       frequency: r.frequency as User["frequency"],
-      plan: r.plan as User["plan"],
-      premiumUntil: (r.premium_until as string) ?? null,
       createdAt: r.created_at as string,
+      diagnosticDone: !!r.diagnostic_done,
       settings: { ...DEFAULT_SETTINGS, ...(JSON.parse(r.settings as string) as Partial<UserSettings>) },
       passwordHash: (r.password_hash as string) ?? null,
       googleSub: (r.google_sub as string) ?? null,
     };
   }
 
-  createUser(u: UserRecord): UserRecord {
-    this.db.prepare(`INSERT INTO users (id, first_name, email, password_hash, google_sub, avatar, goal, goal_text, level, frequency, plan, premium_until, settings, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      u.id, u.firstName, u.email, u.passwordHash, u.googleSub, u.avatar, u.goal, u.goalText,
-      u.level, u.frequency, u.plan, u.premiumUntil, JSON.stringify(u.settings), u.createdAt,
+  createUser(u: Omit<UserRecord, "diagnosticDone"> & { diagnosticDone?: boolean }): UserRecord {
+    this.db.prepare(`INSERT INTO users (id, first_name, email, password_hash, google_sub, avatar, goals, goal_text, level, frequency, settings, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      u.id, u.firstName, u.email, u.passwordHash, u.googleSub, u.avatar, JSON.stringify(u.goals), u.goalText,
+      u.level, u.frequency, JSON.stringify(u.settings), u.createdAt,
     );
-    return u;
+    return this.userById(u.id)!;
   }
 
   userById(id: string): UserRecord | null {
@@ -169,11 +185,20 @@ export class Store {
     const cur = this.userById(id);
     if (!cur) throw new Error("user not found");
     const u = { ...cur, ...patch, settings: { ...cur.settings, ...(patch.settings ?? {}) } };
-    this.db.prepare(`UPDATE users SET first_name=?, email=?, password_hash=?, google_sub=?, avatar=?, goal=?, goal_text=?, level=?, frequency=?, plan=?, premium_until=?, settings=? WHERE id=?`).run(
-      u.firstName, u.email, u.passwordHash, u.googleSub, u.avatar, u.goal, u.goalText, u.level,
-      u.frequency, u.plan, u.premiumUntil, JSON.stringify(u.settings), id,
+    this.db.prepare(`UPDATE users SET first_name=?, email=?, password_hash=?, google_sub=?, avatar=?, goals=?, goal_text=?, level=?, frequency=?, diagnostic_done=?, settings=? WHERE id=?`).run(
+      u.firstName, u.email, u.passwordHash, u.googleSub, u.avatar, JSON.stringify(u.goals), u.goalText, u.level,
+      u.frequency, u.diagnosticDone ? 1 : 0, JSON.stringify(u.settings), id,
     );
     return u;
+  }
+
+  markModelAnswerSeen(id: string) {
+    this.db.prepare("UPDATE users SET model_answer_seen = 1 WHERE id = ?").run(id);
+  }
+
+  modelAnswerSeen(id: string): boolean {
+    const r = this.db.prepare("SELECT model_answer_seen FROM users WHERE id = ?").get(id) as Row | undefined;
+    return !!r?.model_answer_seen;
   }
 
   deleteUser(id: string) {
@@ -191,6 +216,7 @@ export class Store {
       exerciseId: r.exercise_id as string,
       exerciseTitle: r.exercise_title as string,
       category: r.category as Session["category"],
+      source: (r.source as Session["source"]) ?? "catalogue",
       createdAt: r.created_at as string,
       durationSec: r.duration_sec as number,
       audioUrl: null,
@@ -208,15 +234,28 @@ export class Store {
     return r ? { userId: r.user_id as string, audioKey: (r.audio_key as string) ?? null } : null;
   }
 
+  session(id: string): (Session & { audioKey: string | null }) | null {
+    const r = this.db.prepare(`SELECT s.*, a.details FROM sessions s JOIN analyses a ON a.session_id = s.id WHERE s.id = ?`).get(id) as Row | undefined;
+    if (!r) return null;
+    return {
+      id: r.id as string, userId: r.user_id as string, exerciseId: r.exercise_id as string,
+      exerciseTitle: r.exercise_title as string, category: r.category as Session["category"],
+      source: (r.source as Session["source"]) ?? "catalogue", createdAt: r.created_at as string,
+      durationSec: r.duration_sec as number, audioUrl: null, audioKey: (r.audio_key as string) ?? null,
+      transcript: r.transcript as string, score: r.score as number, xpEarned: r.xp_earned as number,
+      attempt: r.attempt as number, analysis: JSON.parse(r.details as string),
+    };
+  }
+
   insertSession(s: Session, audioKey: string | null) {
     const a = s.analysis;
-    this.db.prepare(`INSERT INTO sessions (id, user_id, exercise_id, exercise_title, category, created_at, duration_sec, audio_key, transcript, score, xp_earned, attempt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      s.id, s.userId, s.exerciseId, s.exerciseTitle, s.category, s.createdAt, s.durationSec,
+    this.db.prepare(`INSERT INTO sessions (id, user_id, exercise_id, exercise_title, category, source, created_at, duration_sec, audio_key, transcript, score, xp_earned, attempt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      s.id, s.userId, s.exerciseId, s.exerciseTitle, s.category, s.source, s.createdAt, s.durationSec,
       audioKey, s.transcript, s.score, s.xpEarned, s.attempt,
     );
-    this.db.prepare(`INSERT INTO analyses (session_id, clarte, fluidite, confiance, structure, vocabulaire, debit, parasites, feedback, engine, details)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    this.db.prepare(`INSERT INTO analyses (session_id, clarte, fluidite, confiance, structure, vocabulaire, debit, parasites, argumentation, grammaire, persuasion, concision, feedback, engine, details)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
       s.id, ...DIMENSIONS.map((d) => a.scores[d]), JSON.stringify(a.feedback), a.engine, JSON.stringify(a),
     );
   }
@@ -227,6 +266,11 @@ export class Store {
 
   countToday(userId: string, since: string): number {
     const r = this.db.prepare("SELECT COUNT(*) AS n FROM sessions WHERE user_id = ? AND created_at >= ?").get(userId, since) as Row;
+    return r.n as number;
+  }
+
+  distinctGameTitles(userId: string): number {
+    const r = this.db.prepare("SELECT COUNT(DISTINCT exercise_title) AS n FROM sessions WHERE user_id = ? AND source = 'jeu'").get(userId) as Row;
     return r.n as number;
   }
 
@@ -244,7 +288,7 @@ export class Store {
     );
   }
 
-  // ---- Badges, program, coach -------------------------------------------
+  // ---- Badges, program, diagnostic, library, coach -----------------------
 
   badges(userId: string): EarnedBadge[] {
     return (this.db.prepare("SELECT badge_id, earned_at FROM badges WHERE user_id = ? ORDER BY earned_at").all(userId) as Row[])
@@ -267,6 +311,30 @@ export class Store {
       .run(userId, JSON.stringify(p));
   }
 
+  diagnostic(userId: string): DiagnosticReport | null {
+    const r = this.db.prepare("SELECT data FROM diagnostics WHERE user_id = ?").get(userId) as Row | undefined;
+    return r ? JSON.parse(r.data as string) : null;
+  }
+
+  saveDiagnostic(userId: string, report: DiagnosticReport) {
+    this.db.prepare("INSERT INTO diagnostics (user_id, data) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET data = excluded.data")
+      .run(userId, JSON.stringify(report));
+  }
+
+  markLibraryRead(userId: string, lessonId: string) {
+    this.db.prepare("INSERT OR IGNORE INTO library_reads (user_id, lesson_id, read_at) VALUES (?, ?, ?)")
+      .run(userId, lessonId, new Date().toISOString());
+  }
+
+  libraryReadCount(userId: string): number {
+    const r = this.db.prepare("SELECT COUNT(*) AS n FROM library_reads WHERE user_id = ?").get(userId) as Row;
+    return r.n as number;
+  }
+
+  libraryReadIds(userId: string): string[] {
+    return (this.db.prepare("SELECT lesson_id FROM library_reads WHERE user_id = ?").all(userId) as Row[]).map((r) => r.lesson_id as string);
+  }
+
   coach(userId: string, limit = 200): CoachMessage[] {
     const rows = this.db.prepare("SELECT * FROM coach_messages WHERE user_id = ? ORDER BY created_at DESC, rowid DESC LIMIT ?").all(userId, limit) as Row[];
     return rows.reverse().map((r) => ({
@@ -278,6 +346,15 @@ export class Store {
     }));
   }
 
+  distinctCompletedSimulations(userId: string): number {
+    const msgs = this.coach(userId, 2000);
+    const done = new Set<string>();
+    for (const m of msgs) {
+      if (m.interview?.simulationId && m.interview.step >= m.interview.total) done.add(m.interview.simulationId);
+    }
+    return done.size;
+  }
+
   addCoach(userId: string, m: CoachMessage) {
     const { id, role, text, createdAt, ...meta } = m;
     this.db.prepare("INSERT INTO coach_messages (id, user_id, role, text, meta, created_at) VALUES (?, ?, ?, ?, ?, ?)")
@@ -286,11 +363,6 @@ export class Store {
 
   clearCoach(userId: string) {
     this.db.prepare("DELETE FROM coach_messages WHERE user_id = ?").run(userId);
-  }
-
-  countCoachSince(userId: string, since: string): number {
-    const r = this.db.prepare("SELECT COUNT(*) AS n FROM coach_messages WHERE user_id = ? AND role = 'user' AND created_at >= ?").get(userId, since) as Row;
-    return r.n as number;
   }
 
   // ---- Password resets ----------------------------------------------------
@@ -309,7 +381,7 @@ export class Store {
 
   // ---- Bulk import (guest → account) ------------------------------------
 
-  importState(userId: string, state: Partial<Pick<AccountState, "sessions" | "coach" | "program" | "badges">>) {
+  importState(userId: string, state: Partial<Pick<AccountState, "sessions" | "coach" | "program" | "badges" | "diagnostic">>) {
     this.tx(() => {
       for (const s of state.sessions ?? []) {
         this.insertSession({ ...s, id: `${s.id}_${userId.slice(-6)}`, userId, audioUrl: null }, null);
@@ -317,6 +389,7 @@ export class Store {
       for (const m of state.coach ?? []) this.addCoach(userId, { ...m, id: `${m.id}_${userId.slice(-6)}` });
       if (state.program) this.saveProgram(userId, state.program);
       if (state.badges) this.addBadges(userId, state.badges);
+      if (state.diagnostic) { this.saveDiagnostic(userId, state.diagnostic); this.updateUser(userId, { diagnosticDone: true }); }
     });
     this.refreshProgress(userId);
   }

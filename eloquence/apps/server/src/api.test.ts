@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
+import { getExercise, getGame, buildGameActivity } from "@eloquence/core";
 import { createApp } from "./app";
 import { loadConfig } from "./config";
 import { Store } from "./db";
@@ -30,10 +31,18 @@ async function api(method: string, url: string, body?: unknown, auth = true) {
   return { status: res.status, body: (await res.json()) as any };
 }
 
-function sessionForm(exerciseId: string, transcript: string, withAudio = false) {
+function sessionForm(exerciseId: string, transcript: string, opts: { withAudio?: boolean; source?: string } = {}) {
+  const exercise = getExercise(exerciseId)!;
   const f = new FormData();
-  f.append("meta", JSON.stringify({ exerciseId, capture: { transcript, durationSec: 20, source: "speech" } }));
-  if (withAudio) f.append("audio", new Blob([new Uint8Array([26, 69, 223, 163, 1, 2, 3])], { type: "audio/webm" }), "a.webm");
+  f.append("meta", JSON.stringify({ exercise, source: opts.source ?? "catalogue", capture: { transcript, durationSec: 20, source: "speech" } }));
+  if (opts.withAudio) f.append("audio", new Blob([new Uint8Array([26, 69, 223, 163, 1, 2, 3])], { type: "audio/webm" }), "a.webm");
+  return f;
+}
+
+function gameForm(gameId: string, transcript: string) {
+  const { exercise, constraint } = buildGameActivity(getGame(gameId)!);
+  const f = new FormData();
+  f.append("meta", JSON.stringify({ exercise, constraint, source: "jeu", capture: { transcript, durationSec: 20, source: "speech" } }));
   return f;
 }
 
@@ -59,11 +68,12 @@ afterAll(() => {
 });
 
 describe("API", () => {
-  it("signs up, rejects duplicates and bad logins", async () => {
-    const r = await api("POST", "/api/auth/signup", { firstName: "Alex", email: "Alex@Ex.com", password: "motdepasse", profile: { goal: "entretiens", level: "debutant" } });
+  it("signs up with multiple goals, rejects duplicates and bad logins", async () => {
+    const r = await api("POST", "/api/auth/signup", { firstName: "Alex", email: "Alex@Ex.com", password: "motdepasse", profile: { goals: ["entretiens", "confiance"], level: "debutant" } });
     expect(r.status).toBe(201);
     token = r.body.token;
     expect(r.body.state.user.email).toBe("alex@ex.com");
+    expect(r.body.state.user.goals).toEqual(["entretiens", "confiance"]);
     expect(r.body.state.user.passwordHash).toBeUndefined();
     expect((await api("POST", "/api/auth/signup", { firstName: "A", email: "alex@ex.com", password: "motdepasse" })).status).toBe(409);
     expect((await api("POST", "/api/auth/login", { email: "alex@ex.com", password: "wrong-pass" }, false)).status).toBe(401);
@@ -74,8 +84,8 @@ describe("API", () => {
     expect((await api("GET", "/api/state", undefined, false)).status).toBe(401);
   });
 
-  it("analyses a session, stores audio, then compares a retry", async () => {
-    const first = await api("POST", "/api/sessions", sessionForm("entretien-presentation", MESSY, true));
+  it("analyses a session, stores audio, then compares a retry — no daily or history limits anywhere", async () => {
+    const first = await api("POST", "/api/sessions", sessionForm("entretien-presentation", MESSY, { withAudio: true }));
     expect(first.status).toBe(201);
     expect(first.body.session.analysis.metrics.fillers["du coup"]).toBe(3);
     expect(first.body.comparison).toBeNull();
@@ -90,38 +100,73 @@ describe("API", () => {
     expect(retry.body.comparison.delta).toBeGreaterThan(0);
     expect(retry.body.session.attempt).toBe(2);
 
+    // Run many sessions in a row: nothing gates this in a personal app.
+    for (let i = 0; i < 6; i++) {
+      const r = await api("POST", "/api/sessions", sessionForm("impro-passion", CLEAN));
+      expect(r.status).toBe(201);
+    }
+
     const state = await api("GET", "/api/state");
-    expect(state.body.sessions).toHaveLength(2);
-    expect(state.body.badges.length).toBeGreaterThan(0);
+    expect(state.body.sessions.length).toBeGreaterThanOrEqual(8);
   });
 
-  it("rejects empty transcripts and enforces free limits", async () => {
+  it("rejects empty transcripts but never blocks on volume or a locked exercise", async () => {
     expect((await api("POST", "/api/sessions", sessionForm("impro-passion", "  "))).status).toBe(422);
-    expect((await api("POST", "/api/sessions", sessionForm("entretien-difficulte", CLEAN))).status).toBe(402); // premium exercise
-    expect((await api("POST", "/api/sessions", sessionForm("impro-passion", CLEAN))).status).toBe(201); // 3rd today
-    const blocked = await api("POST", "/api/sessions", sessionForm("impro-metier", CLEAN));
-    expect(blocked.status).toBe(402);
-    expect(blocked.body.error).toBe("daily_limit");
-    // Premium trial lifts the limit.
-    const up = await api("POST", "/api/billing/checkout", { plan: "yearly" });
-    expect(up.body.user.plan).toBe("premium");
     expect((await api("POST", "/api/sessions", sessionForm("entretien-difficulte", CLEAN))).status).toBe(201);
   });
 
-  it("builds a program and ticks days off", async () => {
-    const p = await api("POST", "/api/program", { goalText: "Je veux réussir mon prochain entretien." });
-    expect(p.body.program.days).toHaveLength(14);
-    await api("POST", "/api/sessions", sessionForm("entretien-presentation", CLEAN));
-    const state = await api("GET", "/api/state");
-    expect(state.body.program.days[0].done).toBe(true);
+  it("plays a game with a real, server-verified constraint", async () => {
+    const lose = await api("POST", "/api/sessions", gameForm("g-mot-interdit", "C'est un vrai truc intéressant."));
+    expect(lose.status).toBe(201);
+    expect(lose.body.session.analysis.constraintResult?.passed).toBe(false);
+    expect(lose.body.session.source).toBe("jeu");
   });
 
-  it("chats with the coach and keeps the conversation", async () => {
-    const r = await api("POST", "/api/coach", { text: "Fais-moi passer un entretien d'embauche." });
-    expect(r.body.reply.interview.step).toBe(0);
-    const r2 = await api("POST", "/api/coach", { text: "Je suis étudiant en marketing, du coup voilà." });
-    expect(r2.body.reply.text).toMatch(/Question 2\/4/);
-    expect((await api("GET", "/api/state")).body.coach).toHaveLength(4);
+  it("builds a named template program and a personalised one", async () => {
+    const tpl = await api("POST", "/api/program", { templateId: "tpl-entretien" });
+    expect(tpl.body.program.days).toHaveLength(14);
+    const perso = await api("POST", "/api/program", { goalText: "Je veux réussir mon prochain entretien." });
+    expect(perso.body.program.days.length).toBeGreaterThan(0);
+    const state = await api("GET", "/api/state");
+    expect(state.body.program.title.length).toBeGreaterThan(0);
+  });
+
+  it("runs the diagnostic and stores the report", async () => {
+    const scores = (g: number) => ({ global: g, clarte: g, fluidite: g, confiance: g, structure: g, vocabulaire: g, debit: g, parasites: g, argumentation: g, grammaire: g, persuasion: g, concision: g });
+    const r = await api("POST", "/api/diagnostic", { steps: [
+      { stepId: "presentation", title: "Présentation", sessionId: "s1", scores: scores(72) },
+      { stepId: "culture", title: "Culture", sessionId: "s2", scores: scores(60) },
+    ] });
+    expect(r.status).toBe(201);
+    expect(r.body.diagnostic.averageScores.global).toBe(66);
+    const state = await api("GET", "/api/state");
+    expect(state.body.user.diagnosticDone).toBe(true);
+    expect(state.body.diagnostic.level).toBeDefined();
+  });
+
+  it("chats with the coach, runs a generalised simulation, never limits messages", async () => {
+    for (let i = 0; i < 6; i++) {
+      const r = await api("POST", "/api/coach", { text: `Message ${i}` });
+      expect(r.status).toBe(200);
+    }
+    const r = await api("POST", "/api/coach", { text: "Fais-moi une négociation salariale." });
+    expect(r.body.reply.interview.simulationId).toBe("sim-negociation-salaire");
+  });
+
+  it("gets a weekly plan and marks a library lesson as read", async () => {
+    const w = await api("GET", "/api/weekly");
+    expect(w.body.principal.dimension).toBeDefined();
+    expect((await api("POST", "/api/library/elo-captiver/read")).status).toBe(200);
+  });
+
+  it("offers a heuristic rewrite and a null model answer offline (never fabricated)", async () => {
+    const sessions = await api("GET", "/api/state");
+    const id = sessions.body.sessions[0].id;
+    const rw = await api("POST", `/api/sessions/${id}/rewrite`);
+    expect(rw.body.clair.length).toBeGreaterThan(0);
+    expect(rw.body.persuasif).toBeNull();
+    const ma = await api("POST", `/api/sessions/${id}/model-answer`);
+    expect(ma.body.answer).toBeNull();
   });
 
   it("resets a forgotten password", async () => {

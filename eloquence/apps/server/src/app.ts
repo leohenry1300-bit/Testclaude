@@ -5,11 +5,12 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import {
-  DEFAULT_SETTINGS, FREE_DAILY_COACH_MESSAGES, analyzeSpeech, buildSessionResult,
-  canStartExercise, generateProgram, getExercise, isPremium, markProgramProgress,
+  CATEGORIES, DEFAULT_SETTINGS, DIMENSIONS, analyzeSpeech, buildDiagnosticReport, buildSessionResult,
+  buildTemplateProgram, computeWeeklyGoals, generateProgram, markProgramProgress, programCompleted,
   ruleBasedCoachReply, summarize, uid, weakestDimension,
-  type AccountState, type Session, type User,
+  type AccountState, type DiagnosticStepResult, type Session, type User,
 } from "@eloquence/core";
+import type { Exercise } from "@eloquence/core";
 import type { Config } from "./config";
 import { Store, type UserRecord } from "./db";
 import {
@@ -42,8 +43,15 @@ const wrap = (fn: (req: Request, res: Response) => Promise<unknown>) =>
 
 // ---- Validation schemas ----------------------------------------------------
 
+const GoalEnum = z.enum([
+  "aisance", "entretiens", "presentations", "convaincre", "improviser", "concours", "parasites",
+  "vocabulaire", "grammaire", "structure", "debat", "storytelling", "culture", "diction", "commercial", "confiance",
+]);
+const CategoryEnum = z.enum(CATEGORIES.map((c) => c.id) as [string, ...string[]]);
+const DimensionEnum = z.enum(DIMENSIONS as unknown as [string, ...string[]]);
+
 const Profile = z.object({
-  goal: z.enum(["aisance", "entretiens", "presentations", "convaincre", "improviser", "concours"]).optional(),
+  goals: z.array(GoalEnum).min(1).max(16).optional(),
   goalText: z.string().max(300).nullable().optional(),
   level: z.enum(["debutant", "intermediaire", "a_l_aise", "tres_a_l_aise"]).optional(),
   frequency: z.enum(["5", "10", "15", "semaine"]).optional(),
@@ -54,6 +62,7 @@ const ImportState = z.object({
   coach: z.array(z.any()).max(1000).optional(),
   program: z.any().nullable().optional(),
   badges: z.array(z.object({ id: z.string(), earnedAt: z.string() })).max(100).optional(),
+  diagnostic: z.any().nullable().optional(),
 }).optional();
 
 const Signup = z.object({
@@ -73,8 +82,36 @@ const Capture = z.object({
   source: z.enum(["speech", "text", "server-stt"]),
 });
 
+// The full exercise object travels with the submission: games, generated
+// topics, diagnostic steps and library-linked drills are never in the static
+// catalogue, so the server trusts the client's description of the prompt
+// (it only ever affects feedback wording, never scoring — scoring runs on
+// the transcript/audio signals alone).
+const ExerciseIn = z.object({
+  id: z.string().min(1).max(120),
+  category: CategoryEnum,
+  title: z.string().min(1).max(200),
+  prompt: z.string().max(2000),
+  instruction: z.string().max(1000),
+  durationSec: z.number().min(1).max(1800),
+  focus: DimensionEnum,
+  scaffold: z.array(z.string().max(200)).max(10).optional(),
+  readText: z.string().max(4000).optional(),
+  stance: z.string().max(400).optional(),
+});
+
+const ConstraintIn = z.union([
+  z.object({ type: z.literal("forbidden_words"), words: z.array(z.string().max(60)).max(10) }),
+  z.object({ type: z.literal("no_fillers") }),
+  z.object({ type: z.literal("pace_target"), min: z.number(), max: z.number() }),
+  z.object({ type: z.literal("must_include"), words: z.array(z.string().max(60)).max(10) }),
+  z.object({ type: z.literal("no_repeat_word") }),
+]);
+
 const SessionMeta = z.object({
-  exerciseId: z.string(),
+  exercise: ExerciseIn,
+  source: z.enum(["catalogue", "jeu", "sujet", "simulation", "diagnostic", "libre", "programme"]),
+  constraint: ConstraintIn.optional(),
   onboarding: z.boolean().optional(),
   capture: Capture,
 });
@@ -100,12 +137,16 @@ function publicUser(u: UserRecord): User {
   return rest;
 }
 
-/** Start of the user's current day, from the browser's timezone offset. */
-function startOfUserDay(req: Request): string {
-  const offsetMin = Number(req.headers["x-tz-offset"] ?? 0) || 0;
-  const local = new Date(Date.now() - offsetMin * 60_000);
-  local.setUTCHours(0, 0, 0, 0);
-  return new Date(local.getTime() + offsetMin * 60_000).toISOString();
+function badgeContext(store: Store, userId: string) {
+  const program = store.program(userId);
+  return {
+    diagnosticDone: !!store.userById(userId)?.diagnosticDone,
+    programCompleted: programCompleted(program),
+    distinctGames: store.distinctGameTitles(userId),
+    distinctSimulations: store.distinctCompletedSimulations(userId),
+    libraryRead: store.libraryReadCount(userId),
+    modelAnswerSeen: store.modelAnswerSeen(userId),
+  };
 }
 
 export function createApp(deps: Deps) {
@@ -133,6 +174,7 @@ export function createApp(deps: Deps) {
       program: store.program(userId),
       coach: store.coach(userId),
       badges: store.badges(userId),
+      diagnostic: store.diagnostic(userId),
     };
   };
 
@@ -143,12 +185,10 @@ export function createApp(deps: Deps) {
       avatar: null,
       passwordHash: null,
       googleSub: null,
-      goal: profile?.goal ?? "aisance",
+      goals: profile?.goals ?? ["aisance"],
       goalText: profile?.goalText ?? null,
       level: profile?.level ?? "intermediaire",
       frequency: profile?.frequency ?? "10",
-      plan: "free",
-      premiumUntil: null,
       createdAt: new Date().toISOString(),
       settings: { ...DEFAULT_SETTINGS },
       ...base,
@@ -159,13 +199,7 @@ export function createApp(deps: Deps) {
   app.get("/api/health", (_req, res) => { res.json({ ok: true }); });
 
   app.get("/api/config", (_req, res) => {
-    res.json({
-      googleClientId: config.googleClientId,
-      stt: stt.name,
-      llm: llm.name,
-      billing: config.billing.provider,
-      mail: mailer.name,
-    });
+    res.json({ googleClientId: config.googleClientId, stt: stt.name, llm: llm.name, mail: mailer.name });
   });
 
   // ---- Auth -------------------------------------------------------------
@@ -215,10 +249,8 @@ export function createApp(deps: Deps) {
       const url = `${config.publicUrl}/reinitialiser?token=${token}`;
       await mailer.send(user.email!, "Réinitialise ton mot de passe Éloquence",
         `Bonjour ${user.firstName},\n\nPour choisir un nouveau mot de passe, ouvre ce lien (valable 1 heure) :\n${url}\n\nSi tu n'es pas à l'origine de cette demande, ignore simplement cet e-mail.`);
-      // Without a real mail provider, expose the link so the flow stays testable.
       if (mailer.name === "console") devResetUrl = url;
     }
-    // Same answer whether or not the account exists (no e-mail enumeration).
     res.json({ ok: true, devResetUrl });
   }));
 
@@ -233,6 +265,12 @@ export function createApp(deps: Deps) {
   // ---- Account ---------------------------------------------------------
 
   app.get("/api/state", auth, (req, res) => { res.json(stateFor(req.userId!)); });
+
+  app.get("/api/weekly", auth, (req, res) => {
+    const sessions = store.sessions(req.userId!);
+    const summary = summarize(sessions, store.badges(req.userId!));
+    res.json(computeWeeklyGoals(sessions, summary));
+  });
 
   app.patch("/api/me", auth, (req, res) => {
     const body = MePatch.parse(req.body);
@@ -257,13 +295,7 @@ export function createApp(deps: Deps) {
   app.post("/api/sessions", auth, upload.single("audio"), wrap(async (req, res) => {
     const meta = SessionMeta.parse(JSON.parse(String(req.body.meta ?? "{}")));
     const user = store.userById(req.userId!)!;
-    const exercise = getExercise(meta.exerciseId);
-    if (!exercise) throw new HttpError(404, "exercise_not_found", "Exercice introuvable.");
-    const previous = store.sessions(user.id);
-    const gate = canStartExercise(user, exercise, store.countToday(user.id, startOfUserDay(req)), {
-      onboarding: meta.onboarding && previous.length === 0,
-    });
-    if (!gate.ok) throw new HttpError(402, gate.reason, gate.message);
+    const exercise = meta.exercise as unknown as Exercise;
 
     const capture = { ...meta.capture };
     const audio = req.file;
@@ -273,9 +305,7 @@ export function createApp(deps: Deps) {
         if (out && out.transcript) Object.assign(capture, { transcript: out.transcript, segments: out.segments, source: "server-stt" });
       } catch (e) {
         console.error("[stt]", (e as Error).message);
-        if (!capture.transcript.trim()) {
-          throw new HttpError(502, "stt_failed", "La transcription a échoué. Réessaie dans un instant.");
-        }
+        if (!capture.transcript.trim()) throw new HttpError(502, "stt_failed", "La transcription a échoué. Réessaie dans un instant.");
       }
     }
     if (!capture.transcript.trim() && !(capture.segments ?? []).some((s) => s.text.trim())) {
@@ -283,7 +313,7 @@ export function createApp(deps: Deps) {
     }
     if (!capture.transcript.trim()) capture.transcript = (capture.segments ?? []).map((s) => s.text).join(" ");
 
-    const analysis = analyzeSpeech(capture, { exercise });
+    const analysis = analyzeSpeech(capture, { exercise, constraint: meta.constraint });
     if (analysis.metrics.wordCount >= 8) {
       try {
         const fb = await llm.feedback({ analysis, transcript: capture.transcript, exercise, firstName: user.firstName });
@@ -300,9 +330,11 @@ export function createApp(deps: Deps) {
       await storage.put(audioKey, audio.buffer, audio.mimetype);
     }
 
+    const previous = store.sessions(user.id);
     const result = buildSessionResult({
-      userId: user.id, exercise, analysis, transcript: capture.transcript,
+      userId: user.id, exercise, source: meta.source, analysis, transcript: capture.transcript,
       durationSec: analysis.metrics.durationSec, audioUrl: null, previous, badges: store.badges(user.id),
+      badgeContext: badgeContext(store, user.id),
     });
     store.insertSession(result.session, audioKey);
     store.addBadges(user.id, result.newBadges.map((b) => ({ id: b.id, earnedAt: result.session.createdAt })));
@@ -334,16 +366,58 @@ export function createApp(deps: Deps) {
     res.send(file.data);
   }));
 
+  // ---- Réponse modèle / améliorer ma réponse -----------------------------
+
+  app.post("/api/sessions/:id/model-answer", auth, wrap(async (req, res) => {
+    const s = store.session(String(req.params.id));
+    if (!s || s.userId !== req.userId) throw new HttpError(404, "not_found", "Session introuvable.");
+    const user = store.userById(req.userId!)!;
+    const exercise: Exercise = { id: s.exerciseId, category: s.category, title: s.exerciseTitle, prompt: "", instruction: "", durationSec: s.durationSec, focus: "clarte" };
+    const answer = await llm.modelAnswer({ analysis: s.analysis, transcript: s.transcript, exercise, firstName: user.firstName });
+    store.markModelAnswerSeen(req.userId!);
+    res.json({ answer });
+  }));
+
+  app.post("/api/sessions/:id/rewrite", auth, wrap(async (req, res) => {
+    const s = store.session(String(req.params.id));
+    if (!s || s.userId !== req.userId) throw new HttpError(404, "not_found", "Session introuvable.");
+    const result = await llm.rewrite(s.transcript);
+    res.json(result);
+  }));
+
+  // ---- Diagnostic ----------------------------------------------------------
+
+  app.post("/api/diagnostic", auth, (req, res) => {
+    const body = z.object({
+      steps: z.array(z.object({
+        stepId: z.string(), title: z.string(), sessionId: z.string(),
+        scores: z.record(z.string(), z.number()),
+      })).min(1).max(12),
+    }).parse(req.body);
+    const report = buildDiagnosticReport(body.steps as unknown as DiagnosticStepResult[]);
+    store.saveDiagnostic(req.userId!, report);
+    store.updateUser(req.userId!, { diagnosticDone: true, level: report.level });
+    res.status(201).json({ diagnostic: report });
+  });
+
   // ---- Program -----------------------------------------------------------
 
   app.post("/api/program", auth, (req, res) => {
-    const { goalText } = z.object({ goalText: z.string().trim().min(3).max(300) }).parse(req.body);
+    const body = z.object({ goalText: z.string().trim().min(3).max(300).optional(), templateId: z.string().optional() }).parse(req.body);
     const user = store.userById(req.userId!)!;
+    if (body.templateId) {
+      const program = buildTemplateProgram(body.templateId);
+      if (!program) throw new HttpError(404, "template_not_found", "Programme introuvable.");
+      store.saveProgram(user.id, program);
+      return void res.status(201).json({ program });
+    }
+    if (!body.goalText) throw new HttpError(400, "invalid_request", "Indique ton objectif.");
     const sessions = store.sessions(user.id);
-    const weakest = weakestDimension(summarize(sessions, []).current);
-    const program = generateProgram(goalText, user.goal, weakest);
+    const summary = summarize(sessions, []);
+    const weakest = weakestDimension(summary.current);
+    const program = generateProgram(body.goalText, user.goals, weakest, summary.recurringIssue, 21);
     store.saveProgram(user.id, program);
-    store.updateUser(user.id, { goalText });
+    store.updateUser(user.id, { goalText: body.goalText });
     res.status(201).json({ program });
   });
 
@@ -352,22 +426,21 @@ export function createApp(deps: Deps) {
     res.json({ ok: true });
   });
 
+  // ---- Library --------------------------------------------------------------
+
+  app.post("/api/library/:id/read", auth, (req, res) => {
+    store.markLibraryRead(req.userId!, String(req.params.id));
+    res.json({ ok: true });
+  });
+
   // ---- Coach ---------------------------------------------------------------
 
   app.post("/api/coach", auth, wrap(async (req, res) => {
     const { text } = z.object({ text: z.string().trim().min(1).max(2000) }).parse(req.body);
     const user = store.userById(req.userId!)!;
-    if (!isPremium(user) && store.countCoachSince(user.id, startOfUserDay(req)) >= FREE_DAILY_COACH_MESSAGES) {
-      throw new HttpError(402, "coach_limit", `Tu as utilisé tes ${FREE_DAILY_COACH_MESSAGES} messages gratuits du jour. Le coach illimité fait partie de Premium.`);
-    }
     const history = store.coach(user.id, 30);
     const sessions = store.sessions(user.id);
-    const ctx = {
-      user,
-      summary: summarize(sessions, store.badges(user.id)),
-      lastSession: sessions[0] ?? null,
-      history,
-    };
+    const ctx = { user, summary: summarize(sessions, store.badges(user.id)), lastSession: sessions[0] ?? null, history };
     const userMessage = { id: uid("m_"), role: "user" as const, text, createdAt: new Date().toISOString() };
     let reply;
     try {
@@ -376,7 +449,6 @@ export function createApp(deps: Deps) {
       console.error("[llm coach]", (e as Error).message);
       reply = ruleBasedCoachReply(text, ctx);
     }
-    // Guarantee ordering even when both are created within the same millisecond.
     reply.createdAt = new Date(Math.max(Date.now(), new Date(userMessage.createdAt).getTime() + 1)).toISOString();
     store.addCoach(user.id, userMessage);
     store.addCoach(user.id, reply);
@@ -386,22 +458,6 @@ export function createApp(deps: Deps) {
   app.delete("/api/coach", auth, (req, res) => {
     store.clearCoach(req.userId!);
     res.json({ ok: true });
-  });
-
-  // ---- Billing (development provider) ------------------------------------
-
-  app.post("/api/billing/checkout", auth, (req, res) => {
-    const { plan } = z.object({ plan: z.enum(["monthly", "yearly"]) }).parse(req.body);
-    // The dev provider grants a 7-day trial immediately. A real provider
-    // (Stripe, RevenueCat…) would return a checkout URL and confirm by webhook.
-    const until = new Date(Date.now() + 7 * 86_400_000).toISOString();
-    const user = store.updateUser(req.userId!, { plan: "premium", premiumUntil: until });
-    res.json({ user: publicUser(user), plan, trialDays: 7 });
-  });
-
-  app.post("/api/billing/cancel", auth, (req, res) => {
-    const user = store.updateUser(req.userId!, { plan: "free", premiumUntil: null });
-    res.json({ user: publicUser(user) });
   });
 
   // ---- Static web app ----------------------------------------------------
@@ -420,7 +476,7 @@ export function createApp(deps: Deps) {
       res.status(err.status).json({ error: err.code, message: err.message });
     } else if (err instanceof z.ZodError) {
       const first = err.issues[0];
-      res.status(400).json({ error: "invalid_request", message: first?.message && !first.message.startsWith("Invalid") ? first.message : "Certaines informations sont invalides." , issues: err.issues });
+      res.status(400).json({ error: "invalid_request", message: first?.message && !first.message.startsWith("Invalid") ? first.message : "Certaines informations sont invalides.", issues: err.issues });
     } else if (err instanceof SyntaxError) {
       res.status(400).json({ error: "invalid_json", message: "Requête illisible." });
     } else if ((err as { code?: string }).code === "LIMIT_FILE_SIZE") {
