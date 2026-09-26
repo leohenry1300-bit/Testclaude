@@ -7,7 +7,7 @@ import { allSubjects, generateTopicActivity } from "./topics";
 // data definition that the runner turns into an Exercise-shaped activity at
 // launch time — so adding a new game never requires touching the UI.
 
-export type GameGroup = "parasites" | "debit" | "improvisation" | "argumentation" | "vocabulaire" | "persuasion" | "storytelling" | "structure";
+export type GameGroup = "parasites" | "debit" | "improvisation" | "argumentation" | "vocabulaire" | "persuasion" | "storytelling" | "structure" | "diction" | "memoire" | "confiance" | "ecoute";
 
 interface BuiltGame {
   prompt: string;
@@ -32,7 +32,35 @@ const FORBIDDABLE = ["euh", "du coup", "en fait", "genre", "voilà", "quoi", "do
 const THREE_WORD_POOL = [
   "valise", "orage", "clavier", "pont", "miroir", "sirène", "carnet", "boussole", "lanterne", "escalier",
   "aquarium", "trompette", "cactus", "tunnel", "marée", "grenier", "étincelle", "labyrinthe", "cerf-volant", "horloge",
+  "fanfare", "bougie", "récif", "parapluie", "cascade", "bourrasque", "coquillage", "vitrail", "fourmilière",
 ];
+const TONGUE_TWISTERS = [
+  "Les chaussettes de l'archiduchesse sont-elles sèches, archi-sèches ?",
+  "Un chasseur sachant chasser sait chasser sans son chien.",
+  "Trois tortues trottaient sur trois toits très étroits.",
+  "Si six scies scient six cyprès, six cent six scies scient six cent six cyprès.",
+  "Douze douches douces douchent doucement douze druides distraits.",
+  "Cinq chiens chassent six chats.",
+  "Ces cerises sont si sûres qu'on ne sait pas si c'en sont.",
+  "Pauvre petit pêcheur, prend patience pour pêcher plusieurs poissons.",
+  "Je veux et j'exige d'exquises excuses.",
+  "Le ver vert va vers le verre vert.",
+  "Un dragon gradé dégrade un gradé dragon.",
+  "Natacha n'attacha pas son chat Pacha qui s'échappa.",
+];
+const READING_TEXTS = [
+  "Il faut imaginer Sisyphe heureux : la lutte elle-même vers les sommets suffit à remplir un cœur d'homme.",
+  "Le silence éternel de ces espaces infinis m'effraie, et pourtant j'y trouve une forme de vertige apaisant.",
+  "On ne voit bien qu'avec le cœur. L'essentiel est invisible pour les yeux, disait le renard, sans jamais élever la voix.",
+  "La vraie générosité envers l'avenir consiste à tout donner au présent, disait-elle, en pesant chaque mot.",
+  "Rien n'est jamais acquis à l'homme. Ni sa force, ni sa faiblesse, ni son cœur. Et quand il croit ouvrir ses bras, son ombre est celle d'une croix.",
+  "Le doute n'est pas une faiblesse : c'est souvent le premier pas vers une certitude plus solide.",
+  "Chaque matin, le monde est à refaire, et pourtant chaque matin nous croyons qu'il est déjà fini.",
+];
+
+function randomOf<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 function pickN<T>(arr: T[], n: number): T[] {
   const copy = [...arr];
@@ -171,6 +199,136 @@ export const GAMES: Game[] = [
     id: "g-socratique", title: "Question socratique", tagline: "Approfondir ta pensée par questionnement", icon: "MessageCircleQuestion", group: "argumentation", durationSec: 90,
     build: () => ({ prompt: "Choisis une opinion que tu tiens pour évidente, puis mets-la à l'épreuve : qu'est-ce qui la justifie vraiment ? Quelle serait la meilleure objection possible ?", instruction: "Parle comme si tu te questionnais toi-même à voix haute.", category: "culture", focus: "argumentation" }),
   },
+
+  // ---- Diction & prononciation ---------------------------------------------
+  {
+    id: "g-virelangue", title: "Virelangue", tagline: "Articule une phrase piège sans fauter", icon: "AudioLines", group: "diction", durationSec: 40,
+    build: () => { const text = randomOf(TONGUE_TWISTERS); return { prompt: "Lis ce virelangue trois fois de suite, de plus en plus vite, sans te tromper.", instruction: text, category: "prononciation", focus: "debit" }; },
+  },
+  {
+    id: "g-lecture-expressive", title: "Lecture expressive", tagline: "Donner vie à un texte à voix haute", icon: "BookOpen", group: "diction", durationSec: 60,
+    build: () => { const text = randomOf(READING_TEXTS); return { prompt: "Lis ce texte comme si tu le racontais à quelqu'un, pas comme si tu le lisais.", instruction: text, category: "prononciation", focus: "clarte" }; },
+  },
+  {
+    id: "g-syllabe-par-syllabe", title: "Articulation extrême", tagline: "Exagérer chaque syllabe", icon: "Type", group: "diction", durationSec: 45,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Détache volontairement chaque syllabe, comme pour un public malentendant, sans perdre le naturel.", category: "prononciation", focus: "clarte" }; },
+  },
+  {
+    id: "g-voyelles", title: "Voyelles ouvertes", tagline: "Articuler sans mâcher les mots", icon: "MessageCircleQuestion", group: "diction", durationSec: 45,
+    build: () => { const text = randomOf(TONGUE_TWISTERS); return { prompt: "Lis ce virelangue en articulant exagérément chaque voyelle.", instruction: text, category: "prononciation", focus: "clarte" }; },
+  },
+  {
+    id: "g-lecture-rythmee", title: "Lecture rythmée", tagline: "Respecter un débit imposé en lisant", icon: "Gauge", group: "diction", durationSec: 45,
+    build: () => { const text = randomOf(READING_TEXTS); return { prompt: "Lis ce texte à voix haute, à un rythme posé et régulier.", instruction: text, constraint: { type: "pace_target", min: 110, max: 140 }, category: "prononciation", focus: "debit" }; },
+  },
+
+  // ---- Mémoire & structure --------------------------------------------------
+  {
+    id: "g-liste-croissante", title: "Liste qui grandit", tagline: "Répéter puis ajouter un élément", icon: "ListTree", group: "memoire", durationSec: 60,
+    build: () => ({ prompt: "Improvise une liste sur un thème de ton choix (ex : des villes, des métiers) et énumère-la en développant un peu chaque élément.", instruction: "Reste fluide : ne t'arrête pas pour chercher le mot juste.", category: "improvisation", focus: "fluidite" }),
+  },
+  {
+    id: "g-plan-impose", title: "Plan imposé", tagline: "Respecter une structure en 3 temps stricte", icon: "Layers", group: "structure", durationSec: 90,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Structure obligatoire, annoncée à voix haute : « D'abord... », « Ensuite... », « Enfin... ».", category: "presentation", focus: "structure" }; },
+  },
+  {
+    id: "g-conclusion-dabord", title: "La conclusion d'abord", tagline: "Annoncer le message clé en premier", icon: "Target", group: "structure", durationSec: 60,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Commence directement par ta conclusion ou ton message principal, puis justifie-le ensuite.", category: "presentation", focus: "concision" }; },
+  },
+  {
+    id: "g-recap-15s", title: "Récap en 15 secondes", tagline: "Condenser un développement", icon: "Timer", group: "structure", durationSec: 75,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Développe pendant 60 secondes, puis résume tout en 15 secondes seulement, sans rien perdre d'essentiel.", category: "presentation", focus: "concision" }; },
+  },
+  {
+    id: "g-un-mot-un-point", title: "Un mot, un point", tagline: "Trois points, un mot-clé chacun", icon: "ListTree", group: "structure", durationSec: 60,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Annonce trois mots-clés au tout début, puis développe chacun d'eux dans l'ordre annoncé.", category: "presentation", focus: "structure" }; },
+  },
+
+  // ---- Confiance & impro ----------------------------------------------------
+  {
+    id: "g-sans-filet", title: "Sans filet", tagline: "Zéro préparation, zéro retour en arrière", icon: "Zap", group: "confiance", durationSec: 45,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Une seule prise : pas de pause pour réfléchir, pas de retour en arrière si tu bafouilles.", category: "improvisation", focus: "confiance" }; },
+  },
+  {
+    id: "g-silence-assume", title: "Silence assumé", tagline: "Remplacer chaque hésitation par une vraie pause", icon: "VolumeX", group: "confiance", durationSec: 60,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Interdiction de mot parasite : à chaque hésitation, fais une vraie pause silencieuse d'une seconde plutôt que de dire « euh ».", constraint: { type: "no_fillers" }, category: "improvisation", focus: "confiance" }; },
+  },
+  {
+    id: "g-debout-face-cam", title: "Face caméra", tagline: "Parler comme si tu étais filmé pour de vrai", icon: "Eye", group: "confiance", durationSec: 60,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Imagine que cette prise sera vraiment publiée : engage-toi comme si le public t'écoutait déjà.", category: "presentation", focus: "confiance" }; },
+  },
+  {
+    id: "g-affirmation", title: "Affirme, ne t'excuse pas", tagline: "Bannir les tournures qui minimisent", icon: "ShieldCheck", group: "confiance", durationSec: 60,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Interdiction de dire « je pense que », « peut-être », « un peu » : affirme directement ce que tu penses.", constraint: { type: "forbidden_words", words: ["peut-être", "un peu", "je pense"] }, category: "pro", focus: "confiance" }; },
+  },
+
+  // ---- Écoute & interaction ---------------------------------------------
+  {
+    id: "g-reformule-objection", title: "Reformule puis réponds", tagline: "Prouver que tu as compris avant de répondre", icon: "MessageSquareText", group: "ecoute", durationSec: 60,
+    build: () => ({ prompt: `Un collègue te dit : ${pickN(["« Je trouve que ton rapport manque de clarté. »", "« On n'a pas le temps de faire ça correctement. »", "« Je ne suis pas d'accord avec ta méthode. »"], 1)[0]} Réponds-lui.`, instruction: "Commence par reformuler ce qu'il vient de dire en une phrase, avant de répondre sur le fond.", category: "pro", focus: "clarte" }),
+  },
+  {
+    id: "g-question-relance", title: "Question de relance", tagline: "Répondre puis relancer par une question", icon: "MessageCircleQuestion", group: "ecoute", durationSec: 45,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Termine ta réponse par une question ouverte, comme si tu voulais relancer une vraie conversation.", category: "pro", focus: "clarte" }; },
+  },
+  {
+    id: "g-ecoute-active", title: "Écoute active simulée", tagline: "Répondre à une remarque avec empathie d'abord", icon: "Handshake", group: "ecoute", durationSec: 60,
+    build: () => ({ prompt: `Un ami te dit : ${pickN(["« Je suis épuisé, rien ne va en ce moment. »", "« J'ai raté un entretien important. »", "« Personne ne m'écoute jamais. »"], 1)[0]} Réponds-lui.`, instruction: "Commence par une phrase qui montre que tu as vraiment entendu ce qu'il ressent, avant tout conseil.", category: "pro", focus: "clarte" }),
+  },
+
+  // ---- Plus de storytelling, argumentation, persuasion, vocabulaire --------
+  {
+    id: "g-story-spine", title: "Story Spine", tagline: "La structure Pixar en accéléré", icon: "BookMarked", group: "storytelling", durationSec: 90,
+    build: () => ({ prompt: "Raconte une histoire (vraie ou inventée) en suivant strictement cette trame.", instruction: "« Il était une fois… Chaque jour… Jusqu'au jour où… À cause de ça… À cause de ça… Jusqu'à ce que, finalement… »", category: "storytelling", focus: "structure" }),
+  },
+  {
+    id: "g-chute-inattendue", title: "Chute inattendue", tagline: "Une histoire qui se termine par une pirouette", icon: "Sparkles", group: "storytelling", durationSec: 60,
+    build: () => { const words = pickN(THREE_WORD_POOL, 2); return { prompt: `Raconte une courte histoire impliquant ${words.join(" et ")}, avec une chute surprenante à la fin.`, instruction: "Garde la chute pour la toute dernière phrase.", constraint: { type: "must_include", words }, category: "storytelling", focus: "structure" }; },
+  },
+  {
+    id: "g-point-de-vue", title: "Changement de point de vue", tagline: "Raconter le même fait de deux points de vue", icon: "RefreshCcw", group: "storytelling", durationSec: 90,
+    build: () => ({ prompt: "Raconte brièvement un désaccord ou un conflit que tu connais, une première fois de ton point de vue, puis à nouveau du point de vue de l'autre personne.", instruction: "Marque clairement la transition entre les deux versions.", category: "storytelling", focus: "structure" }),
+  },
+  {
+    id: "g-toulmin", title: "Argument à la Toulmin", tagline: "Thèse, preuve, garantie, réfutation", icon: "Scale", group: "argumentation", durationSec: 90,
+    build: () => ({ prompt: "Défends cette position en suivant strictement une structure d'argumentation rigoureuse.", stance: randomStance(), instruction: "Annonce ta thèse, une preuve concrète, la règle générale qui relie les deux, puis anticipe une objection.", category: "debat", focus: "argumentation" }),
+  },
+  {
+    id: "g-chiffre-choc", title: "Le chiffre qui frappe", tagline: "Construire un argument autour d'une statistique", icon: "TrendingUp", group: "argumentation", durationSec: 60,
+    build: () => ({ prompt: `Défends cette position en t'appuyant sur un chiffre ou une statistique (réelle ou estimée à voix haute).`, stance: randomStance(), instruction: "Cite un ordre de grandeur, même approximatif, et explique pourquoi il compte.", category: "debat", focus: "argumentation" }),
+  },
+  {
+    id: "g-elevator-pitch-60", title: "Ascenseur, 60 secondes", tagline: "Convaincre avant que la porte ne s'ouvre", icon: "Rocket", group: "persuasion", durationSec: 60,
+    build: () => ({ prompt: `Tu croises la bonne personne dans un ascenseur et tu as 60 secondes pour la convaincre de : ${pickN(["financer ton projet", "te recommander pour un poste", "essayer ton produit", "te donner sa carte de visite"], 1)[0]}.`, instruction: "Sois concret : ce que tu proposes, pourquoi maintenant, ce que tu demandes.", category: "pitch", focus: "persuasion" }),
+  },
+  {
+    id: "g-negociation-express", title: "Négociation express", tagline: "Trouver un compromis en 60 secondes", icon: "Handshake", group: "persuasion", durationSec: 60,
+    build: () => ({ prompt: `Négocie : ${pickN(["un délai supplémentaire pour un rendu", "un prix plus bas chez un vendeur", "un jour de télétravail en plus", "un échange de service entre collègues"], 1)[0]}.`, instruction: "Propose une solution gagnant-gagnant, pas juste une demande à sens unique.", category: "pro", focus: "persuasion" }),
+  },
+  {
+    id: "g-mot-rare", title: "Mot rare", tagline: "Placer un mot peu courant à bon escient", icon: "Type", group: "vocabulaire", durationSec: 60,
+    build: () => { const word = pickN(["idoine", "ubuesque", "velléité", "acmé", "paradigme", "palimpseste", "sérendipité", "épiphénomène"], 1); const p = randomPrompt(); return { prompt: p.prompt, instruction: `Utilise le mot « ${word[0]} » à un endroit où il a vraiment du sens, pas juste casé.`, constraint: { type: "must_include", words: word }, category: "improvisation", focus: "vocabulaire" }; },
+  },
+  {
+    id: "g-registre-soutenu", title: "Registre soutenu", tagline: "Parler comme à l'écrit littéraire", icon: "BookOpen", group: "vocabulaire", durationSec: 60,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Exprime-toi dans un registre soutenu, comme si tu écrivais une lettre formelle, sans familiarité.", category: "culture", focus: "vocabulaire" }; },
+  },
+  {
+    id: "g-registre-familier", title: "Registre familier maîtrisé", tagline: "Rester clair même en langage courant", icon: "MessageCircle", group: "vocabulaire", durationSec: 60,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Parle comme à un ami proche, langage courant, mais reste structuré et compréhensible.", category: "improvisation", focus: "vocabulaire" }; },
+  },
+  {
+    id: "g-double-audience", title: "Double audience", tagline: "Le même message pour deux publics", icon: "Users", group: "vocabulaire", durationSec: 90,
+    build: () => ({ prompt: `Explique « ${randomTopicLabel()} », d'abord à un enfant, puis exactement le même contenu à un professionnel du secteur.`, instruction: "Garde le même message de fond, change uniquement le niveau de langue.", category: "culture", focus: "vocabulaire" }),
+  },
+  {
+    id: "g-cent-mots", title: "Cent mots pile", tagline: "Viser une longueur précise, pas de texte", icon: "Hourglass", group: "structure", durationSec: 60,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Vise environ 100 mots : ni un développement trop long, ni une réponse trop courte.", category: "presentation", focus: "concision" }; },
+  },
+  {
+    id: "g-sans-jargon", title: "Zéro jargon", tagline: "Interdiction des mots techniques de ton métier", icon: "Ban", group: "vocabulaire", durationSec: 60,
+    build: () => { const p = randomPrompt(); return { prompt: p.prompt, instruction: "Interdiction d'utiliser le moindre jargon technique ou anglicisme professionnel : reformule tout simplement.", category: "pro", focus: "clarte" }; },
+  },
 ];
 
 export function getGame(id: string): Game | undefined {
@@ -184,12 +342,16 @@ export function gamesByGroup(group: GameGroup): Game[] {
 export const GAME_GROUPS: { id: GameGroup; title: string }[] = [
   { id: "parasites", title: "Anti mots parasites" },
   { id: "debit", title: "Rythme & débit" },
+  { id: "diction", title: "Diction & prononciation" },
   { id: "improvisation", title: "Improvisation" },
+  { id: "confiance", title: "Confiance & aisance" },
   { id: "argumentation", title: "Argumentation & débat" },
   { id: "vocabulaire", title: "Vocabulaire" },
   { id: "persuasion", title: "Persuasion & vente" },
   { id: "storytelling", title: "Storytelling" },
   { id: "structure", title: "Structure" },
+  { id: "memoire", title: "Mémoire & fluidité" },
+  { id: "ecoute", title: "Écoute & interaction" },
 ];
 
 /** Turns a Game into a launchable, Exercise-shaped activity plus its

@@ -126,6 +126,130 @@ export const SIMULATIONS: Simulation[] = [
     ],
     llmPersona: "Tu joues un interlocuteur en désaccord, ferme mais pas malhonnête, qui se calme si l'utilisateur reste factuel et cherche un compromis réel.",
   },
+  {
+    id: "sim-manager", title: "Recadrage managérial", persona: "Un·e manager", icon: "Briefcase",
+    intro: "Je joue ton manager, qui doit te faire un retour sur un problème récent.",
+    questions: [
+      "J'ai remarqué plusieurs retards ces deux dernières semaines. Qu'est-ce qui se passe ?",
+      "Je comprends, mais ça a un impact sur l'équipe. Qu'est-ce que tu proposes pour que ça change ?",
+      "D'accord. On se refait un point dans deux semaines pour voir où ça en est ?",
+    ],
+    llmPersona: "Tu joues un manager ferme mais bienveillant qui recadre poliment sur un problème concret, cherche des solutions plutôt que des excuses, et reste constructif si l'utilisateur est honnête et propose des actions concrètes.",
+  },
+  {
+    id: "sim-appraisal", title: "Entretien annuel", persona: "Un·e manager", icon: "ClipboardCheck",
+    intro: "Je joue ton manager pour ton entretien annuel d'évaluation.",
+    questions: [
+      "Comment évalues-tu ton année, globalement ?",
+      "Quelle a été ta plus grande réussite, et ta plus grande difficulté ?",
+      "Quels sont tes objectifs pour l'année prochaine ?",
+      "As-tu des attentes particulières vis-à-vis de moi ou de l'entreprise ?",
+    ],
+    llmPersona: "Tu joues un manager qui mène un entretien annuel classique, à l'écoute mais qui pousse à la précision et aux exemples concrets plutôt qu'aux généralités.",
+  },
+  {
+    id: "sim-media", title: "Interview presse", persona: "Un·e journaliste", icon: "MessageSquareText",
+    intro: "Je joue un journaliste qui t'interviewe. Reste clair, même sous pression.",
+    questions: [
+      "Pouvez-vous résumer votre position en une phrase pour nos lecteurs ?",
+      "Certains vous reprochent d'aller trop vite sur ce sujet. Que répondez-vous ?",
+      "Concrètement, qu'est-ce que ça change pour les gens qui nous écoutent ?",
+      "Un dernier mot pour conclure cet entretien ?",
+    ],
+    llmPersona: "Tu joues un journaliste courtois mais incisif, qui pose des questions qui poussent à la clarté et n'accepte pas les réponses évasives sans relancer.",
+  },
+  {
+    id: "sim-service-client", title: "Réclamation téléphonique", persona: "Un client au téléphone", icon: "MessageCircleQuestion",
+    intro: "Je joue un client qui t'appelle pour une réclamation. Gère l'appel du début à la fin.",
+    questions: [
+      "Bonjour, j'appelle parce que ma commande n'est toujours pas arrivée, ça fait dix jours.",
+      "C'est inadmissible, j'ai déjà payé. Qu'est-ce que vous allez faire ?",
+      "Bon, et vous me garantissez que ça sera réglé quand exactement ?",
+    ],
+    llmPersona: "Tu joues un client au téléphone, agacé au début, qui se détend si l'utilisateur reste calme, précis et propose un délai concret.",
+  },
+  {
+    id: "sim-colocataire", title: "Conversation entre colocataires", persona: "Un·e colocataire", icon: "Users",
+    intro: "Je joue ton colocataire. On doit régler un désaccord sur la vie commune.",
+    questions: [
+      "On doit parler du ménage, ça devient n'importe quoi.",
+      "Je sens que je fais toujours plus que toi, tu ne trouves pas que c'est injuste ?",
+      "OK, qu'est-ce qu'on met en place concrètement pour que ça change ?",
+    ],
+    llmPersona: "Tu joues un colocataire agacé mais pas hostile, qui cherche un vrai compromis pratique plutôt qu'un simple mea culpa.",
+  },
+  {
+    id: "sim-professeur", title: "Face à un professeur", persona: "Un·e professeur·e", icon: "GraduationCap",
+    intro: "Je joue un professeur. Défends ton travail ou ton point de vue.",
+    questions: [
+      "Vous avez rendu ce travail en retard, pouvez-vous m'expliquer pourquoi ?",
+      "Votre note ne reflète pas vos capacités habituelles. Que s'est-il passé ?",
+      "Qu'allez-vous mettre en place pour la prochaine fois ?",
+    ],
+    llmPersona: "Tu joues un professeur exigeant mais juste, qui veut comprendre la situation avant de juger, et valorise les élèves qui prennent leurs responsabilités.",
+  },
+  {
+    id: "sim-investisseur", title: "Face à un investisseur", persona: "Un·e investisseur·se", icon: "TrendingUp",
+    intro: "Je joue un investisseur potentiel. Pitch ton projet et réponds à mes questions difficiles.",
+    questions: [
+      "Présentez-moi votre projet en deux minutes.",
+      "Quel est votre modèle économique, concrètement ?",
+      "Qu'est-ce qui vous différencie de vos concurrents ?",
+      "Pourquoi je devrais vous faire confiance avec mon argent plutôt qu'à un autre projet ?",
+    ],
+    llmPersona: "Tu joues un investisseur pragmatique et sceptique par défaut, qui challenge le modèle économique et la crédibilité de l'équipe, et devient plus réceptif face à des réponses chiffrées et concrètes.",
+  },
+  {
+    id: "sim-douane", title: "Contrôle ou administration", persona: "Un agent administratif", icon: "ShieldAlert",
+    intro: "Je joue un agent administratif à qui tu dois expliquer ta situation clairement.",
+    questions: [
+      "Pouvez-vous m'expliquer votre situation en quelques mots ?",
+      "Avez-vous les justificatifs nécessaires pour appuyer votre demande ?",
+      "Et si ce document manque, comment comptez-vous procéder ?",
+    ],
+    llmPersona: "Tu joues un agent administratif neutre et procédurier, qui demande de la précision et des justificatifs, sans hostilité mais sans complaisance.",
+  },
+  {
+    id: "sim-blind-date", title: "Premier rendez-vous", persona: "Une personne que tu rencontres", icon: "UserPlus",
+    intro: "Je joue une personne que tu rencontres pour la première fois. Fais connaissance naturellement.",
+    questions: [
+      "Alors, parle-moi un peu de toi, qu'est-ce qui te définit ?",
+      "Qu'est-ce que tu aimes faire de ton temps libre ?",
+      "Et qu'est-ce que tu recherches en ce moment, dans la vie en général ?",
+    ],
+    llmPersona: "Tu joues une personne curieuse et détendue lors d'un premier rendez-vous, qui pose des questions naturelles et réagit avec authenticité, sans jamais être artificielle.",
+  },
+  {
+    id: "sim-jury-concours", title: "Oral de concours", persona: "Un jury de concours", icon: "Gavel",
+    intro: "Je joue un jury de concours. Réponds avec méthode, même sous pression.",
+    questions: [
+      "Pourquoi avez-vous choisi de vous présenter à ce concours ?",
+      "Quelle actualité récente vous a marqué, et pourquoi ?",
+      "Si vous étiez face à une décision impopulaire mais nécessaire, comment agiriez-vous ?",
+      "Avez-vous des questions pour le jury ?",
+    ],
+    llmPersona: "Tu joues un jury de concours administratif exigeant, qui teste la méthode, le sang-froid et la culture générale du candidat.",
+  },
+  {
+    id: "sim-fournisseur", title: "Négociation fournisseur", persona: "Un·e fournisseur·se", icon: "Handshake",
+    intro: "Je joue un fournisseur avec qui tu dois négocier des conditions.",
+    questions: [
+      "Nos tarifs sont fixes, je ne vois pas ce qu'on peut faire de plus.",
+      "Si je baisse le prix, il faudra revoir les volumes ou les délais. Qu'en pensez-vous ?",
+      "Qu'est-ce que vous pouvez m'offrir en échange d'un effort de ma part ?",
+    ],
+    llmPersona: "Tu joues un fournisseur pragmatique, ni hostile ni complaisant, qui cherche un accord gagnant-gagnant si l'utilisateur propose une vraie contrepartie.",
+  },
+  {
+    id: "sim-parent", title: "Conversation familiale difficile", persona: "Un membre de ta famille", icon: "Users",
+    intro: "Je joue un proche avec qui tu dois avoir une conversation délicate.",
+    questions: [
+      "Je voulais qu'on parle de ce qui s'est passé la dernière fois.",
+      "Je ne suis pas sûr de comprendre ton point de vue, tu peux m'expliquer ?",
+      "Qu'est-ce que tu attends de moi, concrètement, pour qu'on avance ?",
+    ],
+    llmPersona: "Tu joues un proche blessé mais aimant, qui cherche sincèrement à comprendre et à se réconcilier si l'utilisateur fait preuve d'écoute et de sincérité.",
+  },
 ];
 
 export function getSimulation(id: string): Simulation | undefined {

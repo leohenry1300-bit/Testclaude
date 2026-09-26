@@ -192,6 +192,11 @@ export function useRecorder(opts: { language: string; maxSeconds: number; onAuto
       streamRef.current = stream;
       const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const ctx = new AC();
+      // Some browsers create the context "suspended" until a user gesture
+      // resumes it explicitly; the click that got us here counts, but only
+      // if we actually call resume() — otherwise the waveform/halo silently
+      // never animate even though recording itself works.
+      if (ctx.state === "suspended") void ctx.resume();
       const src = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 1024;

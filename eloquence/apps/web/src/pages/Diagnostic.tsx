@@ -32,9 +32,14 @@ export function Diagnostic() {
       const next = [...steps, r];
       setSteps(next);
       save(next);
-      window.history.replaceState({}, "");
+      // Clear location.state so a refresh doesn't re-add this step. Going
+      // through the router (not a raw window.history.replaceState call)
+      // keeps React Router's own idx/key bookkeeping intact — mutating
+      // history.state directly was corrupting it and made the browser's
+      // back/forward buttons land on the wrong route afterwards.
+      nav(".", { replace: true, state: null });
     }
-  }, [location.state, steps]);
+  }, [location.state, steps, nav]);
 
   const total = DIAGNOSTIC_STEPS.length;
   const done = steps.length;

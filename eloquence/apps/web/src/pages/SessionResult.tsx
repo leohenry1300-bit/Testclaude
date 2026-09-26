@@ -4,6 +4,7 @@ import { ChevronRight, Cloud, Home as HomeIcon, Sparkles, Trash2, TrendingDown, 
 import { DIMENSION_LABELS, DIMENSIONS, buildGameActivity, compareAttempts, getBadge, getExercise, getGame, type Comparison, type SessionResult as Result } from "@eloquence/core";
 import { useAccount } from "../lib/store";
 import { useLaunchActivity } from "../lib/launch";
+import { canGoBackInApp } from "../lib/nav";
 import { longDay, signed } from "../lib/format";
 import { EmptyState, Icon, ScoreRing, TopBar } from "../components/ui";
 import { CompareBars } from "../components/charts";
@@ -65,7 +66,7 @@ export function SessionResult() {
 
   return (
     <div className="page no-nav">
-      <TopBar title={fresh ? "Ton analyse" : "Session"} onBack={() => (fresh ? nav("/", { replace: true }) : nav(-1))}
+      <TopBar title={fresh ? "Ton analyse" : "Session"} onBack={() => (fresh ? nav("/", { replace: true }) : (canGoBackInApp() ? nav(-1) : nav("/historique", { replace: true })))}
         right={fresh ? <Link to="/" className="icon-btn" aria-label="Accueil"><HomeIcon size={20} /></Link> : undefined} />
 
       <section className="card center celebrate" aria-labelledby="score-title" style={{ paddingTop: 28 }}>

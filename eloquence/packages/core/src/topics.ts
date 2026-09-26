@@ -41,6 +41,15 @@ const SUBJECTS: Record<TopicCategory, string[]> = {
     "l'Empire britannique et son déclin", "les croisades", "la civilisation égyptienne antique", "la démocratie athénienne",
     "l'Empire byzantin", "la peste noire au Moyen Âge", "la conquête spatiale", "la guerre du Vietnam",
     "la construction de la Ve République", "les grandes migrations humaines préhistoriques", "l'Empire mongol",
+    "la guerre d'Algérie", "la Commune de Paris", "l'expansion de l'Empire inca", "la civilisation maya",
+    "la dynastie des Han en Chine", "la conquête de l'Amérique par l'Espagne", "l'esclavage et son abolition",
+    "la guerre de Cent Ans", "les grandes explorations polaires", "la course à l'armement nucléaire",
+    "le procès de Nuremberg", "la crise des missiles de Cuba", "l'ONU et sa création en 1945",
+    "les Trente Glorieuses", "la chute de l'URSS", "la construction du canal de Suez", "les grandes famines historiques",
+    "la naissance de l'écriture", "l'Empire perse", "la guerre des Gaules", "la fondation de Rome",
+    "les grandes épidémies de l'Histoire", "le siècle des Lumières", "la Fronde", "l'affaire Dreyfus",
+    "la Libération de la France en 1944", "le plan Marshall", "la conférence de Yalta", "les grandes cathédrales gothiques",
+    "l'âge d'or islamique", "la Reconquista espagnole", "l'unification du Japon sous les Tokugawa",
   ],
   philosophie: [
     "la liberté", "le bonheur", "la justice", "la vérité", "la conscience", "l'identité personnelle",
@@ -51,6 +60,14 @@ const SUBJECTS: Record<TopicCategory, string[]> = {
     "faut-il pardonner", "le progrès est-il toujours un bien", "la nature humaine est-elle bonne ou mauvaise",
     "avons-nous besoin des autres pour être nous-mêmes", "la culture nous rend-elle plus libres ou moins libres",
     "faut-il désobéir pour être juste", "le hasard existe-t-il", "peut-on désirer sans manquer",
+    "le doute est-il le début de la sagesse", "sommes-nous maîtres de nos pensées", "la fin justifie-t-elle les moyens",
+    "peut-on penser par soi-même sans les autres", "le temps existe-t-il en dehors de notre perception",
+    "la justice sociale et la justice légale sont-elles la même chose", "faut-il toujours dire la vérité",
+    "le bonheur est-il un droit ou une conquête", "l'art doit-il avoir un but", "sommes-nous prisonniers de notre passé",
+    "la raison suffit-elle à nous guider", "le sens de la vie doit-il être trouvé ou inventé",
+    "l'égalité et la liberté sont-elles toujours compatibles", "faut-il avoir peur de l'inconnu",
+    "peut-on être libre sans être responsable", "la souffrance a-t-elle un sens", "l'ennui est-il utile",
+    "l'homme est-il un animal comme les autres", "la mémoire définit-elle qui nous sommes",
   ],
   geographie: [
     "l'urbanisation des mégapoles", "le réchauffement climatique et les littoraux", "les frontières artificielles en Afrique",
@@ -60,6 +77,12 @@ const SUBJECTS: Record<TopicCategory, string[]> = {
     "le tourisme de masse", "la Méditerranée comme carrefour", "les fleuves transfrontaliers et leurs tensions",
     "l'exode rural", "les villes nouvelles", "la fonte des glaciers", "les zones économiques exclusives en mer",
     "la Russie et son immensité territoriale", "le canal de Suez", "le canal de Panama",
+    "les mégapoles côtières face à la montée des eaux", "la géopolitique du pétrole", "les terres rares et leur extraction",
+    "le Japon et les risques sismiques", "l'Australie et son isolement continental", "les frontières maritimes contestées",
+    "les grandes plaines agricoles mondiales", "la fracture territoriale ville-campagne", "les paradis fiscaux insulaires",
+    "les enclaves et exclaves dans le monde", "la Route de la soie moderne (nouvelles routes commerciales chinoises)",
+    "les zones franches économiques", "l'accès à l'eau potable dans le monde", "les grandes métropoles africaines en expansion",
+    "le Groenland et ses ressources stratégiques", "les couloirs migratoires mondiaux", "l'Antarctique et son statut particulier",
   ],
   economie: [
     "l'inflation", "le chômage structurel", "les banques centrales", "les marchés financiers",
@@ -68,6 +91,11 @@ const SUBJECTS: Record<TopicCategory, string[]> = {
     "les délocalisations", "le protectionnisme", "le libre-échange", "la spéculation immobilière",
     "les subventions publiques", "la croissance économique a-t-elle des limites", "le revenu universel",
     "l'économie de la donnée", "les paradis fiscaux", "la finance verte", "le surendettement des ménages",
+    "la concurrence entre monnaies (dollar, euro, yuan)", "les chaînes d'approvisionnement mondiales", "l'économie de plateforme",
+    "les rachats d'entreprises et fusions-acquisitions", "la taxation des multinationales", "l'épargne des ménages",
+    "le prix de l'énergie et son impact sur les ménages", "les bulles spéculatives", "l'économie informelle",
+    "le microcrédit", "les faillites d'entreprises", "l'investissement socialement responsable", "la pénurie de main-d'œuvre",
+    "les monopoles technologiques", "les accords de libre-échange internationaux", "l'inflation salariale", "la sobriété économique",
   ],
   entreprise: [
     "le management à distance", "le leadership bienveillant", "la culture d'entreprise", "la transformation digitale",
@@ -75,6 +103,12 @@ const SUBJECTS: Record<TopicCategory, string[]> = {
     "l'innovation ouverte", "la responsabilité sociale des entreprises", "le télétravail", "la fidélisation des talents",
     "la négociation commerciale", "la prise de décision en équipe", "l'intelligence collective", "le mentorat",
     "les startups face aux grands groupes", "la raison d'être d'une entreprise", "le burnout au travail",
+    "le recrutement par les soft skills", "la gestion de projet agile", "le feedback entre collègues", "l'onboarding des nouveaux salariés",
+    "la reconversion professionnelle", "l'intrapreneuriat", "la transmission d'entreprise familiale", "le co-développement entre pairs",
+    "la gestion des conflits en équipe", "la diversité et l'inclusion en entreprise", "la rémunération variable",
+    "les entreprises libérées", "la sobriété numérique au travail", "le droit à la déconnexion", "le mécénat de compétences",
+    "la fusion de deux cultures d'entreprise", "les comités d'éthique en entreprise", "le bien-être au travail comme stratégie",
+    "l'automatisation des tâches répétitives", "la gestion d'une équipe multiculturelle", "le rachat par une entreprise étrangère",
   ],
   technologie: [
     "l'intelligence artificielle générative", "la cybersécurité", "les réseaux sociaux et l'attention", "la 5G",
@@ -82,6 +116,12 @@ const SUBJECTS: Record<TopicCategory, string[]> = {
     "les smartphones et la déconnexion", "l'impression 3D", "les objets connectés", "la reconnaissance faciale",
     "le quantique et l'informatique", "les biotechnologies", "la désinformation en ligne", "l'open source",
     "la neutralité du net", "l'automatisation du travail", "les données personnelles",
+    "les deepfakes", "la course aux puces électroniques (semi-conducteurs)", "les assistants vocaux", "la réalité augmentée",
+    "le droit à l'oubli numérique", "l'IA dans la médecine", "la blockchain au-delà des crypto-monnaies",
+    "les data centers et leur consommation énergétique", "la modération des contenus en ligne", "les satellites et l'internet spatial",
+    "les interfaces cerveau-machine", "la régulation de l'intelligence artificielle", "l'obsolescence programmée",
+    "le piratage informatique et les rançongiciels", "les jumeaux numériques", "l'impact environnemental du numérique",
+    "les algorithmes de recommandation", "la souveraineté numérique européenne", "les NFT et la propriété numérique",
   ],
   sciences: [
     "le changement climatique", "la biodiversité", "les énergies renouvelables", "le cerveau humain",
@@ -89,6 +129,12 @@ const SUBJECTS: Record<TopicCategory, string[]> = {
     "le génome humain", "les antibiotiques et leurs limites", "le sommeil", "les océans et leur exploration",
     "les énergies fossiles", "la fusion nucléaire", "l'intelligence animale", "la médecine personnalisée",
     "les épidémies et leur prévention", "la physique quantique expliquée simplement",
+    "les édition génétique (CRISPR)", "l'astrobiologie et la recherche de vie extraterrestre", "les neurosciences et l'apprentissage",
+    "la microbiologie et le microbiote intestinal", "les exoplanètes", "l'intelligence des plantes",
+    "le stress et ses effets physiologiques", "la cryogénisation", "les vaccins à ARN messager",
+    "la paléontologie et les fossiles", "l'effondrement des populations d'insectes", "les volcans et la tectonique des plaques",
+    "les origines de l'univers (Big Bang)", "la robotique médicale", "l'agriculture de précision",
+    "le réchauffement des océans", "la médecine régénérative", "les probiotiques", "la conservation des espèces menacées",
   ],
   societe: [
     "l'école et l'orientation", "l'égalité femmes-hommes au travail", "le vieillissement de la population",
@@ -96,6 +142,13 @@ const SUBJECTS: Record<TopicCategory, string[]> = {
     "les nouvelles formes de famille", "la place des seniors dans l'entreprise", "le harcèlement scolaire",
     "la consommation responsable", "le logement des jeunes actifs", "la mixité sociale à l'école",
     "les générations au travail", "la santé mentale", "l'accès à la culture", "le bénévolat",
+    "l'aide aux aidants familiaux", "la fracture numérique chez les seniors", "le sport comme lien social",
+    "les violences conjugales et leur prévention", "la précarité étudiante", "l'engagement associatif des jeunes",
+    "la place des personnes en situation de handicap", "les déserts médicaux", "le vivre-ensemble en quartier populaire",
+    "l'adoption et la parentalité", "les discriminations à l'embauche", "l'illettrisme et l'accès à la lecture",
+    "la place des animaux de compagnie dans nos vies", "le sentiment d'appartenance à une communauté",
+    "les nouvelles formes de spiritualité", "la place des jeunes aidants", "la garde d'enfants et son organisation",
+    "l'isolement des personnes âgées", "la transmission intergénérationnelle", "les colocations intergénérationnelles",
   ],
   politique: [
     "le rôle du Parlement", "la séparation des pouvoirs", "le fonctionnement d'une commune", "le fonctionnement d'une région",
@@ -103,12 +156,26 @@ const SUBJECTS: Record<TopicCategory, string[]> = {
     "les libertés publiques", "le référendum comme outil démocratique", "la participation citoyenne locale",
     "le rôle du Conseil constitutionnel", "la fonction publique", "le fonctionnement de la justice",
     "les collectivités territoriales", "la démocratie représentative face à la démocratie participative",
+    "le rôle du Sénat", "le fonctionnement du gouvernement", "le mode de désignation du président de la République",
+    "le rôle des syndicats", "les budgets participatifs locaux", "le fonctionnement de l'ONU",
+    "la Cour européenne des droits de l'homme", "le rôle des médiateurs institutionnels", "les conseils citoyens",
+    "la répartition des compétences entre État et régions", "le fonctionnement d'un conseil municipal",
+    "la naturalisation et l'accès à la citoyenneté", "le vote électronique", "les autorités administratives indépendantes",
+    "le droit de grève", "le mandat des élus locaux", "le rôle de la Cour des comptes",
+    "la coopération intercommunale", "le statut des lanceurs d'alerte", "le fonctionnement du Conseil de l'Europe",
   ],
   arts: [
     "l'impressionnisme", "le cinéma comme art populaire", "la musique classique aujourd'hui", "l'architecture contemporaine",
     "la bande dessinée comme neuvième art", "le street art", "la place du patrimoine", "la photographie numérique",
     "la mode comme expression culturelle", "le théâtre à l'ère du streaming", "les musées et leur numérisation",
     "la littérature de science-fiction", "la place de la culture française à l'international",
+    "le jazz et son histoire", "la sculpture contemporaine", "le design d'objet", "la danse contemporaine",
+    "les jeux vidéo comme forme d'art", "la poésie à l'ère des réseaux sociaux", "le cinéma d'animation",
+    "la restauration des œuvres d'art", "les festivals de musique", "l'art numérique et génératif",
+    "la caricature et le dessin de presse", "la haute couture", "les biennales d'art contemporain",
+    "la musique électronique", "le documentaire comme genre cinématographique", "l'illustration jeunesse",
+    "la calligraphie", "le hip-hop comme mouvement culturel", "les séries télévisées comme récit contemporain",
+    "l'art urbain et la gentrification", "la restitution des œuvres d'art coloniales", "le vitrail médiéval",
   ],
   quotidien: [
     "tes dernières vacances", "un plat que tu adores cuisiner", "ton sport préféré", "un voyage qui t'a marqué",
@@ -117,6 +184,12 @@ const SUBJECTS: Record<TopicCategory, string[]> = {
     "un achat dont tu es content", "un projet personnel en cours", "un souvenir d'enfance", "ta façon de te détendre",
     "un défi que tu t'es lancé récemment", "une compétence que tu aimerais apprendre", "ton dernier week-end",
     "une rencontre récente", "un livre qui t'a marqué", "un conseil que tu donnerais à ton plus jeune toi",
+    "une erreur dont tu as appris", "ta playlist du moment", "un plat que tu détestes", "ton animal de compagnie (ou celui que tu voudrais)",
+    "un talent caché que tu as", "une tradition familiale", "ton dernier fou rire", "une décision difficile que tu as prise",
+    "un endroit où tu rêves d'aller", "ta façon de gérer le stress", "un cadeau qui t'a marqué", "une personne qui t'inspire",
+    "ton rapport aux écrans", "une saison de l'année que tu préfères", "un souvenir de vacances en famille",
+    "une compétence que tu pourrais enseigner à quelqu'un", "ta relation avec l'argent", "un rituel du soir",
+    "une chose que tu voudrais accomplir cette année", "ton rapport au sommeil", "une passion que peu de gens connaissent",
   ],
 };
 
@@ -229,4 +302,38 @@ export function dailyTopic(date: Date): { topic: TopicRef; activity: Exercise } 
   const dayIndex = Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000);
   const topic = all[dayIndex % all.length];
   return { topic, activity: generateTopicActivity(topic, "expliquer") };
+}
+
+/**
+ * Deterministic, stable-id catalogue entries generated from the subject
+ * bank — unlike generateTopicActivity (random id, built on click for
+ * "Sujets"), these get a fixed id from the subject+template pair so they
+ * can live permanently in the "Exercices" catalogue for culture, débat and
+ * présentation: the same list every load, so history/best-score tracking
+ * by exercise id keeps working. One template per subject (picked
+ * deterministically) keeps the list large without ever showing the same
+ * subject twice under near-identical phrasings.
+ */
+export function generateStaticTopicExercises(kind: TemplateKind, limit = 150): Exercise[] {
+  const tpl = TEMPLATES.find((t) => t.kind === kind)!;
+  const all = allSubjects();
+  // Subjects are grouped consecutively by topic category (histoire, then
+  // philosophie, …): a plain slice would show only the first couple of
+  // categories. A fixed stride walks across all of them evenly instead.
+  const stride = Math.max(1, Math.floor(all.length / Math.min(limit, all.length)));
+  const picked: TopicRef[] = [];
+  for (let i = 0; i < all.length && picked.length < limit; i += stride) picked.push(all[i]);
+  return picked.map((topic) => {
+    const built = tpl.build(topic.label);
+    return {
+      id: `cat_${topic.id}_${kind}`,
+      category: tpl.category,
+      title: capitalize(topic.label),
+      prompt: built.prompt,
+      instruction: built.instruction,
+      stance: built.stance,
+      durationSec: tpl.durationSec,
+      focus: TOPIC_FOCUS[topic.category],
+    };
+  });
 }

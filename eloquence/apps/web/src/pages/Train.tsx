@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { ChevronRight, Clock, Dices, Gamepad2, RotateCcw, Users as UsersIcon } from "lucide-react";
-import { CATEGORIES, EXERCISES, formatDuration, GAME_GROUPS, GAMES, type CategoryId } from "@eloquence/core";
+import { CATEGORIES, EXERCISES, EXERCISES_ALL, formatDuration, GAME_GROUPS, GAMES, type CategoryId } from "@eloquence/core";
 import { useAccount } from "../lib/store";
 import { Icon } from "../components/ui";
 
@@ -8,7 +8,11 @@ export function Train() {
   const { account } = useAccount();
   const [params, setParams] = useSearchParams();
   const active = (params.get("c") as CategoryId | null) ?? null;
-  const list = active ? EXERCISES.filter((e) => e.category === active) : EXERCISES;
+  // The full generated catalogue runs into the hundreds per category —
+  // great once you've picked a category, but far too many DOM nodes to
+  // dump on screen at once. "Tout" (no filter) shows the curated highlights
+  // instead; picking a category reveals its full depth.
+  const list = active ? EXERCISES_ALL.filter((e) => e.category === active) : EXERCISES;
   const best = new Map<string, number>();
   for (const s of account.sessions) best.set(s.exerciseId, Math.max(best.get(s.exerciseId) ?? 0, s.score));
 
@@ -46,7 +50,7 @@ export function Train() {
       {!active && (
         <div className="cat-grid">
           {CATEGORIES.map((c) => {
-            const count = EXERCISES.filter((e) => e.category === c.id).length;
+            const count = EXERCISES_ALL.filter((e) => e.category === c.id).length;
             return (
               <button key={c.id} className="cat-tile" onClick={() => setParams({ c: c.id })}>
                 <span className="c-ic"><Icon name={c.icon} /></span>

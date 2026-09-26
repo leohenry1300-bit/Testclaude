@@ -57,11 +57,11 @@ Tests : `npm test` (35 tests — moteur d'analyse, API de bout en bout). Vérifi
 - **Mode démo** : un profil complet généré par le vrai moteur d'analyse (17 sessions sur 30 jours, série, programme en cours, badges).
 - **Accueil** : session du jour, objectifs hebdomadaires calculés (pas hand-set), session rapide 5/15/30 min, détection et relance sur une difficulté qui revient souvent, programme en cours, scores par compétence.
 - **S'entraîner** — hub central :
-  - **Exercices** : 7 catégories de situations réalistes (improvisation, entretien, pitch, présentation, débat, communication pro, prononciation, culture générale, storytelling, libre).
-  - **Jeux** : 25 mini-jeux dans 8 familles (anti-parasites, rythme, improvisation, argumentation, vocabulaire, persuasion, storytelling, structure), avec de vraies contraintes vérifiées (mot interdit, zéro « euh », débit cible, mots imposés, pas de répétition).
-  - **Sujets** : bibliothèque de 250+ sujets nommés (histoire, philosophie, géographie, économie, entreprise, technologie, sciences, société, institutions — traitées de façon strictement neutre —, arts, quotidien), combinés à 6 gabarits de question → plus de 1 500 formulations distinctes générées à la volée, jamais répétitives.
-  - **Simulations** : 10 mises en situation avec un personnage qui réagit (recruteur, banque, commercial, client difficile, négociation salariale, vente, réunion, jury, networking, situation conflictuelle).
-  - **Bibliothèque pédagogique** : 30 mini-cours (Éloquence, Argumentation, Communication, Présentation, Entretien, Vocabulaire), chacun suivi d'un exercice.
+  - **Exercices** : 10 catégories de situations réalistes (improvisation, entretien, pitch, présentation, débat, communication pro, prononciation, culture générale, storytelling, libre), chacune avec **au moins 100 prompts distincts** (sauf l'entraînement libre, volontairement sans prompt) — un noyau curaté à la main, multiplié par des variantes de livraison réelles (durée, contrainte, structure imposée) pour ne jamais tourner en rond.
+  - **Jeux** : plus de 50 mini-jeux dans 12 familles (anti-parasites, rythme, diction, improvisation, confiance, argumentation, vocabulaire, persuasion, storytelling, structure, mémoire, écoute), avec de vraies contraintes vérifiées (mot interdit, zéro « euh », débit cible, mots imposés, pas de répétition).
+  - **Sujets** : bibliothèque de 400+ sujets nommés (histoire, philosophie, géographie, économie, entreprise, technologie, sciences, société, institutions — traitées de façon strictement neutre —, arts, quotidien), combinés à 6 gabarits de question → plus de 2 500 formulations distinctes générées à la volée, jamais répétitives.
+  - **Simulations** : 23 mises en situation avec un personnage qui réagit (recruteur, banque, commercial, client difficile, négociation salariale, vente, réunion, jury, networking, situation conflictuelle, manager, presse, service client, colocataire, professeur, investisseur, administration, rencontre, concours, fournisseur, famille…).
+  - **Bibliothèque pédagogique** : mini-cours (Éloquence, Argumentation, Communication, Présentation, Entretien, Vocabulaire), chacun suivi d'un exercice.
 - **Analyse** : 11 dimensions mesurées honnêtement (clarté, fluidité, confiance, structure, vocabulaire, débit, mots parasites, **argumentation, grammaire, persuasion, concision**), transcription surlignée, détection de tournures fautives à l'oral, marqueurs d'argumentation (exemples, contre-arguments). Le feedback suit toujours le même contrat : **ce que tu fais bien** (≤3 points) / **ce qui te pénalise** (≤3 points) / **un exemple réel tiré de ta transcription** / **pourquoi c'est un problème** / **comment corriger** (nommant PREP, STAR, le modèle de Toulmin ou la Story Spine quand c'est pertinent) / **un objectif chiffré**. Rien n'est jamais inventé : une citation générée par l'IA est vérifiée contre la vraie transcription avant affichage.
 - **Réponse modèle** et **Améliorer ma réponse** (clair / concis / pro / persuasif) — la version mécanique (toujours disponible, même hors ligne) retravaille tes propres mots sans jamais inventer de contenu ; la version IA va plus loin.
 - **Avant/après** automatique quand on refait un exercice.
@@ -89,9 +89,9 @@ eloquence/
 │   ├── analysis.ts    11 dimensions, grammaire, argumentation, transcription annotée, contraintes de jeu
 │   ├── feedback.ts     Contrat forces/faiblesses/citation/pourquoi/comment corriger/objectif
 │   ├── topics.ts       Bibliothèque de sujets + génération combinatoire
-│   ├── games.ts         25 mini-jeux + moteur de contraintes
+│   ├── games.ts         50+ mini-jeux + moteur de contraintes
 │   ├── simulations.ts   10 personas de mise en situation
-│   ├── library.ts        30 mini-cours pédagogiques
+│   ├── library.ts        mini-cours pédagogiques
 │   ├── diagnostic.ts      8 étapes + bilan initial
 │   ├── coaching.ts         Objectifs hebdomadaires, session rapide, réécriture heuristique, recherche
 │   ├── progress.ts     Séries, XP, niveaux, 40 badges, profil par catégorie, difficulté récurrente

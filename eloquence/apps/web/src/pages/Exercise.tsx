@@ -6,6 +6,7 @@ import {
 import { getCategory, getExercise, type ActivitySource, type Exercise as ExerciseT, type GameConstraint, type SpeechCapture } from "@eloquence/core";
 import { useAccount } from "../lib/store";
 import { ApiError } from "../lib/http";
+import { canGoBackInApp } from "../lib/nav";
 import { MIC_ERROR_TEXT, micSupport, useRecorder, type RecorderResult } from "../lib/recorder";
 import { clock, formatDurationLong } from "./exerciseFormat";
 import { Icon } from "../components/ui";
@@ -92,8 +93,19 @@ export function Exercise() {
   }, [rec, serverTranscribes, submit]);
   finishRef.current = () => void finish();
 
+  // Guards against a second getUserMedia() firing while the first is still
+  // pending (e.g. a double space-bar press): without this, the first stream
+  // never gets its ref set (overwritten by the second) and its tracks are
+  // never stopped, silently holding the microphone busy for later attempts.
+  const startingRef = useRef(false);
   const begin = async () => {
-    if (await rec.start()) setPhase("live");
+    if (startingRef.current || rec.status === "requesting" || rec.status === "recording") return;
+    startingRef.current = true;
+    try {
+      if (await rec.start()) setPhase("live");
+    } finally {
+      startingRef.current = false;
+    }
   };
 
   useEffect(() => {
@@ -151,7 +163,8 @@ export function Exercise() {
           rec.reset();
           if (onboarding) nav("/");
           else if (navState.diagnostic) nav("/diagnostic");
-          else nav(-1);
+          else if (canGoBackInApp()) nav(-1);
+          else nav("/entrainement");
         }}
       />
 

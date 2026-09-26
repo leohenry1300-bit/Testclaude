@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { DIMENSION_LABELS, type Dimension } from "@eloquence/core";
 import { scoreTone } from "../lib/format";
+import { canGoBackInApp } from "../lib/nav";
 import { useStore } from "../lib/store";
 
 export const ICONS: Record<string, LucideIcon> = {
@@ -47,7 +48,7 @@ export function TopBar({ title, back = true, right, onBack }: { title?: string; 
   return (
     <header className="topbar">
       {back ? (
-        <button className="icon-btn" onClick={onBack ?? (() => (window.history.length > 1 ? nav(-1) : nav("/")))} aria-label="Retour">
+        <button className="icon-btn" onClick={onBack ?? (() => (canGoBackInApp() ? nav(-1) : nav("/")))} aria-label="Retour">
           <ArrowLeft size={22} />
         </button>
       ) : <span className="spacer" />}
