@@ -14,7 +14,13 @@ services:
         value: 22.13.0
       - key: PUBLIC_URL
         sync: false
-    # Sur le plan gratuit, pas de disque persistant : les comptes créés et les
-    # enregistrements sont réinitialisés à chaque redéploiement ou redémarrage
-    # après inactivité. Passer sur un plan payant et ajouter un `disk` monté
-    # sur DATA_DIR pour conserver les données durablement.
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+    # Sur le plan gratuit, pas de disque persistant : sans DATABASE_URL, les
+    # comptes et enregistrements sont réinitialisés à chaque redéploiement ou
+    # redémarrage après inactivité. Pour rester sur le plan gratuit sans
+    # perdre les données, créer une base Postgres gratuite sur supabase.com
+    # et renseigner DATABASE_URL (+ un JWT_SECRET fixe) — voir le README,
+    # section « Déploiement gratuit, sans perdre les données ».

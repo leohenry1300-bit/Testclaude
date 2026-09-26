@@ -7,7 +7,7 @@ import type { Server } from "node:http";
 import { getExercise, getGame, buildGameActivity } from "@eloquence/core";
 import { createApp } from "./app";
 import { loadConfig } from "./config";
-import { Store } from "./db";
+import { SqliteStore } from "./store/sqlite";
 import { ClientTranscriptStt } from "./providers/stt";
 import { HeuristicLlm } from "./providers/llm";
 import { ConsoleMailer, LocalDiskStorage } from "./providers/services";
@@ -51,7 +51,7 @@ beforeAll(async () => {
   const config = loadConfig({ DATA_DIR: dir, JWT_SECRET: "test-secret", WEB_DIST: path.join(dir, "none"), GOOGLE_CLIENT_ID: "cid" });
   const app = createApp({
     config,
-    store: new Store(path.join(dir, "db.sqlite")),
+    store: new SqliteStore(path.join(dir, "db.sqlite")),
     stt: new ClientTranscriptStt(),
     llm: new HeuristicLlm(),
     storage: new LocalDiskStorage(path.join(dir, "audio")),

@@ -11,6 +11,7 @@ export interface Config {
   webDist: string;
   publicUrl: string;
   jwtSecret: string;
+  databaseUrl: string | null;
   googleClientId: string | null;
   stt: { provider: "client" | "openai"; openaiKey: string | null; model: string };
   llm: { provider: "heuristic" | "anthropic"; model: string };
@@ -37,6 +38,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     webDist: path.resolve(env.WEB_DIST ?? path.join(here, "../../web/dist")),
     publicUrl: env.PUBLIC_URL ?? "http://localhost:5173",
     jwtSecret: env.JWT_SECRET || persistentSecret(dataDir),
+    databaseUrl: env.DATABASE_URL || null,
     googleClientId: env.GOOGLE_CLIENT_ID || null,
     stt: {
       provider: env.STT_PROVIDER === "openai" || (!env.STT_PROVIDER && openaiKey) ? "openai" : "client",

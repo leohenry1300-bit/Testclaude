@@ -30,6 +30,23 @@ Configuration : copier `.env.example` en `.env` et renseigner uniquement ce dont
 | `OPENAI_API_KEY` | L'audio est retranscrit côté serveur par Whisper (plus précis, garde les « euh »). |
 | `GOOGLE_CLIENT_ID` | Active « Continuer avec Google ». |
 | `RESEND_API_KEY` | Envoie réellement les e-mails de réinitialisation (sinon : console du serveur, et lien affiché à l'écran en développement). |
+| `DATABASE_URL` | Remplace le fichier SQLite par une base Postgres (ex. Supabase gratuit) — voir « Déploiement gratuit » ci-dessous. |
+| `JWT_SECRET` | À définir explicitement si le disque du serveur n'est pas persistant (sinon tout le monde est déconnecté à chaque redémarrage). |
+
+## Déploiement gratuit, sans perdre les données
+
+Par défaut, l'API stocke tout dans un fichier SQLite local (`DATA_DIR`). C'est parfait en local, mais certains hébergeurs gratuits (comme le plan gratuit de Render) ont un **disque non persistant** : le fichier disparaît à chaque redémarrage/redéploiement.
+
+Solution gratuite : héberger la base sur **Supabase** (Postgres gratuit et persistant) et laisser Render (ou un autre hébergeur gratuit) exécuter uniquement le serveur, sans état.
+
+1. Créer un projet sur [supabase.com](https://supabase.com) (gratuit).
+2. Dans *Project Settings → Database → Connection string*, copier l'URI (mode « Session pooler » recommandé), et y mettre le mot de passe du projet.
+3. Sur Render (ou l'hébergeur choisi), ajouter deux variables d'environnement au service :
+   - `DATABASE_URL` = l'URI Supabase copiée à l'étape 2.
+   - `JWT_SECRET` = une chaîne aléatoire longue (sinon les connexions sautent à chaque redémarrage).
+4. Redéployer. Le serveur détecte `DATABASE_URL`, crée les tables automatiquement au démarrage, et toutes les données (comptes, sessions, coach, programmes...) survivent désormais aux redémarrages et sont accessibles depuis n'importe quel appareil connecté au même compte.
+
+Sans `DATABASE_URL`, rien ne change : le serveur continue d'utiliser SQLite comme avant.
 
 Tests : `npm test` (35 tests — moteur d'analyse, API de bout en bout). Vérification des types : `npm run typecheck`.
 
