@@ -116,7 +116,8 @@ describe("API", () => {
   });
 
   it("plays a game with a real, server-verified constraint", async () => {
-    const lose = await api("POST", "/api/sessions", gameForm("g-mot-interdit", "C'est un vrai truc intéressant."));
+    // The game forbids 2 random words from a fixed pool; include them all so the test is deterministic.
+    const lose = await api("POST", "/api/sessions", gameForm("g-mot-interdit", "C'est un vrai truc, une vraie chose, un vrai genre de quoi, très bien."));
     expect(lose.status).toBe(201);
     expect(lose.body.session.analysis.constraintResult?.passed).toBe(false);
     expect(lose.body.session.source).toBe("jeu");

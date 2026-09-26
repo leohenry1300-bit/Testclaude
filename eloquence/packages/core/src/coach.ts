@@ -65,7 +65,7 @@ function quickAnswerFeedback(answer: string): string {
   const a = analyzeSpeech({ transcript: answer, durationSec: 0, source: "text" });
   const m = a.metrics;
   const notes: string[] = [];
-  if (m.wordCount < 25) notes.push("C'est un peu court : un recruteur attend 3 ou 4 phrases, avec un exemple.");
+  if (m.wordCount < 25) notes.push("C'est un peu court : vise 3 ou 4 phrases, avec un exemple concret.");
   else if (m.wordCount > 220) notes.push("C'est long. Vise 45 secondes à l'oral, soit environ 110 mots.");
   if (m.fillerCount >= 2) notes.push(`J'ai relevé ${m.fillerCount} mots parasites (${Object.keys(m.fillers).slice(0, 2).map((f) => `« ${f} »`).join(", ")}). À l'oral, ils s'entendent encore plus.`);
   if (m.hedges) notes.push("Tu nuances trop : remplace « je pense que » par une affirmation.");

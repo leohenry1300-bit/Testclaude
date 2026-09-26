@@ -1,7 +1,7 @@
 import type { Dimension, DiagnosticReport, DiagnosticStepResult, Level, Scores } from "./types";
 import type { Exercise } from "./exercises";
 import { getExercise } from "./exercises";
-import { DIMENSIONS, globalScore } from "./analysis";
+import { DIMENSIONS, DIMENSION_LABELS, globalScore } from "./analysis";
 import { generateTopicActivity, allSubjects } from "./topics";
 import { weakestDimension, strongestDimension } from "./progress";
 
@@ -76,7 +76,7 @@ export function buildDiagnosticReport(steps: DiagnosticStepResult[], now = new D
     tres_a_l_aise: "Très bon niveau de départ. On va chercher la précision et l'impact.",
   };
 
-  const summary = `${LEVEL_TEXT[level]} Ton point fort actuel : ${strongest}. Le levier prioritaire : ${weakest}.`;
+  const summary = `${LEVEL_TEXT[level]} Ton point fort actuel : ${DIMENSION_LABELS[strongest]}. Le levier prioritaire : ${DIMENSION_LABELS[weakest]}.`;
 
   return { completedAt: now.toISOString(), steps, averageScores: avg, level, strongest, weakest, summary };
 }
