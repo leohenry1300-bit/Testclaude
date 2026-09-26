@@ -46,6 +46,18 @@ Solution gratuite : héberger la base sur **Supabase** (Postgres gratuit et pers
 
 Sans `DATABASE_URL`, rien ne change : le serveur continue d'utiliser SQLite comme avant.
 
+### Et les enregistrements audio ?
+
+`DATABASE_URL` ne couvre que les données (comptes, sessions, transcriptions, scores) : les fichiers audio eux-mêmes restent, par défaut, écrits sur le disque du serveur — donc perdus au redémarrage sur un hébergeur sans disque persistant, même une fois `DATABASE_URL` configuré.
+
+Pour que les enregistrements survivent aussi, ajouter un bucket S3 (Cloudflare R2 a un vrai plan gratuit : 10 Go, sans frais de sortie) :
+
+1. Créer un bucket sur [dash.cloudflare.com](https://dash.cloudflare.com) → R2, puis un jeton d'accès API (Account API Token) avec les droits lecture/écriture sur ce bucket.
+2. Sur Render, ajouter : `S3_BUCKET`, `S3_ENDPOINT` (l'URL R2 du compte), `S3_REGION=auto`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`.
+3. Redéployer. Le serveur détecte ces variables et bascule automatiquement du disque local vers S3 pour les nouveaux enregistrements.
+
+Sans ces variables, rien ne change : le serveur continue d'écrire sur le disque local comme avant.
+
 Tests : `npm test` (35 tests — moteur d'analyse, API de bout en bout). Vérification des types : `npm run typecheck`.
 
 ## Ce que fait l'app
@@ -55,12 +67,13 @@ Tests : `npm test` (35 tests — moteur d'analyse, API de bout en bout). Vérifi
 - **Mode démo** : un profil complet généré par le vrai moteur d'analyse (17 sessions sur 30 jours, série, programme en cours, badges).
 - **Accueil** : session du jour, objectifs hebdomadaires calculés (pas hand-set), session rapide 5/15/30 min, détection et relance sur une difficulté qui revient souvent, programme en cours, scores par compétence.
 - **S'entraîner** — hub central :
-  - **Exercices** : 10 catégories de situations réalistes (improvisation, entretien, pitch, présentation, débat, communication pro, prononciation, culture générale, storytelling, libre), chacune avec **au moins 100 prompts distincts** (sauf l'entraînement libre, volontairement sans prompt) — un noyau curaté à la main, multiplié par des variantes de livraison réelles (durée, contrainte, structure imposée) pour ne jamais tourner en rond.
+  - **Exercices** : 10 catégories de situations réalistes (improvisation, entretien, pitch, présentation, débat, communication pro, prononciation, culture générale, storytelling, libre), chacune avec **au moins 100 prompts réellement distincts** (sauf l'entraînement libre, volontairement sans prompt) — près de 1 000 au total, aucun titre ni consigne répété deux fois dans une même catégorie.
   - **Jeux** : plus de 50 mini-jeux dans 12 familles (anti-parasites, rythme, diction, improvisation, confiance, argumentation, vocabulaire, persuasion, storytelling, structure, mémoire, écoute), avec de vraies contraintes vérifiées (mot interdit, zéro « euh », débit cible, mots imposés, pas de répétition).
   - **Sujets** : bibliothèque de 400+ sujets nommés (histoire, philosophie, géographie, économie, entreprise, technologie, sciences, société, institutions — traitées de façon strictement neutre —, arts, quotidien), combinés à 6 gabarits de question → plus de 2 500 formulations distinctes générées à la volée, jamais répétitives.
   - **Simulations** : 23 mises en situation avec un personnage qui réagit (recruteur, banque, commercial, client difficile, négociation salariale, vente, réunion, jury, networking, situation conflictuelle, manager, presse, service client, colocataire, professeur, investisseur, administration, rencontre, concours, fournisseur, famille…).
   - **Bibliothèque pédagogique** : mini-cours (Éloquence, Argumentation, Communication, Présentation, Entretien, Vocabulaire), chacun suivi d'un exercice.
-- **Analyse** : 11 dimensions mesurées honnêtement (clarté, fluidité, confiance, structure, vocabulaire, débit, mots parasites, **argumentation, grammaire, persuasion, concision**), transcription surlignée, détection de tournures fautives à l'oral, marqueurs d'argumentation (exemples, contre-arguments). Le feedback suit toujours le même contrat : **ce que tu fais bien** (≤3 points) / **ce qui te pénalise** (≤3 points) / **un exemple réel tiré de ta transcription** / **pourquoi c'est un problème** / **comment corriger** (nommant PREP, STAR, le modèle de Toulmin ou la Story Spine quand c'est pertinent) / **un objectif chiffré**. Rien n'est jamais inventé : une citation générée par l'IA est vérifiée contre la vraie transcription avant affichage.
+- **Analyse** : 11 dimensions mesurées honnêtement (clarté, fluidité, confiance, structure, vocabulaire, débit, mots parasites, **argumentation, grammaire, persuasion, concision**), transcription surlignée, détection de tournures fautives à l'oral, marqueurs d'argumentation (exemples, contre-arguments). Le feedback suit toujours le même contrat : **ce que tu fais bien** (≤3 points) / **ce qui te pénalise** (≤3 points) / **un exemple réel tiré de ta transcription** / **pourquoi c'est un problème** / **comment corriger** (nommant PREP, STAR, le modèle de Toulmin ou la Story Spine quand c'est pertinent) / **un objectif chiffré**. Rien n'est jamais inventé : une citation générée par l'IA est vérifiée contre la vraie transcription avant affichage. Les longs silences sont mesurés directement depuis le micro et pèsent lourd sur le score, pas seulement sur un compteur de pauses.
+- **Pertinence du contenu (avec `ANTHROPIC_API_KEY`)** : en plus des 11 dimensions de forme, Claude juge si la réponse a vraiment du sens et répond à la consigne — une prestation bien articulée mais hors-sujet ou incohérente est notée en conséquence. Ce score ne peut que faire baisser le score global mesuré, jamais l'augmenter. Sans clé IA, cette dimension n'apparaît simplement pas : elle n'est jamais devinée par le moteur heuristique.
 - **Réponse modèle** et **Améliorer ma réponse** (clair / concis / pro / persuasif) — la version mécanique (toujours disponible, même hors ligne) retravaille tes propres mots sans jamais inventer de contenu ; la version IA va plus loin.
 - **Avant/après** automatique quand on refait un exercice.
 - **Progression** : courbes 7 j / 30 j / 3 mois, **profil de compétences par catégorie** (ta moyenne réelle en entretien, en débat, etc. — pas un score inventé), niveaux (Découverte → Maîtrise), 40 badges honnêtes.

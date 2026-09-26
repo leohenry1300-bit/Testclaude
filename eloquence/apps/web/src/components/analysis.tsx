@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  Check, ChevronDown, Eye, Lightbulb, Pause, RotateCcw, Sparkles, Target, TrendingUp, Wand2,
+  BrainCircuit, Check, ChevronDown, Eye, Lightbulb, Pause, RotateCcw, Sparkles, Target, TrendingUp, Wand2,
 } from "lucide-react";
 import type { Analysis, Issue, Session } from "@eloquence/core";
 import { DIMENSION_HINTS, DIMENSION_LABELS, DIMENSIONS } from "@eloquence/core";
@@ -140,6 +140,32 @@ export function CoachFeedback({ analysis, onRetry }: { analysis: Analysis; onRet
           <RotateCcw size={18} />Refaire l'exercice
         </button>
       )}
+    </section>
+  );
+}
+
+/**
+ * Shown only when an AI key is configured — the heuristic engine can't
+ * judge whether what was said actually makes sense, so this never appears
+ * (and never fabricates a verdict) offline.
+ */
+export function ContentCoherence({ analysis }: { analysis: Analysis }) {
+  const c = analysis.contentCoherence;
+  if (!c) return null;
+  const tone = c.score >= 70 ? "tone-success" : c.score >= 40 ? "tone-warning" : "tone-danger";
+  return (
+    <section className="card" aria-labelledby="coherence-title">
+      <div className="row-between" style={{ marginBottom: 10 }}>
+        <h2 id="coherence-title" style={{ fontSize: 18 }}>Pertinence du contenu</h2>
+        <span className="pill primary"><Sparkles size={13} />IA</span>
+      </div>
+      <div className="feedback-block">
+        <span className={`fb-icon ${tone}`}><BrainCircuit size={18} /></span>
+        <div>
+          <p><strong>{c.score}/100</strong> — {c.reason}</p>
+          <p className="tiny faint" style={{ marginTop: 6 }}>Contrairement aux autres scores (débit, mots parasites…), celui-ci juge si ce que tu as dit répond vraiment à la consigne, pas juste comment tu l'as dit.</p>
+        </div>
+      </div>
     </section>
   );
 }

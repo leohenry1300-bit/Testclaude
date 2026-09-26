@@ -332,11 +332,26 @@ export function createApp(deps: Deps) {
 
     const analysis = analyzeSpeech(capture, { exercise, constraint: meta.constraint });
     if (analysis.metrics.wordCount >= 8) {
+      const feedbackInput = { analysis, transcript: capture.transcript, exercise, firstName: user.firstName };
       try {
-        const fb = await llm.feedback({ analysis, transcript: capture.transcript, exercise, firstName: user.firstName });
+        const fb = await llm.feedback(feedbackInput);
         if (fb) { analysis.feedback = fb; analysis.engine = "llm"; }
       } catch (e) {
         console.error("[llm feedback]", (e as Error).message);
+      }
+      try {
+        const coherence = await llm.coherence(feedbackInput);
+        if (coherence) {
+          analysis.contentCoherence = coherence;
+          // Only ever pulls the score down: a heuristic global that's
+          // already low for other reasons never gets inflated back up just
+          // because the content happened to make sense.
+          if (coherence.score < analysis.scores.global) {
+            analysis.scores.global = Math.round(analysis.scores.global * 0.55 + coherence.score * 0.45);
+          }
+        }
+      } catch (e) {
+        console.error("[llm coherence]", (e as Error).message);
       }
     }
 

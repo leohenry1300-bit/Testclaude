@@ -210,3 +210,44 @@ describe("API", () => {
     expect((await api("GET", "/api/state")).status).toBe(401);
   });
 });
+
+describe("content coherence (AI-only, pulls the score down but never up)", () => {
+  class LowCoherenceLlm extends HeuristicLlm {
+    override async coherence() {
+      return { score: 10, reason: "Ne répond pas du tout à la consigne." };
+    }
+  }
+
+  it("drags a clean-sounding but incoherent answer's global score down", async () => {
+    const dir2 = mkdtempSync(path.join(tmpdir(), "eloq-coh-"));
+    const config = loadConfig({ DATA_DIR: dir2, JWT_SECRET: "test-secret", WEB_DIST: path.join(dir2, "none") });
+    const app = createApp({
+      config,
+      store: new SqliteStore(path.join(dir2, "db.sqlite")),
+      stt: new ClientTranscriptStt(),
+      llm: new LowCoherenceLlm(),
+      storage: new LocalDiskStorage(path.join(dir2, "audio")),
+      mailer: { name: "console", send: async () => {} } as ConsoleMailer,
+    });
+    const srv = app.listen(0);
+    const b = `http://127.0.0.1:${(srv.address() as AddressInfo).port}`;
+    try {
+      const signup = await fetch(`${b}/api/auth/signup`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName: "Coh", email: "coh@ex.com", password: "motdepasse" }),
+      });
+      const { token: tok } = (await signup.json()) as { token: string };
+      const f = sessionForm("entretien-presentation", CLEAN);
+      const res = await fetch(`${b}/api/sessions`, { method: "POST", headers: { Authorization: `Bearer ${tok}` }, body: f });
+      const body = (await res.json()) as { session: { analysis: { scores: { global: number }; contentCoherence: { score: number } } } };
+      expect(res.status).toBe(201);
+      expect(body.session.analysis.contentCoherence.score).toBe(10);
+      // The clean transcript alone would score well above 10: the blend must have pulled it down, not left it untouched.
+      expect(body.session.analysis.scores.global).toBeLessThan(70);
+      expect(body.session.analysis.scores.global).toBeGreaterThan(10);
+    } finally {
+      srv.close();
+      rmSync(dir2, { recursive: true, force: true });
+    }
+  });
+});

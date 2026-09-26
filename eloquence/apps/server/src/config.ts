@@ -17,6 +17,7 @@ export interface Config {
   llm: { provider: "heuristic" | "anthropic"; model: string };
   mail: { provider: "console" | "resend"; resendKey: string | null; from: string };
   billing: { provider: "dev" };
+  s3: { bucket: string; endpoint: string | null; region: string; accessKeyId: string; secretAccessKey: string } | null;
 }
 
 function persistentSecret(dataDir: string): string {
@@ -55,5 +56,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       from: env.MAIL_FROM ?? "Éloquence <bonjour@eloquence.app>",
     },
     billing: { provider: "dev" },
+    s3: env.S3_BUCKET && env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY ? {
+      bucket: env.S3_BUCKET,
+      endpoint: env.S3_ENDPOINT || null,
+      region: env.S3_REGION || "auto",
+      accessKeyId: env.S3_ACCESS_KEY_ID,
+      secretAccessKey: env.S3_SECRET_ACCESS_KEY,
+    } : null,
   };
 }

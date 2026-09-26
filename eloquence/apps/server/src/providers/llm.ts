@@ -25,6 +25,11 @@ export interface RewriteResult {
   persuasif: string | null;
 }
 
+export interface CoherenceResult {
+  score: number;
+  reason: string;
+}
+
 export interface LlmProvider {
   readonly name: string;
   /** Rewrites the coaching feedback from the measured analysis. Null = keep heuristic. */
@@ -36,6 +41,11 @@ export interface LlmProvider {
   /** A model answer to the exercise prompt — clearly not "the only right
    * answer". Null when no LLM is configured (never fabricated offline). */
   modelAnswer(input: FeedbackInput): Promise<string | null>;
+  /** Judges whether the answer actually makes sense and addresses the
+   * prompt — content, not delivery. Null when no LLM is configured: the
+   * heuristic engine has no way to judge meaning, so this is never guessed
+   * at offline. */
+  coherence(input: FeedbackInput): Promise<CoherenceResult | null>;
 }
 
 export class HeuristicLlm implements LlmProvider {
@@ -55,6 +65,9 @@ export class HeuristicLlm implements LlmProvider {
     };
   }
   async modelAnswer(): Promise<string | null> {
+    return null;
+  }
+  async coherence(): Promise<CoherenceResult | null> {
     return null;
   }
 }
@@ -123,6 +136,25 @@ export class AnthropicLlm implements LlmProvider {
     // Guard against a fabricated quote: keep only if it's actually in the transcript.
     if (out.example && !transcript.includes(out.example.text)) out.example = null;
     return out;
+  }
+
+  async coherence({ transcript, exercise, firstName }: FeedbackInput): Promise<CoherenceResult | null> {
+    const CoherenceSchema = z.object({
+      score: z.number().min(0).max(100).describe("0 = incohérent, hors-sujet ou absurde ; 100 = répond vraiment et sensément à la consigne"),
+      reason: z.string().describe("Une phrase factuelle et honnête expliquant ce score, sans complaisance"),
+    });
+    const response = await this.client.messages.parse({
+      model: this.model,
+      max_tokens: 500,
+      system: `${COACH_VOICE}\nÉvalue UNIQUEMENT si ce que la personne a dit a du sens et répond réellement à la consigne — pas la forme (débit, mots parasites, longueur des phrases : déjà mesurés ailleurs, ignore-les). Un texte fluide et bien articulé qui ne répond pas à la question, se contredit, part dans tous les sens ou ne veut rien dire doit avoir un score bas malgré une bonne forme. Sois strict : jamais un score élevé par politesse.`,
+      messages: [{
+        role: "user",
+        content: `Prénom : ${firstName}\nExercice : « ${exercise.title} » — consigne : ${exercise.prompt}${exercise.stance ? ` Position : ${exercise.stance}` : ""}\n\nTranscription :\n"""${transcript.slice(0, 4000)}"""`,
+      }],
+      output_config: { format: zodOutputFormat(CoherenceSchema), effort: "low" },
+    });
+    if (response.stop_reason === "refusal" || !response.parsed_output) return null;
+    return response.parsed_output;
   }
 
   async modelAnswer({ analysis, transcript, exercise, firstName }: FeedbackInput): Promise<string | null> {

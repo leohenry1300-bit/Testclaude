@@ -1,5 +1,6 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { DeleteObjectCommand, GetObjectCommand, NoSuchKey, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 // ---- Audio storage --------------------------------------------------------
 
@@ -9,7 +10,12 @@ export interface AudioStorage {
   delete(key: string): Promise<void>;
 }
 
-/** Stores recordings on disk. Swap for S3/GCS by implementing AudioStorage. */
+/**
+ * Stores recordings on disk — the default, zero-config option, but the
+ * disk it writes to isn't persistent on every host (e.g. Render's free
+ * tier): recordings vanish on restart/redeploy even though session
+ * metadata, now in Postgres, survives. Use S3Storage for real persistence.
+ */
 export class LocalDiskStorage implements AudioStorage {
   constructor(private dir: string) {}
 
@@ -36,6 +42,41 @@ export class LocalDiskStorage implements AudioStorage {
 
   async delete(key: string) {
     await rm(this.file(key), { force: true });
+  }
+}
+
+/**
+ * Stores recordings in any S3-compatible bucket (Cloudflare R2's free tier
+ * is a good fit — 10 GB storage, no egress fees). Selected automatically
+ * when S3_* env vars are set — see loadConfig / createStorage in index.ts.
+ */
+export class S3Storage implements AudioStorage {
+  private client: S3Client;
+  constructor(private bucket: string, opts: { endpoint?: string | null; region: string; accessKeyId: string; secretAccessKey: string }) {
+    this.client = new S3Client({
+      region: opts.region,
+      endpoint: opts.endpoint ?? undefined,
+      credentials: { accessKeyId: opts.accessKeyId, secretAccessKey: opts.secretAccessKey },
+    });
+  }
+
+  async put(key: string, data: Buffer, mime: string) {
+    await this.client.send(new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: data, ContentType: mime }));
+  }
+
+  async get(key: string) {
+    try {
+      const out = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
+      const data = Buffer.from(await out.Body!.transformToByteArray());
+      return { data, mime: out.ContentType ?? "audio/webm" };
+    } catch (e) {
+      if (e instanceof NoSuchKey) return null;
+      throw e;
+    }
+  }
+
+  async delete(key: string) {
+    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
   }
 }
 

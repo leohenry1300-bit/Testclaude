@@ -9,7 +9,7 @@ import { longDay, signed } from "../lib/format";
 import { EmptyState, Icon, ScoreRing, TopBar } from "../components/ui";
 import { CompareBars } from "../components/charts";
 import {
-  AdvancedMetrics, AudioPlayer, CoachFeedback, ConstraintBanner, ImproveAnswer, IssueList, ModelAnswer,
+  AdvancedMetrics, AudioPlayer, CoachFeedback, ConstraintBanner, ContentCoherence, ImproveAnswer, IssueList, ModelAnswer,
   ScoresCard, Transcript,
 } from "../components/analysis";
 
@@ -137,6 +137,7 @@ export function SessionResult() {
         </section>
       )}
 
+      <ContentCoherence analysis={a} />
       <ScoresCard analysis={a} deltas={deltas} />
 
       {comparison && (

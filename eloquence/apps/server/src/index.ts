@@ -4,7 +4,7 @@ import { createStore } from "./db";
 import { createApp } from "./app";
 import { ClientTranscriptStt, OpenAiWhisperStt, type SttProvider } from "./providers/stt";
 import { AnthropicLlm, HeuristicLlm, type LlmProvider } from "./providers/llm";
-import { ConsoleMailer, LocalDiskStorage, ResendMailer, type Mailer } from "./providers/services";
+import { ConsoleMailer, LocalDiskStorage, ResendMailer, S3Storage, type AudioStorage, type Mailer } from "./providers/services";
 
 const config = loadConfig();
 const store = createStore({ file: path.join(config.dataDir, "eloquence.db"), databaseUrl: config.databaseUrl ?? undefined });
@@ -14,11 +14,13 @@ const stt: SttProvider = config.stt.provider === "openai" && config.stt.openaiKe
   : new ClientTranscriptStt();
 const llm: LlmProvider = config.llm.provider === "anthropic" ? new AnthropicLlm(config.llm.model) : new HeuristicLlm();
 const mailer: Mailer = config.mail.resendKey ? new ResendMailer(config.mail.resendKey, config.mail.from) : new ConsoleMailer();
-const storage = new LocalDiskStorage(path.join(config.dataDir, "audio"));
+const storage: AudioStorage = config.s3
+  ? new S3Storage(config.s3.bucket, config.s3)
+  : new LocalDiskStorage(path.join(config.dataDir, "audio"));
 
 const app = createApp({ config, store, stt, llm, storage, mailer });
 
 app.listen(config.port, () => {
   console.log(`Éloquence API → http://localhost:${config.port}`);
-  console.log(`  STT : ${stt.name} · IA : ${llm.name}${llm.name === "anthropic" ? ` (${config.llm.model})` : ""} · e-mails : ${mailer.name} · BDD : ${config.databaseUrl ? "postgres" : "sqlite"}`);
+  console.log(`  STT : ${stt.name} · IA : ${llm.name}${llm.name === "anthropic" ? ` (${config.llm.model})` : ""} · e-mails : ${mailer.name} · BDD : ${config.databaseUrl ? "postgres" : "sqlite"} · audio : ${config.s3 ? "s3" : "disque local"}`);
 });

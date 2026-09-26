@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeSpeech, buildDiagnosticReport, buildGameActivity, buildQuickSession, buildSessionResult,
-  buildTemplateProgram, computeWeeklyGoals, createDemoAccount, detectRecurringIssue, GAMES,
-  generateProgram, generateTopicActivity, getExercise, getGame, getSimulation, heuristicRewrite,
-  pickTopic, ruleBasedCoachReply, searchSessions, streaks, summarize, TOPIC_COUNT,
+  buildTemplateProgram, CATEGORIES, computeWeeklyGoals, createDemoAccount, detectRecurringIssue,
+  EXERCISES_ALL, GAMES, generateProgram, generateTopicActivity, getExercise, getGame, getSimulation,
+  heuristicRewrite, pickTopic, ruleBasedCoachReply, searchSessions, streaks, summarize, TOPIC_COUNT,
 } from "./index";
 
 const exercise = getExercise("entretien-presentation")!;
@@ -162,6 +162,25 @@ describe("topics, games & simulations", () => {
     const { topic, activity } = pickTopic({ category: "histoire" });
     expect(topic.category).toBe("histoire");
     expect(activity.prompt.length).toBeGreaterThan(5);
+  });
+
+  it("gives every training category at least 100 genuinely distinct exercises, never the same prompt twice", () => {
+    // Regression guard: an earlier version multiplied each bank item into
+    // several exercises sharing the same title/prompt (only duration or
+    // instruction differed), which looked like duplicates in "Exercices".
+    for (const c of CATEGORIES) {
+      if (c.id === "libre") continue; // free-talk mode has no prompt by design
+      const inCat = EXERCISES_ALL.filter((e) => e.category === c.id);
+      expect(inCat.length).toBeGreaterThanOrEqual(100);
+      // The title is what the catalogue list actually renders — this is the
+      // signal that made it look like duplicates. For reading drills, the
+      // real content is the read-aloud text, not the (deliberately generic)
+      // prompt field, so check that instead.
+      expect(new Set(inCat.map((e) => e.title)).size).toBe(inCat.length);
+      const contentField = c.id === "prononciation" ? "readText" : c.id === "debat" ? "stance" : "prompt";
+      expect(new Set(inCat.map((e) => e[contentField as "prompt"])).size).toBe(inCat.length);
+    }
+    expect(new Set(EXERCISES_ALL.map((e) => e.id)).size).toBe(EXERCISES_ALL.length);
   });
 
   it("has a large, functional games catalogue with real constraints", () => {

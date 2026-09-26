@@ -224,6 +224,15 @@ export interface Analysis {
   feedback: Feedback;
   constraintResult?: ConstraintResult;
   engine: "heuristic" | "llm";
+  /**
+   * Judges whether what was actually said makes sense and answers the
+   * prompt — separate from every other (purely delivery-based) dimension.
+   * Only set when an AI key is configured: the heuristic engine has no way
+   * to judge meaning, so this is never guessed at offline. When present, it
+   * also pulls `scores.global` down (never up) to reflect content that's
+   * cleanly delivered but doesn't actually say anything coherent.
+   */
+  contentCoherence?: { score: number; reason: string } | null;
 }
 
 /** Where an activity came from, so history/search can show it meaningfully. */
