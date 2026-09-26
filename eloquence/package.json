@@ -8,7 +8,7 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev -w @eloquence/server & npm run dev -w @eloquence/web",
+    "dev": "concurrently -n server,web -c \"blue,magenta\" \"npm:dev:server\" \"npm:dev:web\"",
     "dev:web": "npm run dev -w @eloquence/web",
     "dev:server": "npm run dev -w @eloquence/server",
     "build": "npm run build -w @eloquence/web",
@@ -18,5 +18,8 @@
   },
   "engines": {
     "node": ">=22.13.0"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
   }
 }
