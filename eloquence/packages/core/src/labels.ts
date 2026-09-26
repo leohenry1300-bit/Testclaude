@@ -7,7 +7,25 @@ export const GOAL_LABELS: Record<Goal, string> = {
   convaincre: "Être plus convaincant",
   improviser: "Mieux improviser",
   concours: "Préparer un concours ou un examen",
+  parasites: "Supprimer mes mots parasites",
+  vocabulaire: "Améliorer mon vocabulaire",
+  grammaire: "Améliorer ma grammaire à l'oral",
+  structure: "Mieux structurer mes réponses",
+  debat: "Être meilleur en débat",
+  storytelling: "Mieux raconter des histoires",
+  culture: "Développer ma culture générale",
+  diction: "Améliorer ma diction et ma prononciation",
+  commercial: "Améliorer ma communication commerciale",
+  confiance: "Gagner en confiance à l'oral",
 };
+
+export const GOAL_GROUPS: { title: string; goals: Goal[] }[] = [
+  { title: "Bases", goals: ["aisance", "confiance", "parasites", "diction"] },
+  { title: "Fond", goals: ["structure", "vocabulaire", "grammaire", "culture"] },
+  { title: "Situations", goals: ["entretiens", "presentations", "concours"] },
+  { title: "Persuasion", goals: ["convaincre", "debat", "commercial"] },
+  { title: "Créativité", goals: ["improviser", "storytelling"] },
+];
 
 export const LEVEL_LABELS: Record<Level, string> = {
   debutant: "Débutant",

@@ -1,16 +1,17 @@
 import type {
-  Analysis, Dimension, Issue, IssueKind, Metrics, PaceSample, Scores,
-  Silence, SpeechCapture, SpeechSegment, TranscriptSentence, TranscriptToken,
+  Analysis, ConstraintResult, Dimension, GameConstraint, GrammarFlag, Issue, IssueKind, Metrics,
+  PaceSample, QuotedExample, Scores, Silence, SpeechCapture, SpeechSegment, TranscriptSentence, TranscriptToken,
 } from "./types";
 import type { Exercise } from "./exercises";
 import {
-  CONCLUSION_MARKERS, CONNECTORS, FILLERS_ALWAYS, FILLERS_CONTEXTUAL,
-  HEDGES, HESITATION_SOUNDS, STOPWORDS, VAGUE,
+  CONCLUSION_MARKERS, CONNECTORS, COUNTER_ARGUMENT_MARKERS, CTA_MARKERS, EXAMPLE_MARKERS, FILLERS_ALWAYS,
+  FILLERS_CONTEXTUAL, GRAMMAR_PATTERNS, HEDGES, HESITATION_SOUNDS, STOPWORDS, VAGUE,
 } from "./lexicon";
 import { buildFeedback } from "./feedback";
 
 export const DIMENSIONS: Dimension[] = [
   "clarte", "fluidite", "confiance", "structure", "vocabulaire", "debit", "parasites",
+  "argumentation", "grammaire", "persuasion", "concision",
 ];
 
 export const DIMENSION_LABELS: Record<Dimension, string> = {
@@ -21,6 +22,24 @@ export const DIMENSION_LABELS: Record<Dimension, string> = {
   vocabulaire: "Vocabulaire",
   debit: "Débit",
   parasites: "Mots parasites",
+  argumentation: "Argumentation",
+  grammaire: "Grammaire",
+  persuasion: "Persuasion",
+  concision: "Concision",
+};
+
+export const DIMENSION_HINTS: Record<Dimension, string> = {
+  clarte: "Phrases courtes, idées précises, mots concrets.",
+  fluidite: "Peu d'hésitations, de bégaiements et de blancs subis.",
+  confiance: "Affirmations nettes, voix posée, peu de formules d'excuse.",
+  structure: "Une intro, des étapes reliées, une conclusion.",
+  vocabulaire: "Des mots variés et justes, peu de répétitions.",
+  debit: "Un rythme régulier autour de 130–160 mots par minute.",
+  parasites: "Moins de « euh », « du coup », « en fait »…",
+  argumentation: "Une thèse, des preuves, une nuance, une conclusion (modèle de Toulmin).",
+  grammaire: "Constructions correctes à l'oral, peu de tournures fautives.",
+  persuasion: "Un message qui donne envie d'agir, appuyé par des preuves.",
+  concision: "Aller à l'essentiel sans délayer.",
 };
 
 /** "ta clarté", "ton débit"… for sentences addressed to the user. */
@@ -32,21 +51,16 @@ export const DIMENSION_POSSESSIVE: Record<Dimension, string> = {
   vocabulaire: "ton vocabulaire",
   debit: "ton débit",
   parasites: "ta maîtrise des mots parasites",
-};
-
-export const DIMENSION_HINTS: Record<Dimension, string> = {
-  clarte: "Phrases courtes, idées précises, mots concrets.",
-  fluidite: "Peu d'hésitations, de bégaiements et de blancs subis.",
-  confiance: "Affirmations nettes, voix posée, peu de formules d'excuse.",
-  structure: "Une intro, des étapes reliées, une conclusion.",
-  vocabulaire: "Des mots variés et justes, peu de répétitions.",
-  debit: "Un rythme régulier autour de 130–160 mots par minute.",
-  parasites: "Moins de « euh », « du coup », « en fait »…",
+  argumentation: "ton argumentation",
+  grammaire: "ta grammaire à l'oral",
+  persuasion: "ta force de persuasion",
+  concision: "ta concision",
 };
 
 const WEIGHTS: Record<Dimension, number> = {
-  clarte: 0.17, fluidite: 0.16, confiance: 0.15, structure: 0.15,
-  vocabulaire: 0.12, debit: 0.12, parasites: 0.13,
+  clarte: 0.13, fluidite: 0.12, confiance: 0.1, structure: 0.12,
+  vocabulaire: 0.09, debit: 0.09, parasites: 0.1,
+  argumentation: 0.09, grammaire: 0.06, persuasion: 0.05, concision: 0.05,
 };
 
 export const LONG_SENTENCE_WORDS = 28;
@@ -117,6 +131,9 @@ const P_CONTEXTUAL = new Set(FILLERS_CONTEXTUAL);
 const P_HEDGES = phraseTokens(HEDGES);
 const P_VAGUE = phraseTokens(VAGUE);
 const P_CONNECTORS = phraseTokens(CONNECTORS);
+const P_COUNTER = phraseTokens(COUNTER_ARGUMENT_MARKERS);
+const P_EXAMPLE = phraseTokens(EXAMPLE_MARKERS);
+const P_CTA = phraseTokens(CTA_MARKERS);
 
 function matchAt(words: Word[], i: number, phrases: string[][]): number {
   for (const p of phrases) {
@@ -130,13 +147,34 @@ function matchAt(words: Word[], i: number, phrases: string[][]): number {
   return 0;
 }
 
+function countPhrase(text: string, phrases: string[][]): number {
+  const words = text.split(/\s+/).map((w) => ({ raw: w, norm: normalize(w), sentence: 0 }));
+  let n = 0;
+  for (let i = 0; i < words.length; i++) {
+    const len = matchAt(words, i, phrases);
+    if (len) { n++; i += len - 1; }
+  }
+  return n;
+}
+
+// ---------------------------------------------------------------------------
+// Grammar
+
+function detectGrammar(text: string): GrammarFlag[] {
+  const flags: GrammarFlag[] = [];
+  for (const p of GRAMMAR_PATTERNS) {
+    const m = text.match(p.regex);
+    if (m) flags.push({ match: m[0], label: p.label, fix: p.fix });
+  }
+  return flags;
+}
+
 // ---------------------------------------------------------------------------
 // Pauses and pace
 
 function detectPauses(capture: SpeechCapture, units: SentenceUnit[]): Silence[] {
   const dur = capture.durationSec;
   if (capture.silences && capture.silences.length) {
-    // Ignore silences before the first word / after the last one.
     const first = units.find((u) => u.start !== undefined)?.start ?? 0.5;
     const lastUnit = [...units].reverse().find((u) => u.end !== undefined);
     const last = lastUnit?.end ?? dur - 0.5;
@@ -191,7 +229,6 @@ function volumeStability(volume: number[] | undefined): number | null {
   const mean = voiced.reduce((a, b) => a + b, 0) / voiced.length;
   const sd = Math.sqrt(voiced.reduce((a, b) => a + (b - mean) ** 2, 0) / voiced.length);
   const cv = sd / (mean || 1);
-  // cv ~0.35 = steady, >0.9 = erratic. Quiet voices also read as less assured.
   const steadiness = Math.max(0, Math.min(1, 1 - (cv - 0.35) / 0.8));
   const loudness = Math.max(0, Math.min(1, (mean - 0.04) / 0.16));
   return Math.round((0.7 * steadiness + 0.3 * loudness) * 100) / 100;
@@ -221,10 +258,47 @@ export function globalScore(s: Record<Dimension, number>): number {
 }
 
 // ---------------------------------------------------------------------------
+// Constraint checking (games)
+
+function checkConstraint(constraint: GameConstraint | undefined, words: Word[], metrics: Pick<Metrics, "wpm" | "fillerCount" | "repetitions">): ConstraintResult | undefined {
+  if (!constraint) return undefined;
+  switch (constraint.type) {
+    case "forbidden_words": {
+      const norm = constraint.words.map(normalize);
+      const found: Record<string, number> = {};
+      for (const w of words) {
+        const idx = norm.indexOf(w.norm);
+        if (idx >= 0) found[constraint.words[idx]] = (found[constraint.words[idx]] ?? 0) + 1;
+      }
+      const total = Object.values(found).reduce((a, b) => a + b, 0);
+      return {
+        constraint, passed: total === 0,
+        detail: total === 0 ? "Défi réussi : aucun mot interdit prononcé." : `Mot(s) interdit(s) prononcé(s) : ${Object.entries(found).map(([w, n]) => `« ${w} » ×${n}`).join(", ")}.`,
+      };
+    }
+    case "no_fillers":
+      return { constraint, passed: metrics.fillerCount === 0, detail: metrics.fillerCount === 0 ? "Zéro mot parasite. Défi réussi." : `${metrics.fillerCount} mot(s) parasite(s) détecté(s).` };
+    case "pace_target":
+      return { constraint, passed: metrics.wpm >= constraint.min && metrics.wpm <= constraint.max, detail: `Débit mesuré : ${metrics.wpm} mots/min (cible ${constraint.min}-${constraint.max}).` };
+    case "must_include": {
+      const norm = constraint.words.map(normalize);
+      const present = norm.map((w) => words.some((x) => x.norm === w));
+      const missing = constraint.words.filter((_, i) => !present[i]);
+      return { constraint, passed: missing.length === 0, detail: missing.length === 0 ? "Tous les mots imposés ont été utilisés." : `Mot(s) manquant(s) : ${missing.join(", ")}.` };
+    }
+    case "no_repeat_word": {
+      const n = Object.keys(metrics.repetitions).length;
+      return { constraint, passed: n === 0, detail: n === 0 ? "Aucune répétition notable. Défi réussi." : `${n} mot(s) répété(s) plusieurs fois.` };
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main entry point
 
 export interface AnalyzeOptions {
   exercise?: Pick<Exercise, "durationSec" | "category" | "readText">;
+  constraint?: GameConstraint;
 }
 
 export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {}): Analysis {
@@ -316,6 +390,14 @@ export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {})
     }
   });
 
+  // Grammar (regex over the raw transcript, independent of tokenisation).
+  const grammarFlags = detectGrammar(capture.transcript);
+
+  // Argumentation / persuasion markers.
+  const counterArgumentMarkers = countPhrase(capture.transcript, P_COUNTER);
+  const exampleMarkers = countPhrase(capture.transcript, P_EXAMPLE);
+  const ctaMarkers = countPhrase(capture.transcript, P_CTA);
+
   // Sentences and pauses.
   const pauses = detectPauses(capture, units);
   const sentenceWordCounts = units.map((_, si) => words.filter((w) => w.sentence === si).length);
@@ -329,7 +411,6 @@ export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {})
   const durationSec = isText
     ? Math.max(5, Math.round((wordCount / 145) * 60))
     : Math.max(1, capture.durationSec);
-  // Silence before the first word and after the last one doesn't count as speech time.
   let edges = 0;
   if (!isText && capture.silences?.length) {
     const lead = capture.silences.find((s) => s.start <= 0.3);
@@ -368,7 +449,11 @@ export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {})
     longestPause: Math.round(longestPause * 10) / 10,
     lexicalDiversity: Math.round(lexicalDiversity * 100) / 100,
     connectors: [...connectors],
+    counterArgumentMarkers,
+    exampleMarkers,
+    ctaMarkers,
     hedges,
+    grammarFlags,
     pace,
     accelerations,
     slowdowns,
@@ -412,10 +497,23 @@ export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {})
   if (!isText && usedRatio < 0.4) confiance -= 10;
   if (!isText && usedRatio < 0.4) structure -= 10;
 
+  const grammaire = 96 - grammarFlags.length * 10;
+
+  const argumentation = interp(counterArgumentMarkers + exampleMarkers, [[0, 48], [1, 62], [2, 76], [3, 86], [4, 93]])
+    + (conclusion ? 4 : 0) - vague * 2;
+
+  const persuasion = 55 + ctaMarkers * 10 + exampleMarkers * 6 - hedges * 4 - fillerPer100 * 1.2;
+
+  const idealWordsPerIdea = 45; // roughly one idea every ~45 words at a natural pace
+  const expectedIdeas = Math.max(1, Math.round(wordCount / idealWordsPerIdea));
+  const ideaMarkers = Math.max(1, connectors.size + 1);
+  const concision = 90 - Math.max(0, ideaMarkers - expectedIdeas) * 3 - longSentences * 5 - Math.max(0, avgSentenceWords - 20) * 1;
+
   const raw: Record<Dimension, number> = {
     clarte: clamp(clarte), fluidite: clamp(fluidite), confiance: clamp(confiance),
     structure: clamp(structure), vocabulaire: clamp(vocabulaire), debit: clamp(debit),
-    parasites: clamp(parasites),
+    parasites: clamp(parasites), argumentation: clamp(argumentation), grammaire: clamp(grammaire),
+    persuasion: clamp(persuasion), concision: clamp(concision),
   };
   // Very short answers can't earn high scores: not enough signal.
   if (wordCount < 25) {
@@ -473,6 +571,11 @@ export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {})
     detail: `${vague} expression${vague > 1 ? "s" : ""} vague${vague > 1 ? "s" : ""} (« truc », « tout ça »…).`,
     suggestion: "Nomme les choses précisément : un exemple concret vaut mieux que « des trucs comme ça ».",
   });
+  grammarFlags.forEach((g) => addIssue(`gram:${g.match}`, {
+    kind: "grammar", label: g.label, count: 1,
+    detail: `${g.label} : tournure à revoir.`,
+    suggestion: g.fix,
+  }));
   if (accelerations) issues.push({
     kind: "pause", label: "Accélérations", count: accelerations,
     detail: `Tu accélères nettement ${accelerations} fois au cours de ta réponse.`,
@@ -496,7 +599,24 @@ export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {})
     return { tokens, tooLong: sentenceWordCounts[si] > LONG_SENTENCE_WORDS, wordCount: sentenceWordCounts[si], pauseAfter };
   }).filter((s) => s.tokens.length > 0);
 
-  const feedback = buildFeedback(scores, metrics, issues, { usedRatio, isText, readText: !!opts.exercise?.readText });
+  const example = pickQuote(sentences);
+  const constraintResult = checkConstraint(opts.constraint, words, metrics);
+  const feedback = buildFeedback(scores, metrics, issues, example, { usedRatio, isText, readText: !!opts.exercise?.readText, category: opts.exercise?.category });
 
-  return { scores, metrics, issues, sentences, feedback, engine: "heuristic" };
+  return { scores, metrics, issues, sentences, feedback, constraintResult, engine: "heuristic" };
+}
+
+/** The sentence carrying the most flagged tokens — a real, grounded excerpt. */
+function pickQuote(sentences: TranscriptSentence[]): QuotedExample | null {
+  let best: { text: string; kind: IssueKind; score: number } | null = null;
+  for (const s of sentences) {
+    const flagged = s.tokens.filter((t) => t.kind);
+    if (!flagged.length && !s.tooLong) continue;
+    const kind = flagged[0]?.kind ?? "long_sentence";
+    const score = flagged.length + (s.tooLong ? 2 : 0);
+    if (!best || score > best.score) {
+      best = { text: s.tokens.map((t) => t.text).join(" "), kind, score };
+    }
+  }
+  return best ? { text: best.text, issue: best.kind } : null;
 }

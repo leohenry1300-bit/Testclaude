@@ -3,6 +3,7 @@ import { analyzeSpeech, DIMENSIONS, globalScore } from "./analysis";
 import { getExercise } from "./exercises";
 import { buildSessionResult } from "./pipeline";
 import { generateProgram, markProgramProgress } from "./programs";
+import { detectRecurringIssue, weakestDimension } from "./progress";
 
 export const DEFAULT_SETTINGS: UserSettings = {
   notifications: true,
@@ -23,6 +24,8 @@ const TEXTS: Record<string, string> = {
   "debat-teletravail": "Je pense que le télétravail ne doit pas devenir la norme, mais une option. D'abord, parce que les échanges informels créent de l'innovation. Par exemple, beaucoup de bonnes idées naissent autour d'un café. Ensuite, les jeunes salariés apprennent énormément en observant leurs collègues. Cependant, le télétravail apporte de la concentration et évite des heures de transport. Pour conclure, je défends un modèle hybride, choisi par les équipes. Concrètement, deux ou trois jours sur site permettent de garder le lien, de former les nouveaux et de décider vite. Les autres jours, chacun peut se concentrer sur les tâches qui demandent du calme. Imposer un modèle unique, qu'il soit tout au bureau ou tout à distance, revient à ignorer la diversité des métiers.",
   "entretien-qualite": "Ma principale qualité, c'est la rigueur. Lors de mon alternance, j'ai mis en place un tableau de suivi des campagnes que toute l'équipe utilise encore aujourd'hui. Grâce à ce suivi, nous avons repéré une erreur de ciblage qui nous coûtait plusieurs milliers d'euros par mois. Cette rigueur rassure mes collègues et me permet de prendre des décisions solides. Concrètement, je vérifie chaque hypothèse avant de lancer une action, et je documente ce que je fais pour que n'importe qui puisse reprendre mon travail. Cette habitude m'a aussi appris à dire non quand une demande n'est pas assez claire, puis à poser les bonnes questions pour la préciser.",
   "pro-reunion": "Je voudrais proposer une nouvelle façon d'organiser nos points hebdomadaires. Aujourd'hui, ils durent une heure et chacun présente tout. Je propose de passer à trente minutes, avec seulement les blocages et les décisions à prendre. Le reste peut être partagé par écrit la veille. On pourrait tester pendant un mois et faire le bilan ensemble. Concrètement, chacun enverrait trois lignes le lundi soir : ce qui avance, ce qui bloque, ce dont il a besoin. Le mardi, on ne traiterait que les blocages. Je pense qu'on gagnerait une demi-heure par semaine et par personne, soit plus de vingt heures par mois pour l'équipe.",
+  "story-experience": "À l'origine, j'étais plutôt du genre à éviter de parler en public. Chaque jour, je préférais laisser les autres prendre la parole en réunion. Jusqu'au jour où mon manager est tombé malade juste avant une présentation client importante, et j'ai dû la faire à sa place avec deux heures de préparation. À cause de ça, j'ai dû improviser un plan sur un coin de table. Et à cause de ça aussi, j'ai découvert que je retenais mieux mes idées en les structurant en trois points qu'en essayant de tout retenir par cœur. Et depuis ce jour, je prépare toujours mes interventions de cette façon, même les plus courtes.",
+  "culture-libre": "Les villes se sont historiquement développées autour des fleuves pour plusieurs raisons concrètes. D'abord, l'eau était indispensable à la vie quotidienne et à l'agriculture environnante. Ensuite, les fleuves offraient une voie de transport bien plus rapide que la route, ce qui facilitait le commerce. Par exemple, Paris s'est développée autour de la Seine notamment pour cette raison commerciale. Cependant, cette proximité comporte aussi un risque d'inondation, ce qui explique certains choix d'urbanisme plus récents. Pour conclure, le fleuve a longtemps été à la fois une ressource et une voie de circulation, ce qui explique sa place centrale dans l'histoire urbaine.",
 };
 
 const FILLER_POOL = ["euh", "du coup", "en fait", "euh", "voilà", "genre", "donc euh"];
@@ -76,9 +79,9 @@ const PLAN: Plan[] = [
   { dayOffset: -5, hour: 19, exerciseId: "impro-ville", target: 81, fillerRate: 0.05, wpm: 166 },
   { dayOffset: -4, hour: 18, exerciseId: "entretien-qualite", target: 82, fillerRate: 0.04, wpm: 164 },
   { dayOffset: -3, hour: 19, exerciseId: "debat-teletravail", target: 80, fillerRate: 0.05, wpm: 168 },
-  { dayOffset: -3, hour: 20, exerciseId: "debat-teletravail", target: 85, fillerRate: 0.03, wpm: 163 },
+  { dayOffset: -3, hour: 20, exerciseId: "story-experience", target: 85, fillerRate: 0.03, wpm: 163 },
   { dayOffset: -2, hour: 19, exerciseId: "entretien-presentation", target: 84, fillerRate: 0.03, wpm: 162 },
-  { dayOffset: -1, hour: 21, exerciseId: "pro-reunion", target: 86, fillerRate: 0.03, wpm: 161 },
+  { dayOffset: -1, hour: 21, exerciseId: "culture-libre", target: 86, fillerRate: 0.03, wpm: 161 },
   { dayOffset: 0, hour: 9, exerciseId: "impro-passion", target: 86, fillerRate: 0.02, wpm: 160 },
 ];
 
@@ -89,15 +92,14 @@ export function createDemoAccount(now = new Date()): AccountState {
     firstName: "Camille",
     email: null,
     avatar: null,
-    goal: "entretiens",
+    goals: ["entretiens", "confiance", "parasites"],
     goalText: "Je veux réussir mon prochain entretien.",
     level: "intermediaire",
     frequency: "10",
-    plan: "premium",
-    premiumUntil: new Date(now.getTime() + 14 * 86_400_000).toISOString(),
     createdAt: new Date(now.getTime() - 30 * 86_400_000).toISOString(),
     settings: { ...DEFAULT_SETTINGS },
     isDemo: true,
+    diagnosticDone: true,
   };
 
   const sessions: Session[] = [];
@@ -106,35 +108,50 @@ export function createDemoAccount(now = new Date()): AccountState {
     const exercise = getExercise(p.exerciseId)!;
     const capture = simulateCapture(TEXTS[p.exerciseId], p.fillerRate, p.wpm, rand);
     const analysis = analyzeSpeech(capture, { exercise });
-    // Nudge the heuristic scores onto the demo trajectory, keeping their shape.
     const shift = p.target - analysis.scores.global;
     for (const d of DIMENSIONS) analysis.scores[d] = Math.max(35, Math.min(97, Math.round(analysis.scores[d] + shift)));
     analysis.scores.global = globalScore(analysis.scores);
     const at = new Date(now);
     at.setDate(at.getDate() + p.dayOffset);
     at.setHours(p.hour, (i * 7) % 60, 0, 0);
-    // Today's session must not be in the future.
     if (at > now) at.setTime(now.getTime() - 60 * 60 * 1000);
     const result = buildSessionResult({
-      userId: user.id, exercise, analysis, transcript: capture.transcript,
+      userId: user.id, exercise, source: "catalogue", analysis, transcript: capture.transcript,
       durationSec: capture.durationSec, audioUrl: null, previous: sessions, badges, now: at, id: `demo_${i + 1}`,
+      badgeContext: { diagnosticDone: true, distinctGames: 3, distinctSimulations: 1 },
     });
     sessions.push(result.session);
     for (const b of result.newBadges) badges.push({ id: b.id, earnedAt: at.toISOString() });
   });
 
-  let program = generateProgram(user.goalText!, user.goal, "debit", new Date(now.getTime() - 5 * 86_400_000));
-  for (const s of sessions.slice(-6)) program = markProgramProgress(program, s.exerciseId);
+  const sorted = sessions.slice().reverse();
+  const weakest = weakestDimension({
+    global: 0, clarte: 87, fluidite: 84, confiance: 80, structure: 73, vocabulaire: 92, debit: 93, parasites: 76,
+    argumentation: 79, grammaire: 88, persuasion: 78, concision: 81,
+  });
+  let program = generateProgram(user.goalText!, user.goals, weakest, detectRecurringIssue(sessions), 21, new Date(now.getTime() - 5 * 86_400_000));
+  for (const s of sorted.slice(-6)) program = markProgramProgress(program, s.exerciseId);
 
   const t0 = new Date(now.getTime() - 2 * 86_400_000).toISOString();
   const coach: CoachMessage[] = [
     { id: "c1", role: "user", text: "Pourquoi je parle trop vite ?", createdAt: t0 },
     {
       id: "c2", role: "coach", createdAt: t0,
-      text: "On parle vite pour trois raisons : le stress, l'envie d'en finir, ou parce qu'on connaît trop bien son sujet. Sur tes premières sessions, tu étais au-dessus de 170 mots/min. Tu es maintenant autour de 150 : c'est la zone idéale.\n\nPour ancrer ce rythme : une pause complète après chaque idée importante.",
+      text: "On parle vite pour trois raisons : le stress, l'envie d'en finir, ou parce qu'on connaît trop bien son sujet. Sur tes premières sessions, tu étais au-dessus de 180 mots/min. Tu es maintenant autour de 160 : c'est la zone idéale.\n\nPour ancrer ce rythme : une pause complète après chaque idée importante.",
       action: { label: "Rythme et pauses · 60 s", exerciseId: "pron-rythme" },
     },
   ];
 
-  return { user, sessions: sessions.reverse(), program, coach, badges };
+  return {
+    user, sessions: sorted, program, coach, badges,
+    diagnostic: {
+      completedAt: new Date(now.getTime() - 29 * 86_400_000).toISOString(),
+      steps: [],
+      averageScores: { global: 66, clarte: 68, fluidite: 62, confiance: 64, structure: 60, vocabulaire: 70, debit: 65, parasites: 55, argumentation: 61, grammaire: 74, persuasion: 60, concision: 63 },
+      level: "intermediaire",
+      strongest: "grammaire",
+      weakest: "parasites",
+      summary: "Tu te débrouilles déjà bien, avec quelques réflexes à automatiser. Ton point fort actuel : grammaire. Le levier prioritaire : parasites.",
+    },
+  };
 }

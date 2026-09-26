@@ -1,10 +1,8 @@
-import type { Analysis, EarnedBadge, Plan, Session, SessionResult, User } from "./types";
+import type { Analysis, EarnedBadge, Session, SessionResult } from "./types";
 import type { Exercise } from "./exercises";
-import { compareAttempts, evaluateBadges, levelFor, streaks, totalXp, xpForSession } from "./progress";
-
-export const FREE_DAILY_EXERCISES = 3;
-export const FREE_DAILY_COACH_MESSAGES = 5;
-export const FREE_HISTORY_DAYS = 7;
+import {
+  compareAttempts, detectRecurringIssue, evaluateBadges, levelFor, streaks, totalXp, xpForSession,
+} from "./progress";
 
 export function uid(prefix = ""): string {
   const rnd = typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -13,53 +11,25 @@ export function uid(prefix = ""): string {
   return prefix + rnd;
 }
 
-export function isPremium(user: Pick<User, "plan" | "premiumUntil">, now = new Date()): boolean {
-  if (user.plan !== "premium") return false;
-  return !user.premiumUntil || new Date(user.premiumUntil) > now;
-}
-
-export type Gate =
-  | { ok: true }
-  | { ok: false; reason: "premium_exercise" | "daily_limit"; message: string };
-
-export function canStartExercise(
-  user: Pick<User, "plan" | "premiumUntil">,
-  exercise: Pick<Exercise, "premium">,
-  todayCount: number,
-  opts: { onboarding?: boolean } = {},
-): Gate {
-  if (opts.onboarding || isPremium(user)) return { ok: true };
-  if (exercise.premium) {
-    return { ok: false, reason: "premium_exercise", message: "Cet exercice fait partie d'Éloquence Premium." };
-  }
-  if (todayCount >= FREE_DAILY_EXERCISES) {
-    return {
-      ok: false,
-      reason: "daily_limit",
-      message: `Tu as fait tes ${FREE_DAILY_EXERCISES} exercices gratuits du jour. Reviens demain ou passe en Premium pour continuer.`,
-    };
-  }
-  return { ok: true };
-}
-
-export function planLabel(plan: Plan): string {
-  return plan === "premium" ? "Premium" : "Gratuit";
-}
-
 /**
  * Turns an analysis into a stored session plus its rewards. Pure: the caller
  * persists the returned session and badges. Used by both the API and the
  * offline/demo client so the rules can't drift apart.
+ *
+ * This is a personal, single-user app: nothing here gates access — every
+ * exercise, game, simulation and coach conversation is unlimited.
  */
 export function buildSessionResult(args: {
   userId: string;
   exercise: Pick<Exercise, "id" | "title" | "category">;
+  source: Session["source"];
   analysis: Analysis;
   transcript: string;
   durationSec: number;
   audioUrl: string | null;
   previous: Session[];
   badges: EarnedBadge[];
+  badgeContext?: Parameters<typeof evaluateBadges>[2];
   now?: Date;
   id?: string;
 }): SessionResult {
@@ -78,6 +48,7 @@ export function buildSessionResult(args: {
     exerciseId: args.exercise.id,
     exerciseTitle: args.exercise.title,
     category: args.exercise.category,
+    source: args.source,
     createdAt: now.toISOString(),
     durationSec: Math.round(args.durationSec),
     audioUrl: args.audioUrl,
@@ -89,12 +60,13 @@ export function buildSessionResult(args: {
   };
   const all = [...args.previous, draft];
   const after = streaks(all, now).current;
-  const xp = xpForSession(score, comparison, after, before);
+  const xp = xpForSession(score, comparison, after, before, args.analysis.constraintResult?.passed);
   draft.xpEarned = xp.reduce((a, l) => a + l.xp, 0);
 
   const levelBefore = levelFor(totalXp(args.previous));
   const levelAfter = levelFor(totalXp(all));
-  const newBadges = evaluateBadges(all, args.badges, now);
+  const newBadges = evaluateBadges(all, args.badges, args.badgeContext, now);
+  const recurringChallenge = detectRecurringIssue(all);
 
   return {
     session: draft,
@@ -102,5 +74,6 @@ export function buildSessionResult(args: {
     xp,
     newBadges,
     levelUp: levelAfter.level > levelBefore.level ? levelAfter : null,
+    recurringChallenge,
   };
 }

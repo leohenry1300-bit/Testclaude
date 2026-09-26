@@ -1,5 +1,8 @@
 // Shared domain model for Éloquence. Used by the web app, the API and the
 // analysis engine so that both sides always speak the same language.
+//
+// This is a personal, single-user coaching app: there is no plan, no
+// premium tier, no paywall anywhere in this model on purpose.
 
 export type Goal =
   | "aisance"
@@ -7,13 +10,21 @@ export type Goal =
   | "presentations"
   | "convaincre"
   | "improviser"
-  | "concours";
+  | "concours"
+  | "parasites"
+  | "vocabulaire"
+  | "grammaire"
+  | "structure"
+  | "debat"
+  | "storytelling"
+  | "culture"
+  | "diction"
+  | "commercial"
+  | "confiance";
 
 export type Level = "debutant" | "intermediaire" | "a_l_aise" | "tres_a_l_aise";
 
 export type Frequency = "5" | "10" | "15" | "semaine";
-
-export type Plan = "free" | "premium";
 
 export type CategoryId =
   | "improvisation"
@@ -22,8 +33,13 @@ export type CategoryId =
   | "presentation"
   | "debat"
   | "pro"
-  | "prononciation";
+  | "prononciation"
+  | "culture"
+  | "storytelling"
+  | "libre";
 
+/** Measurable, honestly-scored dimensions. Kept deliberately limited to what
+ * the engine can actually observe in text/audio signals. */
 export type Dimension =
   | "clarte"
   | "fluidite"
@@ -31,7 +47,11 @@ export type Dimension =
   | "structure"
   | "vocabulaire"
   | "debit"
-  | "parasites";
+  | "parasites"
+  | "argumentation"
+  | "grammaire"
+  | "persuasion"
+  | "concision";
 
 export type Scores = Record<Dimension, number> & { global: number };
 
@@ -50,15 +70,14 @@ export interface User {
   firstName: string;
   email: string | null;
   avatar: string | null; // data URL or emoji seed
-  goal: Goal;
+  goals: Goal[];
   goalText: string | null;
   level: Level;
   frequency: Frequency;
-  plan: Plan;
-  premiumUntil: string | null;
   createdAt: string;
   settings: UserSettings;
   isDemo?: boolean;
+  diagnosticDone?: boolean;
 }
 
 /** A chunk of recognised speech with its timing, in seconds from start. */
@@ -92,7 +111,9 @@ export type IssueKind =
   | "long_sentence"
   | "pause"
   | "hedge"
-  | "vague";
+  | "vague"
+  | "grammar"
+  | "forbidden";
 
 export interface TranscriptToken {
   text: string;
@@ -122,6 +143,12 @@ export interface PaceSample {
   wpm: number;
 }
 
+export interface GrammarFlag {
+  match: string;
+  label: string;
+  fix: string;
+}
+
 export interface Metrics {
   wordCount: number;
   uniqueWords: number;
@@ -139,7 +166,11 @@ export interface Metrics {
   longestPause: number;
   lexicalDiversity: number;
   connectors: string[];
+  counterArgumentMarkers: number;
+  exampleMarkers: number;
+  ctaMarkers: number;
   hedges: number;
+  grammarFlags: GrammarFlag[];
   pace: PaceSample[];
   accelerations: number;
   slowdowns: number;
@@ -148,13 +179,39 @@ export interface Metrics {
   typed?: boolean;
 }
 
+/** A short excerpt from the actual transcript, used to ground feedback. */
+export interface QuotedExample {
+  text: string;
+  issue: IssueKind;
+}
+
 export interface Feedback {
-  strengths: string;
-  improvements: string;
-  tip: string;
-  retry: string;
-  /** one-line headline summarising the attempt */
   headline: string;
+  /** What went well — at most 3 concrete points. */
+  strengths: string[];
+  /** What holds the answer back — at most 3 concrete points. */
+  weaknesses: string[];
+  /** A real excerpt from the transcript illustrating the top issue. */
+  example: QuotedExample | null;
+  /** Why that excerpt is a problem. */
+  why: string;
+  /** A concrete technique to fix it (may name PREP, STAR, Toulmin…). */
+  howToFix: string;
+  /** A quantified target for the next attempt. */
+  goal: string;
+}
+
+export type GameConstraint =
+  | { type: "forbidden_words"; words: string[] }
+  | { type: "no_fillers" }
+  | { type: "pace_target"; min: number; max: number }
+  | { type: "must_include"; words: string[] }
+  | { type: "no_repeat_word" };
+
+export interface ConstraintResult {
+  constraint: GameConstraint;
+  passed: boolean;
+  detail: string;
 }
 
 export interface Analysis {
@@ -163,8 +220,12 @@ export interface Analysis {
   issues: Issue[];
   sentences: TranscriptSentence[];
   feedback: Feedback;
+  constraintResult?: ConstraintResult;
   engine: "heuristic" | "llm";
 }
+
+/** Where an activity came from, so history/search can show it meaningfully. */
+export type ActivitySource = "catalogue" | "jeu" | "sujet" | "simulation" | "diagnostic" | "libre" | "programme";
 
 export interface Session {
   id: string;
@@ -172,6 +233,7 @@ export interface Session {
   exerciseId: string;
   exerciseTitle: string;
   category: CategoryId;
+  source: ActivitySource;
   createdAt: string;
   durationSec: number;
   audioUrl: string | null;
@@ -214,6 +276,7 @@ export interface SessionResult {
   xp: XpLine[];
   newBadges: Badge[];
   levelUp: LevelInfo | null;
+  recurringChallenge: RecurringChallenge | null;
 }
 
 export interface LevelInfo {
@@ -227,15 +290,26 @@ export interface ProgramDay {
   day: number;
   title: string;
   focus: string;
-  exerciseId: string;
+  activityId: string;
+  kind: "exercise" | "game" | "topic" | "simulation" | "lesson";
   done: boolean;
 }
 
 export interface Program {
   id: string;
+  templateId: string | null;
+  title: string;
   goalText: string;
   createdAt: string;
   days: ProgramDay[];
+}
+
+export interface ProgramTemplate {
+  id: string;
+  title: string;
+  tagline: string;
+  days: number;
+  icon: string;
 }
 
 export interface CoachMessage {
@@ -245,8 +319,8 @@ export interface CoachMessage {
   createdAt: string;
   /** Optional suggested exercise the UI can launch. */
   action?: { label: string; exerciseId: string };
-  /** Set while the coach runs a mock interview, to track the question index. */
-  interview?: { step: number; total: number };
+  /** Set while the coach runs a mock interview/simulation. */
+  interview?: { step: number; total: number; simulationId?: string };
 }
 
 export interface ProgressSummary {
@@ -268,6 +342,29 @@ export interface ProgressSummary {
   fillersRemoved: number;
   todayCount: number;
   badges: EarnedBadge[];
+  /** average score & count per exercise category — the "competency profile". */
+  byCategory: Partial<Record<CategoryId, { average: number; count: number }>>;
+  distinctTopics: number;
+  recurringIssue: RecurringChallenge | null;
+}
+
+export interface RecurringChallenge {
+  key: string;
+  label: string;
+  kind: IssueKind;
+  occurrences: number;
+  sessionsAffected: number;
+  suggestedGameId: string;
+}
+
+export interface WeeklyGoals {
+  weekStart: string;
+  principal: { dimension: Dimension; label: string };
+  secondary: { dimension: Dimension; label: string } | null;
+  culturel: { label: string; target: number; done: number };
+  challenge: { label: string; activityId: string };
+  recapAvailable: boolean;
+  recap?: { scoreDelta: number; message: string };
 }
 
 /** Everything a client needs to render the app for one user. */
@@ -277,4 +374,22 @@ export interface AccountState {
   program: Program | null;
   coach: CoachMessage[];
   badges: EarnedBadge[];
+  diagnostic: DiagnosticReport | null;
+}
+
+export interface DiagnosticStepResult {
+  stepId: string;
+  title: string;
+  sessionId: string;
+  scores: Scores;
+}
+
+export interface DiagnosticReport {
+  completedAt: string;
+  steps: DiagnosticStepResult[];
+  averageScores: Scores;
+  level: Level;
+  strongest: Dimension;
+  weakest: Dimension;
+  summary: string;
 }
