@@ -99,6 +99,33 @@ describe("analyzeSpeech", () => {
     expect(short.scores.global).toBeLessThanOrEqual(35);
     expect(short.feedback.headline).toMatch(/Pas assez/);
   });
+
+  it("scores a recording that's mostly dead air low, even with a clean-looking transcript", () => {
+    // A handful of coherent words spread over a mostly-silent 60s recording
+    // (the "gros blancs" case): the browser's speech recognition often
+    // drops filler sounds entirely, so the transcript alone looks clean —
+    // the silence itself has to be what tanks the score.
+    const a = analyzeSpeech({
+      transcript: "Alors du coup je sais pas trop quoi dire là sur ce sujet franchement.",
+      durationSec: 60,
+      source: "speech",
+      silences: [{ start: 3, end: 20 }, { start: 24, end: 45 }],
+    }, { exercise });
+    expect(a.metrics.silenceRatio).toBeGreaterThan(0.5);
+    expect(a.scores.global).toBeLessThan(50);
+    expect(a.scores.fluidite).toBeLessThan(45);
+  });
+
+  it("flags when the transcript has zero fillers despite heavy silence — a sign the browser swallowed them", () => {
+    const a = analyzeSpeech({
+      transcript: "C'est un sujet vraiment intéressant que je trouve important pour tout le monde aujourd'hui.",
+      durationSec: 45,
+      source: "speech",
+      silences: [{ start: 5, end: 18 }],
+    }, { exercise });
+    expect(a.metrics.fillerCount).toBe(0);
+    expect(a.feedback.weaknesses.some((w) => w.includes("efface probablement"))).toBe(true);
+  });
 });
 
 describe("sessions, streaks & rewards — no gating anywhere", () => {

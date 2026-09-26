@@ -427,6 +427,7 @@ export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {})
   const slowdowns = pace.length >= 3 ? pace.filter((p) => p.wpm < med * 0.65).length : 0;
   const longestPause = pauses.reduce((m, p) => Math.max(m, p.end - p.start), 0);
   const stability = volumeStability(capture.volume);
+  const silenceRatio = isText ? 0 : Math.max(0, Math.min(1, totalPause / trimmedDuration));
 
   const fillerCount = Object.values(fillers).reduce((a, b) => a + b, 0);
   const fillerPer100 = wordCount ? (fillerCount / wordCount) * 100 : 0;
@@ -447,6 +448,7 @@ export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {})
     longSentences,
     pauseCount: pauses.length,
     longestPause: Math.round(longestPause * 10) / 10,
+    silenceRatio: Math.round(silenceRatio * 100) / 100,
     lexicalDiversity: Math.round(lexicalDiversity * 100) / 100,
     connectors: [...connectors],
     counterArgumentMarkers,
@@ -478,10 +480,10 @@ export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {})
     debit = 95 - gap * 0.9 - Math.min(12, accelerations * 4) - Math.min(8, slowdowns * 3);
   }
 
-  const fluidite = 95 - hes100 * 3 - stutters * 4 - longPauses * 5
-    - Math.max(0, pauses.length - longPauses - expectedPauses) * 2 - fillerPer100 * 0.8;
+  const fluidite = 95 - hes100 * 3 - stutters * 4 - longPauses * 9
+    - Math.max(0, pauses.length - longPauses - expectedPauses) * 2 - fillerPer100 * 0.8 - silenceRatio * 55;
 
-  const clarte = 92 - longSentences * 6 - Math.max(0, avgSentenceWords - 22) * 1.2 - vague * 5 - fillerPer100 * 1;
+  const clarte = 92 - longSentences * 6 - Math.max(0, avgSentenceWords - 22) * 1.2 - vague * 5 - fillerPer100 * 1 - silenceRatio * 20;
 
   const vocabulaire = interp(lexicalDiversity, [[0.45, 45], [0.55, 60], [0.65, 76], [0.72, 86], [0.8, 94]])
     - Object.keys(repetitions).length * 4 - vague * 2;
@@ -492,7 +494,7 @@ export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {})
     + (nonEmpty.length >= 3 ? 3 : -5);
   if (opts.exercise?.readText) structure = Math.max(structure, 80); // reading drills: structure given
 
-  let confiance = 88 - hedges * 5 - fillerPer100 * 1.5 - longPauses * 3;
+  let confiance = 88 - hedges * 5 - fillerPer100 * 1.5 - longPauses * 6 - silenceRatio * 30;
   if (stability !== null) confiance += (stability - 0.6) * 20;
   if (!isText && usedRatio < 0.4) confiance -= 10;
   if (!isText && usedRatio < 0.4) structure -= 10;
@@ -518,6 +520,14 @@ export function analyzeSpeech(capture: SpeechCapture, opts: AnalyzeOptions = {})
   // Very short answers can't earn high scores: not enough signal.
   if (wordCount < 25) {
     const cap = wordCount < 8 ? 35 : 60;
+    for (const d of DIMENSIONS) raw[d] = Math.min(raw[d], cap);
+  }
+  // A recording that's mostly dead air can't score well either, whatever the
+  // few words in it look like: real silence is a strong, honest signal on
+  // its own, measured straight from the microphone (not from the
+  // transcript, which some browsers' speech recognition can under-report).
+  if (!isText && silenceRatio >= 0.5) {
+    const cap = silenceRatio >= 0.7 ? 30 : 50;
     for (const d of DIMENSIONS) raw[d] = Math.min(raw[d], cap);
   }
   const scores: Scores = { ...raw, global: globalScore(raw) };

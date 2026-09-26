@@ -139,6 +139,17 @@ export function buildFeedback(
   if (!ctx.isText && ctx.usedRatio < 0.5 && weaknesses.length < 3) {
     weaknesses.push("Moins de la moitié du temps disponible utilisé : les idées manquent de développement.");
   }
+  // Zero filler words detected despite a lot of silence usually means the
+  // browser's speech recognition swallowed the hesitations rather than the
+  // user having none — say so plainly instead of implying a clean take.
+  // Prioritised over other weaknesses (it explains why the rest of the
+  // analysis may be understating hesitation), so it replaces the last slot
+  // if the list is already full rather than being silently dropped.
+  if (!ctx.isText && m.fillerCount === 0 && m.silenceRatio >= 0.15) {
+    const note = "Aucun mot parasite détecté malgré des silences marqués : ton navigateur efface probablement les « euh » à la transcription — active la transcription serveur (clé Whisper) ou réponds à l'écrit pour une analyse plus fidèle.";
+    if (weaknesses.length < 3) weaknesses.push(note);
+    else weaknesses[weaknesses.length - 1] = note;
+  }
 
   const g = scores.global;
   const headline =

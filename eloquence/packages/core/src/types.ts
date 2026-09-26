@@ -164,6 +164,8 @@ export interface Metrics {
   longSentences: number;
   pauseCount: number;
   longestPause: number;
+  /** Share of the recording spent in silence (0-1): how much "dead air". */
+  silenceRatio: number;
   lexicalDiversity: number;
   connectors: string[];
   counterArgumentMarkers: number;
