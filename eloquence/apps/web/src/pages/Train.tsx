@@ -1,8 +1,62 @@
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ChevronRight, Clock, Dices, Gamepad2, RotateCcw, Users as UsersIcon } from "lucide-react";
-import { CATEGORIES, EXERCISES, EXERCISES_ALL, formatDuration, GAME_GROUPS, GAMES, type CategoryId } from "@eloquence/core";
+import { ChevronRight, Clock, Dices, Gamepad2, Mic, RotateCcw, Users as UsersIcon } from "lucide-react";
+import {
+  CATEGORIES, EXERCISES, EXERCISES_ALL, formatDuration, GAME_GROUPS, GAMES, uid, type CategoryId, type Exercise,
+} from "@eloquence/core";
 import { useAccount } from "../lib/store";
+import { useLaunchActivity } from "../lib/launch";
 import { Icon } from "../components/ui";
+
+const CUSTOM_DURATIONS = [30, 60, 90, 120, 180];
+
+function CustomTopicCard() {
+  const launch = useLaunchActivity();
+  const [text, setText] = useState("");
+  const [category, setCategory] = useState<CategoryId>("improvisation");
+  const [durationSec, setDurationSec] = useState(60);
+
+  const start = () => {
+    const prompt = text.trim();
+    if (!prompt) return;
+    const exercise: Exercise = {
+      id: uid("perso_"),
+      category,
+      title: prompt.length > 60 ? `${prompt.slice(0, 57)}…` : prompt,
+      prompt,
+      instruction: "Réponds comme tu le ferais vraiment dans cette situation précise.",
+      durationSec,
+      focus: "clarte",
+    };
+    launch(exercise, { source: "libre" });
+  };
+
+  return (
+    <section className="card stack" aria-labelledby="custom-topic-title">
+      <div>
+        <h2 id="custom-topic-title" style={{ fontSize: 17 }}>Entraîne-toi sur ta situation</h2>
+        <p className="small muted" style={{ marginTop: 4 }}>Une vraie question qu'on va te poser, un sujet précis à préparer : écris-le et entraîne-toi dessus, avec la même analyse que le reste.</p>
+      </div>
+      <textarea
+        className="textarea"
+        rows={3}
+        maxLength={2000}
+        placeholder="Ex : « Pourquoi voulez-vous nous rejoindre alors que vous n'avez jamais travaillé dans ce secteur ? »"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
+      <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
+        <select className="select" style={{ minHeight: 40, flex: "1 1 160px" }} value={category} onChange={(e) => setCategory(e.target.value as CategoryId)} aria-label="Catégorie">
+          {CATEGORIES.filter((c) => c.id !== "libre").map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+        </select>
+        <select className="select" style={{ minHeight: 40, width: 110 }} value={durationSec} onChange={(e) => setDurationSec(Number(e.target.value))} aria-label="Durée">
+          {CUSTOM_DURATIONS.map((s) => <option key={s} value={s}>{formatDuration(s)}</option>)}
+        </select>
+      </div>
+      <button className="btn btn-primary btn-block" disabled={!text.trim()} onClick={start}><Mic size={16} />S'entraîner sur ce sujet</button>
+    </section>
+  );
+}
 
 export function Train() {
   const { account } = useAccount();
@@ -22,6 +76,8 @@ export function Train() {
         <h1 className="page-title">S'entraîner</h1>
         <p className="page-sub">Exercices, jeux, sujets, simulations. Tout est ouvert, tout de suite.</p>
       </header>
+
+      <CustomTopicCard />
 
       <div className="grid-2">
         <Link to="/jeux" className="cat-tile">
