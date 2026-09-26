@@ -6,7 +6,6 @@ import { StoreProvider, useStore } from "./lib/store";
 import { AppShell } from "./components/shell";
 import { FullScreenLoader, Toasts, Wordmark } from "./components/ui";
 import { Onboarding } from "./pages/Onboarding";
-import { ForgotPassword, Login, ResetPassword, Signup } from "./pages/Auth";
 import { Home } from "./pages/Home";
 import { Train } from "./pages/Train";
 import { Games } from "./pages/Games";
@@ -30,9 +29,10 @@ function RequireProfile() {
   return <Outlet />;
 }
 
-function GuestOnly() {
+/** Skip onboarding if a profile (account, guest or demo) already exists. */
+function OnboardingRoute() {
   const { mode } = useStore();
-  return mode === "account" || mode === "demo" ? <Navigate to="/" replace /> : <Outlet />;
+  return mode === "none" ? <Onboarding /> : <Navigate to="/" replace />;
 }
 
 function ScrollTop() {
@@ -83,13 +83,7 @@ function Root() {
       <a href="#main" className="sr-only">Aller au contenu</a>
       <ScrollTop />
       <Routes>
-        <Route element={<GuestOnly />}>
-          <Route path="/bienvenue" element={<Onboarding />} />
-          <Route path="/connexion" element={<Login />} />
-          <Route path="/inscription" element={<Signup />} />
-        </Route>
-        <Route path="/mot-de-passe-oublie" element={<ForgotPassword />} />
-        <Route path="/reinitialiser" element={<ResetPassword />} />
+        <Route path="/bienvenue" element={<OnboardingRoute />} />
         <Route element={<RequireProfile />}>
           <Route element={<AppShell />}>
             <Route index element={<Home />} />

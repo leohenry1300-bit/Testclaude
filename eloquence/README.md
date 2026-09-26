@@ -28,8 +28,6 @@ Configuration : copier `.env.example` en `.env` et renseigner uniquement ce dont
 | --- | --- |
 | `ANTHROPIC_API_KEY` | Le feedback après chaque exercice, le coach, la « réponse modèle » et les reformulations les plus fines sont générés par Claude (`ANTHROPIC_MODEL`, par défaut `claude-opus-5`). Le coach incarne alors n'importe quelle simulation de rôle librement, au lieu de suivre un script fixe. |
 | `OPENAI_API_KEY` | L'audio est retranscrit côté serveur par Whisper (plus précis, garde les « euh »). |
-| `GOOGLE_CLIENT_ID` | Active « Continuer avec Google ». |
-| `RESEND_API_KEY` | Envoie réellement les e-mails de réinitialisation (sinon : console du serveur, et lien affiché à l'écran en développement). |
 | `DATABASE_URL` | Remplace le fichier SQLite par une base Postgres (ex. Supabase gratuit) — voir « Déploiement gratuit » ci-dessous. |
 | `JWT_SECRET` | À définir explicitement si le disque du serveur n'est pas persistant (sinon tout le monde est déconnecté à chaque redémarrage). |
 
@@ -52,7 +50,7 @@ Tests : `npm test` (35 tests — moteur d'analyse, API de bout en bout). Vérifi
 
 ## Ce que fait l'app
 
-- **Onboarding** multi-objectifs (on peut en choisir plusieurs simultanément parmi 16), niveau, fréquence, prénom, premier test oral gratuit — sans compte.
+- **Onboarding** multi-objectifs (on peut en choisir plusieurs simultanément parmi 16), niveau, fréquence, prénom, premier test oral gratuit — **aucun formulaire de compte** : le profil est créé automatiquement et silencieusement (pas d'e-mail, pas de mot de passe), sauvegardé sur le serveur dès qu'il est joignable.
 - **Diagnostic initial** en 8 étapes (présentation, improvisation, argumentation, explication, question difficile, storytelling, entretien, culture générale) → bilan détaillé par compétence.
 - **Mode démo** : un profil complet généré par le vrai moteur d'analyse (17 sessions sur 30 jours, série, programme en cours, badges).
 - **Accueil** : session du jour, objectifs hebdomadaires calculés (pas hand-set), session rapide 5/15/30 min, détection et relance sur une difficulté qui revient souvent, programme en cours, scores par compétence.

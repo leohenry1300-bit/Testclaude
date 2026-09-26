@@ -93,7 +93,7 @@ export function Profile() {
         </div>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 650 }}>{user.firstName}</h1>
-          <p className="small muted">{user.email ?? (mode === "demo" ? "Profil de démonstration" : "Profil local, sans compte")}</p>
+          <p className="small muted">{mode === "demo" ? "Profil de démonstration" : mode === "guest" ? "Profil local, sans compte" : "Profil personnel, sauvegardé automatiquement"}</p>
         </div>
         <span className="pill primary">Niveau {level.level} · {level.name}</span>
         <button className="btn btn-outline btn-sm" onClick={() => setEditing(true)}><Pencil size={15} />Modifier le profil</button>
@@ -105,18 +105,27 @@ export function Profile() {
         <div className="stat-tile" style={{ gap: 4 }}><div className="stat"><span className="v">{spokenTime(summary.totalSec)}</span><span className="l">Parlé</span></div></div>
       </div>
 
-      {mode !== "account" && (
+      {mode === "demo" && (
         <div className="card" style={{ background: "var(--primary-soft)", boxShadow: "none" }}>
           <div className="row" style={{ alignItems: "flex-start" }}>
             <CloudUpload size={22} color="var(--primary-ink)" style={{ flexShrink: 0 }} />
             <div className="stack" style={{ gap: 10 }}>
-              <strong>{mode === "demo" ? "Tu explores la démo" : "Tes données restent sur cet appareil"}</strong>
-              <span className="small muted">{mode === "demo" ? "Crée ton profil pour t'entraîner avec tes propres sessions." : "Crée un compte gratuit pour les sauvegarder et les retrouver partout."}</span>
+              <strong>Tu explores la démo</strong>
+              <span className="small muted">Crée ton profil pour t'entraîner avec tes propres sessions.</span>
               <div>
-                {mode === "demo"
-                  ? <button className="btn btn-primary btn-sm" onClick={async () => { await logout(); nav("/bienvenue"); }}>Créer mon profil</button>
-                  : <Link to="/inscription" className="btn btn-primary btn-sm">Créer mon compte</Link>}
+                <button className="btn btn-primary btn-sm" onClick={async () => { await logout(); nav("/bienvenue"); }}>Créer mon profil</button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {mode === "guest" && (
+        <div className="card" style={{ background: "var(--primary-soft)", boxShadow: "none" }}>
+          <div className="row" style={{ alignItems: "flex-start" }}>
+            <CloudUpload size={22} color="var(--primary-ink)" style={{ flexShrink: 0 }} />
+            <div className="stack" style={{ gap: 10 }}>
+              <strong>Serveur injoignable</strong>
+              <span className="small muted">Le serveur était injoignable au démarrage : tes données restent pour l'instant sur cet appareil uniquement. Recharge la page une fois le serveur de nouveau accessible — elles seront alors sauvegardées automatiquement.</span>
             </div>
           </div>
         </div>
@@ -216,9 +225,11 @@ export function Profile() {
         </div>
       </section>
 
-      <button className="btn btn-outline btn-block" onClick={async () => { await logout(); nav("/bienvenue", { replace: true }); }}>
-        <LogOut size={17} />{mode === "account" ? "Se déconnecter" : mode === "demo" ? "Quitter la démo" : "Changer de profil"}
-      </button>
+      {mode !== "account" && (
+        <button className="btn btn-outline btn-block" onClick={async () => { await logout(); nav("/bienvenue", { replace: true }); }}>
+          <LogOut size={17} />{mode === "demo" ? "Quitter la démo" : "Changer de profil"}
+        </button>
+      )}
       <p className="tiny faint center">Éloquence · gratuit, sans limite, pour ton usage personnel.</p>
 
       {editing && <EditProfile onClose={() => setEditing(false)} />}

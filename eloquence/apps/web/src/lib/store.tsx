@@ -29,12 +29,8 @@ interface Ctx {
   toasts: Toast[];
   retryBoot(): void;
   startGuest(profile: OnboardingProfile): void;
+  provisionAccount(profile: OnboardingProfile): Promise<void>;
   startDemo(): void;
-  signup(firstName: string, email: string, password: string): Promise<void>;
-  login(email: string, password: string): Promise<void>;
-  googleSignIn(credential: string): Promise<void>;
-  forgotPassword(email: string): Promise<string | undefined>;
-  resetPassword(token: string, password: string): Promise<void>;
   logout(): Promise<void>;
   deleteAccount(): Promise<void>;
   submitSession(input: SubmitInput): Promise<SessionResult>;
@@ -125,6 +121,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
     }
     const saved = readLocal();
+    // A guest profile was created earlier as a fallback (server unreachable
+    // at the time). Now that the server answers, migrate it silently into a
+    // real, persistent account instead of leaving it stuck on this device.
+    if (saved?.mode === "guest" && cfg) {
+      try {
+        const a = saved.account;
+        const r = await http<{ token: string; state: AccountState }>("POST", "/api/auth/anonymous", {
+          firstName: a.user.firstName,
+          profile: { goals: a.user.goals, goalText: a.user.goalText, level: a.user.level, frequency: a.user.frequency },
+          importState: { sessions: a.sessions, coach: a.coach, program: a.program, badges: a.badges, diagnostic: a.diagnostic },
+        });
+        setToken(r.token);
+        writeLocal(null, null);
+        setAccount(r.state);
+        setMode("account");
+        setStatus("ready");
+        return;
+      } catch {
+        // Fall through and keep using the local guest profile for now.
+      }
+    }
     if (saved) {
       if (saved.mode === "demo") {
         const fresh = createDemoAccount();
@@ -216,39 +233,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setMode("demo");
   }, []);
 
-  const guestImport = () => {
-    const a = accountRef.current;
-    if (modeRef.current !== "guest" || !a) return { profile: undefined, importState: undefined };
-    return {
-      profile: { goals: a.user.goals, goalText: a.user.goalText, level: a.user.level, frequency: a.user.frequency },
-      importState: { sessions: a.sessions, coach: a.coach, program: a.program, badges: a.badges, diagnostic: a.diagnostic },
-    };
-  };
-
-  const signup = useCallback(async (firstName: string, email: string, password: string) => {
-    const r = await http<{ token: string; state: AccountState }>("POST", "/api/auth/signup", { firstName, email, password, ...guestImport() });
-    enterAccount(r.token, r.state);
-  }, []);
-
-  const login = useCallback(async (email: string, password: string) => {
-    const r = await http<{ token: string; state: AccountState }>("POST", "/api/auth/login", { email, password });
-    enterAccount(r.token, r.state);
-  }, []);
-
-  const googleSignIn = useCallback(async (credential: string) => {
-    const r = await http<{ token: string; state: AccountState }>("POST", "/api/auth/google", { credential, ...guestImport() });
-    enterAccount(r.token, r.state);
-  }, []);
-
-  const forgotPassword = useCallback(async (email: string) => {
-    const r = await http<{ ok: boolean; devResetUrl?: string }>("POST", "/api/auth/forgot", { email });
-    return r.devResetUrl;
-  }, []);
-
-  const resetPassword = useCallback(async (token: string, password: string) => {
-    const r = await http<{ token: string; state: AccountState }>("POST", "/api/auth/reset", { token, password });
-    enterAccount(r.token, r.state);
-  }, []);
+  /**
+   * Silently creates the (single, personal) account on the server — no
+   * email, no password, no form: just the onboarding answers. Falls back to
+   * the fully local "guest" mode when no server is reachable (e.g. a static
+   * deployment), so the app still works either way.
+   */
+  const provisionAccount = useCallback(async (p: OnboardingProfile) => {
+    if (!server) { startGuest(p); return; }
+    try {
+      const r = await http<{ token: string; state: AccountState }>("POST", "/api/auth/anonymous", {
+        firstName: p.firstName,
+        profile: { goals: p.goals, level: p.level, frequency: p.frequency },
+      });
+      enterAccount(r.token, r.state);
+    } catch {
+      startGuest(p);
+    }
+  }, [server, startGuest]);
 
   const logout = useCallback(async () => {
     setToken(null);
@@ -285,7 +287,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     status, bootError, mode, account, server, toasts,
     summary: account ? summarize(account.sessions, account.badges) : null,
     retryBoot: () => void boot(),
-    startGuest, startDemo, signup, login, googleSignIn, forgotPassword, resetPassword, logout, deleteAccount,
+    startGuest, provisionAccount, startDemo, logout, deleteAccount,
     submitSession: (input) => withAccount(async (b, s) => {
       const r = await b.submitSession(s, input);
       apply(r.state);

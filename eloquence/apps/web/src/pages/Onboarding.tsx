@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, Clock, Mic, Sparkles } from "lucide-react";
 import {
   FREQUENCY_HINTS, FREQUENCY_LABELS, GOAL_GROUPS, GOAL_LABELS, LEVEL_HINTS, LEVEL_LABELS, ONBOARDING_EXERCISE_ID,
@@ -12,7 +12,7 @@ import { Wordmark } from "../components/ui";
 const STEPS = 6;
 
 export function Onboarding() {
-  const { startGuest, startDemo } = useStore();
+  const { provisionAccount, startDemo } = useStore();
   const nav = useNavigate();
   const launch = useLaunchActivity();
   const [step, setStep] = useState(0);
@@ -20,6 +20,7 @@ export function Onboarding() {
   const [level, setLevel] = useState<Level | null>(null);
   const [frequency, setFrequency] = useState<Frequency | null>(null);
   const [firstName, setFirstName] = useState("");
+  const [busy, setBusy] = useState(false);
   const exercise = getExercise(ONBOARDING_EXERCISE_ID)!;
 
   const next = () => setStep((s) => Math.min(STEPS - 1, s + 1));
@@ -45,7 +46,6 @@ export function Onboarding() {
           <button className="btn btn-outline btn-block" onClick={() => { startDemo(); nav("/"); }}>
             <Sparkles size={17} />Explorer la démo
           </button>
-          <p className="center small muted" style={{ marginTop: 6 }}>Déjà un compte ? <Link to="/connexion">Se connecter</Link></p>
         </div>
       </div>
     );
@@ -134,10 +134,18 @@ export function Onboarding() {
           </div>
           <div style={{ flex: 1 }} />
           <div className="onb-foot">
-            <button className="btn btn-primary btn-lg btn-block" onClick={() => { startGuest(profile()); launch(exercise, { onboarding: true, source: "catalogue" }); }}>
-              <Mic size={18} />Lancer mon premier test
+            <button className="btn btn-primary btn-lg btn-block" disabled={busy} onClick={async () => {
+              setBusy(true);
+              await provisionAccount(profile());
+              launch(exercise, { onboarding: true, source: "catalogue" });
+            }}>
+              {busy && <span className="spinner" />}<Mic size={18} />Lancer mon premier test
             </button>
-            <button className="btn btn-ghost btn-block" onClick={() => { startGuest(profile()); nav("/", { replace: true }); }}>Plus tard</button>
+            <button className="btn btn-ghost btn-block" disabled={busy} onClick={async () => {
+              setBusy(true);
+              await provisionAccount(profile());
+              nav("/", { replace: true });
+            }}>Plus tard</button>
           </div>
         </div>
       )}

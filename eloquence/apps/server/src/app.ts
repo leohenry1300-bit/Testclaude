@@ -219,6 +219,17 @@ export function createApp(deps: Deps) {
     res.status(201).json({ token: signToken(config.jwtSecret, user.id), state: await stateFor(user.id) });
   }));
 
+  // Silent account provisioning: this is a personal, single-user app, so
+  // there's no reason to make signup a form — the client calls this once,
+  // automatically, the first time it boots without a saved token, and keeps
+  // the returned token in localStorage from then on. No email, no password.
+  app.post("/api/auth/anonymous", authLimiter, wrap(async (req, res) => {
+    const body = z.object({ firstName: z.string().trim().min(1).max(40), profile: Profile.optional(), importState: ImportState }).parse(req.body);
+    const user = await createAccount({ firstName: body.firstName, email: null, passwordHash: null, googleSub: null }, body.profile);
+    if (body.importState) await store.importState(user.id, body.importState as Partial<AccountState>);
+    res.status(201).json({ token: signToken(config.jwtSecret, user.id), state: await stateFor(user.id) });
+  }));
+
   app.post("/api/auth/login", authLimiter, wrap(async (req, res) => {
     const body = z.object({ email: z.string(), password: z.string() }).parse(req.body);
     const user = await store.userByEmail(body.email.trim());

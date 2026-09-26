@@ -84,6 +84,14 @@ describe("API", () => {
     expect((await api("GET", "/api/state", undefined, false)).status).toBe(401);
   });
 
+  it("provisions an anonymous account with no email or password", async () => {
+    const r = await api("POST", "/api/auth/anonymous", { firstName: "Sam", profile: { goals: ["aisance"] } }, false);
+    expect(r.status).toBe(201);
+    expect(r.body.state.user.email).toBeNull();
+    expect(r.body.state.user.firstName).toBe("Sam");
+    expect(r.body.token).toBeTruthy();
+  });
+
   it("analyses a session, stores audio, then compares a retry — no daily or history limits anywhere", async () => {
     const first = await api("POST", "/api/sessions", sessionForm("entretien-presentation", MESSY, { withAudio: true }));
     expect(first.status).toBe(201);

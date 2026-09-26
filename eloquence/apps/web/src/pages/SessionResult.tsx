@@ -16,7 +16,7 @@ import {
 export function SessionResult() {
   const { id = "" } = useParams();
   const location = useLocation() as { state?: { result?: Result; onboarding?: boolean } };
-  const { account, deleteSession, toast } = useAccount();
+  const { account, mode, deleteSession, toast } = useAccount();
   const launch = useLaunchActivity();
   const nav = useNavigate();
   const fresh = location.state?.result?.session.id === id ? location.state.result : undefined;
@@ -125,17 +125,13 @@ export function SessionResult() {
         </section>
       )}
 
-      {account.user.email === null && !account.user.isDemo && (
+      {mode === "guest" && (
         <section className="card" style={{ background: "var(--primary-soft)", boxShadow: "none" }} aria-labelledby="save-title">
           <div className="row" style={{ alignItems: "flex-start" }}>
             <Cloud size={22} color="var(--primary-ink)" style={{ flexShrink: 0, marginTop: 2 }} />
             <div className="stack" style={{ gap: 10 }}>
-              <h2 id="save-title" style={{ fontSize: 17 }}>Sauvegarde ta progression</h2>
-              <p className="small muted">Crée ton compte gratuit pour retrouver tes sessions, ton score et ta série sur tous tes appareils.</p>
-              <div className="row" style={{ flexWrap: "wrap" }}>
-                <Link to="/inscription" className="btn btn-primary btn-sm">Créer mon compte</Link>
-                {fresh && <Link to="/" className="btn btn-ghost btn-sm">Continuer sans compte</Link>}
-              </div>
+              <h2 id="save-title" style={{ fontSize: 17 }}>Serveur injoignable</h2>
+              <p className="small muted">Cette session reste pour l'instant sur cet appareil. Recharge la page une fois le serveur de nouveau accessible pour la sauvegarder automatiquement.</p>
             </div>
           </div>
         </section>
