@@ -1,12 +1,13 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Bell, Camera, ChevronRight, Clock, ClipboardCheck, CloudUpload, Download, Globe, LogOut, Moon,
+  Bell, Camera, ChevronRight, Clock, ClipboardCheck, CloudUpload, Download, Globe, LogOut, Mic, Moon,
   Pencil, ShieldCheck, Target, Trash2, Trophy,
 } from "lucide-react";
 import { GOAL_GROUPS, GOAL_LABELS, LEVEL_LABELS, levelFor, type Goal, type Level, type UserSettings } from "@eloquence/core";
 import { useAccount } from "../lib/store";
 import { http } from "../lib/http";
+import { localWhisperSupported } from "../lib/localWhisper";
 import { nf, spokenTime } from "../lib/format";
 import { Avatar, Sheet, Switch } from "../components/ui";
 
@@ -188,6 +189,13 @@ export function Profile() {
               {LANGS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
             </select>
           </div>
+          {localWhisperSupported() && (
+            <div className="list-item">
+              <span className="li-icon"><Mic size={18} /></span>
+              <span className="grow"><span className="li-title">Transcription locale (gratuite)</span><br /><span className="li-sub">Un modèle Whisper tourne dans ton navigateur — garde les « euh », rien n'est envoyé à un serveur. Télécharge ~40 Mo la première fois.</span></span>
+              <Switch checked={user.settings.localTranscription} onChange={(v) => void setSetting("localTranscription", v)} label="Transcription locale" />
+            </div>
+          )}
           <div className="list-item" style={{ flexWrap: "wrap" }}>
             <span className="li-icon"><Moon size={18} /></span>
             <span className="grow li-title">Thème</span>

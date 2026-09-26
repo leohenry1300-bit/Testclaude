@@ -127,6 +127,7 @@ const MePatch = Profile.extend({
     theme: z.enum(["system", "light", "dark"]),
     saveAudio: z.boolean(),
     shareAnonymousStats: z.boolean(),
+    localTranscription: z.boolean(),
   }).partial().optional(),
 });
 

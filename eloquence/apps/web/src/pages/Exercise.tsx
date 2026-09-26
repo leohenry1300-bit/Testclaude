@@ -7,11 +7,12 @@ import { getCategory, getExercise, type ActivitySource, type Exercise as Exercis
 import { useAccount } from "../lib/store";
 import { ApiError } from "../lib/http";
 import { canGoBackInApp } from "../lib/nav";
+import { localWhisperSupported, transcribeLocally } from "../lib/localWhisper";
 import { MIC_ERROR_TEXT, micSupport, useRecorder, type RecorderResult } from "../lib/recorder";
 import { clock, formatDurationLong } from "./exerciseFormat";
 import { Icon } from "../components/ui";
 
-type Phase = "prep" | "live" | "text" | "analyzing" | "failed" | "empty";
+type Phase = "prep" | "live" | "text" | "transcribing" | "analyzing" | "failed" | "empty";
 
 export interface ExerciseNavState {
   activity?: ExerciseT;
@@ -41,6 +42,7 @@ export function Exercise() {
   const [pending, setPending] = useState<RecorderResult | null>(null);
   const [text, setText] = useState("");
   const [step, setStep] = useState(0);
+  const [transcribeProgress, setTranscribeProgress] = useState<number | null>(null);
   const finishRef = useRef<() => void>(() => undefined);
 
   const duration = exercise?.category === "improvisation" && !navState.activity ? account.user.settings.sessionSeconds : exercise?.durationSec ?? 60;
@@ -51,6 +53,7 @@ export function Exercise() {
   });
 
   const serverTranscribes = mode === "account" && server?.stt === "openai";
+  const wantsLocalWhisper = account.user.settings.localTranscription && localWhisperSupported();
 
   const submit = useCallback(async (capture: SpeechCapture, audio: Blob | null) => {
     if (!exercise) return;
@@ -84,13 +87,28 @@ export function Exercise() {
     if (rec.status !== "recording" && rec.status !== "paused") return;
     const result = await rec.stop();
     setPending(result);
+    if (wantsLocalWhisper && result.audio) {
+      setPhase("transcribing");
+      setTranscribeProgress(null);
+      try {
+        const local = await transcribeLocally(result.audio, account.user.settings.language, (p) => setTranscribeProgress(p.percent));
+        if (local.transcript.trim()) {
+          Object.assign(result.capture, { transcript: local.transcript, segments: local.segments, source: "speech" });
+        }
+      } catch (e) {
+        // Local model failed to load or run (unsupported device, out of
+        // memory…): fall back silently to whatever the browser's own
+        // speech recognition already captured — never block the session.
+        console.error("[local whisper]", (e as Error).message);
+      }
+    }
     const heard = result.capture.transcript.trim().length > 0;
     if (!heard && !serverTranscribes) {
       setPhase("empty");
       return;
     }
     await submit(result.capture, result.audio);
-  }, [rec, serverTranscribes, submit]);
+  }, [rec, serverTranscribes, submit, wantsLocalWhisper, account.user.settings.language]);
   finishRef.current = () => void finish();
 
   // Guards against a second getUserMedia() firing while the first is still
@@ -134,6 +152,24 @@ export function Exercise() {
   const cat = getCategory(exercise.category);
   const remaining = Math.max(0, duration - rec.elapsed);
   const support = micSupport();
+
+  if (phase === "transcribing") {
+    return (
+      <div className="analyzing" role="status" aria-live="polite">
+        <div className="center">
+          <div className="orb" aria-hidden="true" />
+          <h1 className="page-title">Transcription locale en cours…</h1>
+          <p className="muted" style={{ marginTop: 8 }}>
+            {transcribeProgress === null
+              ? "Ça tourne entièrement sur ton téléphone, rien n'est envoyé à un serveur."
+              : transcribeProgress < 100
+                ? `Téléchargement du modèle (une seule fois) : ${Math.round(transcribeProgress)} %`
+                : "Analyse de ta voix…"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (phase === "analyzing") {
     return (

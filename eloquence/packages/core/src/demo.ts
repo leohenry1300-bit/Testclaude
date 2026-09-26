@@ -13,6 +13,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   theme: "system",
   saveAudio: true,
   shareAnonymousStats: false,
+  localTranscription: false,
 };
 
 // Clean spoken answers; fillers are injected to simulate early vs. late sessions.

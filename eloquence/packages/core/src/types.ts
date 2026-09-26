@@ -63,6 +63,13 @@ export interface UserSettings {
   theme: "system" | "light" | "dark";
   saveAudio: boolean;
   shareAnonymousStats: boolean;
+  /**
+   * Re-transcribes the recording with a small Whisper model running
+   * entirely in the browser (free, no server, no API key) instead of the
+   * browser's built-in speech recognition, which tends to erase
+   * hesitations. Off by default: it downloads a ~40 MB model on first use.
+   */
+  localTranscription: boolean;
 }
 
 export interface User {
