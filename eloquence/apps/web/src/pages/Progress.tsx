@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Flame, History, Mic, Trophy } from "lucide-react";
-import { BADGES, CATEGORY_LABELS, DIMENSION_POSSESSIVE, LEVELS, scoreSeries, strongestDimension, weakestDimension, weekActivity } from "@eloquence/core";
+import { ChevronRight, Flame, History, Mic, TrendingDown, TrendingUp, Trophy } from "lucide-react";
+import {
+  BADGES, CATEGORY_LABELS, DIMENSION_LABELS, DIMENSION_POSSESSIVE, DIMENSIONS, LEVELS, scoreSeries,
+  strongestDimension, weakestDimension, weekActivity,
+} from "@eloquence/core";
 import { useAccount } from "../lib/store";
 import { nf, spokenTime } from "../lib/format";
 import { DimensionBars, EmptyState, Icon } from "../components/ui";
@@ -89,6 +92,29 @@ export function Progress() {
             {strong && weak ? `Point fort : ${DIMENSION_POSSESSIVE[strong]}. Levier principal : ${DIMENSION_POSSESSIVE[weak]}.` : ""}
           </p>
           <DimensionBars scores={summary.current} />
+        </section>
+      )}
+
+      {Object.keys(summary.dimensionTrend30).length > 0 && (
+        <section className="card" aria-labelledby="trend-title">
+          <h2 id="trend-title" style={{ fontSize: 18, marginBottom: 4 }}>Tendance sur 30 jours</h2>
+          <p className="small muted" style={{ marginBottom: 16 }}>Évolution réelle de chaque compétence — début vs. fin de période.</p>
+          <div className="stack" style={{ gap: 10 }}>
+            {DIMENSIONS.filter((d) => summary.dimensionTrend30[d] !== undefined)
+              .sort((a, b) => (summary.dimensionTrend30[b] ?? 0) - (summary.dimensionTrend30[a] ?? 0))
+              .map((d) => {
+                const v = summary.dimensionTrend30[d] ?? 0;
+                return (
+                  <div key={d} className="row-between small">
+                    <span>{DIMENSION_LABELS[d]}</span>
+                    <span className={`row strong tabular ${v > 0 ? "delta-up" : v < 0 ? "delta-down" : "muted"}`} style={{ gap: 4 }}>
+                      {v > 0 ? <TrendingUp size={14} /> : v < 0 ? <TrendingDown size={14} /> : null}
+                      {v > 0 ? `+${v}` : v}
+                    </span>
+                  </div>
+                );
+              })}
+          </div>
         </section>
       )}
 

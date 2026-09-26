@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
-import { getExercise, getGame, buildGameActivity } from "@eloquence/core";
+import { getExercise, getGame, buildGameActivity, CHALLENGES } from "@eloquence/core";
 import { createApp } from "./app";
 import { loadConfig } from "./config";
 import { SqliteStore } from "./store/sqlite";
@@ -116,6 +116,22 @@ describe("API", () => {
 
     const state = await api("GET", "/api/state");
     expect(state.body.sessions.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("tracks real-life challenge completions, self-reported only, per day", async () => {
+    const id = CHALLENGES[0].id;
+    const today = new Date().toISOString().slice(0, 10);
+    const done = await api("POST", `/api/challenges/${id}/done`, { date: today });
+    expect(done.status).toBe(201);
+    let state = await api("GET", "/api/state");
+    expect(state.body.completedChallenges).toContainEqual(expect.objectContaining({ challengeId: id, date: today }));
+
+    const removed = await api("DELETE", `/api/challenges/${id}/done?date=${today}`);
+    expect(removed.status).toBe(200);
+    state = await api("GET", "/api/state");
+    expect(state.body.completedChallenges.some((c: { challengeId: string }) => c.challengeId === id)).toBe(false);
+
+    expect((await api("POST", "/api/challenges/not-a-real-id/done", { date: today })).status).toBe(404);
   });
 
   it("rejects empty transcripts but never blocks on volume or a locked exercise", async () => {

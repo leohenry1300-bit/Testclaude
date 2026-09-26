@@ -40,6 +40,8 @@ export interface Backend {
   deleteProgram(state: AccountState): Promise<AccountState>;
   finalizeDiagnostic(state: AccountState, steps: DiagnosticStepResult[]): Promise<AccountState>;
   markLibraryRead(state: AccountState, lessonId: string): Promise<AccountState>;
+  completeChallenge(state: AccountState, challengeId: string, date: string): Promise<AccountState>;
+  uncompleteChallenge(state: AccountState, challengeId: string, date: string): Promise<AccountState>;
   rewrite(sessionId: string, transcript: string): Promise<RewriteResult>;
   modelAnswer(session: AccountState["sessions"][number]): Promise<string | null>;
   weeklyGoals(state: AccountState): Promise<WeeklyGoals>;
@@ -105,6 +107,17 @@ export class RemoteBackend implements Backend {
   async markLibraryRead(state: AccountState, lessonId: string) {
     await http("POST", `/api/library/${lessonId}/read`);
     return state;
+  }
+
+  async completeChallenge(state: AccountState, challengeId: string, date: string) {
+    await http("POST", `/api/challenges/${challengeId}/done`, { date });
+    const completedAt = new Date().toISOString();
+    return { ...state, completedChallenges: [...state.completedChallenges, { challengeId, date, completedAt }] };
+  }
+
+  async uncompleteChallenge(state: AccountState, challengeId: string, date: string) {
+    await http("DELETE", `/api/challenges/${challengeId}/done?date=${encodeURIComponent(date)}`);
+    return { ...state, completedChallenges: state.completedChallenges.filter((c) => !(c.challengeId === challengeId && c.date === date)) };
   }
 
   async rewrite(sessionId: string) {
@@ -211,6 +224,15 @@ export class LocalBackend implements Backend {
 
   async markLibraryRead(state: AccountState) {
     return state;
+  }
+
+  async completeChallenge(state: AccountState, challengeId: string, date: string) {
+    const completedAt = new Date().toISOString();
+    return this.save({ ...state, completedChallenges: [...state.completedChallenges, { challengeId, date, completedAt }] });
+  }
+
+  async uncompleteChallenge(state: AccountState, challengeId: string, date: string) {
+    return this.save({ ...state, completedChallenges: state.completedChallenges.filter((c) => !(c.challengeId === challengeId && c.date === date)) });
   }
 
   async rewrite(_sessionId: string, transcript: string) {

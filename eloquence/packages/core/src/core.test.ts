@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeSpeech, buildDiagnosticReport, buildGameActivity, buildQuickSession, buildSessionResult,
-  buildTemplateProgram, CATEGORIES, computeWeeklyGoals, createDemoAccount, detectRecurringIssue,
-  EXERCISES_ALL, GAMES, generateProgram, generateTopicActivity, getExercise, getGame, getSimulation,
-  heuristicRewrite, pickTopic, ruleBasedCoachReply, searchSessions, streaks, summarize, TOPIC_COUNT,
+  buildTemplateProgram, CATEGORIES, CHALLENGES, computeWeeklyGoals, createDemoAccount, dailyChallenges,
+  detectRecurringIssue, EXERCISES_ALL, GAMES, generateProgram, generateTopicActivity, getExercise, getGame,
+  getSimulation, heuristicRewrite, pickTopic, ruleBasedCoachReply, searchSessions, streaks, summarize,
+  TOPIC_COUNT,
 } from "./index";
 
 const exercise = getExercise("entretien-presentation")!;
@@ -322,5 +323,24 @@ describe("programs & coach", () => {
     const user = { firstName: "Léa", goals: ["commercial"] as import("./types").Goal[], goalText: null, level: "debutant" as const };
     const start = ruleBasedCoachReply("Fais-moi une négociation salariale.", { user, summary: null, lastSession: null, history: [] });
     expect(start.interview?.simulationId).toBe("sim-negociation-salaire");
+  });
+});
+
+describe("real-life challenges", () => {
+  it("has a large bank of genuinely distinct challenges", () => {
+    expect(CHALLENGES.length).toBeGreaterThanOrEqual(50);
+    expect(new Set(CHALLENGES.map((c) => c.id)).size).toBe(CHALLENGES.length);
+    expect(new Set(CHALLENGES.map((c) => c.title)).size).toBe(CHALLENGES.length);
+  });
+
+  it("picks the requested count and rotates through the bank day to day", () => {
+    const day1 = dailyChallenges(new Date("2026-01-01T10:00:00"), 3);
+    expect(day1).toHaveLength(3);
+    expect(new Set(day1.map((c) => c.id)).size).toBe(3);
+    const day2 = dailyChallenges(new Date("2026-01-02T10:00:00"), 3);
+    expect(day2.map((c) => c.id)).not.toEqual(day1.map((c) => c.id));
+    // Same day always gives the same picks, deterministically.
+    const day1again = dailyChallenges(new Date("2026-01-01T22:00:00"), 3);
+    expect(day1again.map((c) => c.id)).toEqual(day1.map((c) => c.id));
   });
 });

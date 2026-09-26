@@ -326,6 +326,27 @@ export function detectRecurringIssue(sessions: Session[], windowSize = 8): Recur
   return { key: best.key, label: best.label, kind: best.kind, occurrences: best.occurrences, sessionsAffected: best.sessions.size, suggestedGameId };
 }
 
+/** Per-dimension score change over the last 30 days, the same "first third
+ * vs. last third" comparison as trend30 but broken down by dimension — so a
+ * user can see not just "you're improving" but "structure is up, confidence
+ * is flat". Only set for a dimension with enough recent sessions to compare. */
+export function dimensionTrend30(sessions: Session[], now = new Date()): Partial<Record<Dimension, number>> {
+  const monthAgo = addDays(now, -30);
+  const lastMonth = [...sessions].filter((s) => new Date(s.createdAt) >= monthAgo)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const out: Partial<Record<Dimension, number>> = {};
+  if (lastMonth.length < 4) return out;
+  const k = Math.max(2, Math.floor(lastMonth.length / 3));
+  const first = lastMonth.slice(0, k);
+  const last = lastMonth.slice(-k);
+  for (const d of DIMENSIONS) {
+    const avgFirst = first.reduce((a, s) => a + s.analysis.scores[d], 0) / first.length;
+    const avgLast = last.reduce((a, s) => a + s.analysis.scores[d], 0) / last.length;
+    out[d] = Math.round(avgLast - avgFirst);
+  }
+  return out;
+}
+
 export function summarize(
   sessions: Session[],
   badges: EarnedBadge[],
@@ -370,7 +391,27 @@ export function summarize(
     byCategory: categoryProfile(sessions),
     distinctTopics: new Set(sessions.map((s) => s.exerciseTitle)).size,
     recurringIssue: detectRecurringIssue(sessions),
+    dimensionTrend30: dimensionTrend30(sessions, now),
   };
+}
+
+/**
+ * Compact, factual summary of a user's history for grounding AI feedback —
+ * so the coach can honestly say "you hesitate less than before" instead of
+ * treating every session as if it were the user's first. Only real,
+ * measured deltas: never invents a trend that isn't in the data.
+ */
+export function historyContextText(previousSessions: Session[], now = new Date()): string | null {
+  if (previousSessions.length < 3) return null;
+  const s = summarize(previousSessions, [], now);
+  const lines: string[] = [`${s.sessionCount} sessions précédentes, score moyen ${s.averageScore}/100.`];
+  if (s.trend30 !== null) lines.push(`Tendance globale sur 30 jours : ${s.trend30 >= 0 ? "+" : ""}${s.trend30} points.`);
+  const improved = DIMENSIONS.filter((d) => (s.dimensionTrend30[d] ?? 0) >= 5);
+  const declined = DIMENSIONS.filter((d) => (s.dimensionTrend30[d] ?? 0) <= -5);
+  if (improved.length) lines.push(`En progrès récent : ${improved.map((d) => DIMENSION_LABELS[d]).join(", ")}.`);
+  if (declined.length) lines.push(`En recul récent : ${declined.map((d) => DIMENSION_LABELS[d]).join(", ")}.`);
+  if (s.recurringIssue) lines.push(`Difficulté récurrente : « ${s.recurringIssue.label} » sur ${s.recurringIssue.sessionsAffected} des dernières sessions.`);
+  return lines.join(" ");
 }
 
 export interface SeriesPoint {

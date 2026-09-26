@@ -1,6 +1,6 @@
 import { DatabaseSync } from "node:sqlite";
 import type {
-  AccountState, CoachMessage, DiagnosticReport, EarnedBadge, Program, Session, UserSettings,
+  AccountState, CoachMessage, CompletedChallenge, DiagnosticReport, EarnedBadge, Program, Session, UserSettings,
 } from "@eloquence/core";
 import { DEFAULT_SETTINGS, DIMENSIONS, summarize, scoreSeries } from "@eloquence/core";
 import type { SessionRow, Store, UserRecord } from "./types";
@@ -103,6 +103,13 @@ CREATE TABLE IF NOT EXISTS password_resets (
   token_hash TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   expires_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS challenge_completions (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  challenge_id TEXT NOT NULL,
+  date TEXT NOT NULL,
+  completed_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, challenge_id, date)
 );
 `;
 
@@ -375,9 +382,25 @@ export class SqliteStore implements Store {
     return new Date(r.expires_at as string) > new Date() ? (r.user_id as string) : null;
   }
 
+  // ---- Défis vie réelle ---------------------------------------------------
+
+  async completedChallenges(userId: string): Promise<CompletedChallenge[]> {
+    return (this.db.prepare("SELECT challenge_id, date, completed_at FROM challenge_completions WHERE user_id = ?").all(userId) as Row[])
+      .map((r) => ({ challengeId: r.challenge_id as string, date: r.date as string, completedAt: r.completed_at as string }));
+  }
+
+  async completeChallenge(userId: string, challengeId: string, date: string) {
+    this.db.prepare("INSERT OR IGNORE INTO challenge_completions (user_id, challenge_id, date, completed_at) VALUES (?, ?, ?, ?)")
+      .run(userId, challengeId, date, new Date().toISOString());
+  }
+
+  async uncompleteChallenge(userId: string, challengeId: string, date: string) {
+    this.db.prepare("DELETE FROM challenge_completions WHERE user_id = ? AND challenge_id = ? AND date = ?").run(userId, challengeId, date);
+  }
+
   // ---- Bulk import (guest → account) ------------------------------------
 
-  async importState(userId: string, state: Partial<Pick<AccountState, "sessions" | "coach" | "program" | "badges" | "diagnostic">>) {
+  async importState(userId: string, state: Partial<Pick<AccountState, "sessions" | "coach" | "program" | "badges" | "diagnostic" | "completedChallenges">>) {
     this.tx(() => {
       for (const s of state.sessions ?? []) {
         void this.insertSession({ ...s, id: `${s.id}_${userId.slice(-6)}`, userId, audioUrl: null }, null);
@@ -385,6 +408,7 @@ export class SqliteStore implements Store {
       for (const m of state.coach ?? []) void this.addCoach(userId, { ...m, id: `${m.id}_${userId.slice(-6)}` });
       if (state.program) void this.saveProgram(userId, state.program);
       if (state.badges) void this.addBadges(userId, state.badges);
+      for (const c of state.completedChallenges ?? []) void this.completeChallenge(userId, c.challengeId, c.date);
     });
     if (state.diagnostic) { await this.saveDiagnostic(userId, state.diagnostic); await this.updateUser(userId, { diagnosticDone: true }); }
     await this.refreshProgress(userId);

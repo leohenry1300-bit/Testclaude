@@ -14,3 +14,4 @@ export * from "./simulations";
 export * from "./library";
 export * from "./diagnostic";
 export * from "./coaching";
+export * from "./challenges";

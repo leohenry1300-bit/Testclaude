@@ -43,6 +43,8 @@ interface Ctx {
   deleteProgram(): Promise<void>;
   finalizeDiagnostic(steps: DiagnosticStepResult[]): Promise<void>;
   markLibraryRead(lessonId: string): Promise<void>;
+  completeChallenge(challengeId: string, date: string): Promise<void>;
+  uncompleteChallenge(challengeId: string, date: string): Promise<void>;
   rewrite(sessionId: string, transcript: string): Promise<RewriteResult>;
   modelAnswer(session: AccountState["sessions"][number]): Promise<string | null>;
   weeklyGoals(): Promise<WeeklyGoals>;
@@ -130,7 +132,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const r = await http<{ token: string; state: AccountState }>("POST", "/api/auth/anonymous", {
           firstName: a.user.firstName,
           profile: { goals: a.user.goals, goalText: a.user.goalText, level: a.user.level, frequency: a.user.frequency },
-          importState: { sessions: a.sessions, coach: a.coach, program: a.program, badges: a.badges, diagnostic: a.diagnostic },
+          importState: { sessions: a.sessions, coach: a.coach, program: a.program, badges: a.badges, diagnostic: a.diagnostic, completedChallenges: a.completedChallenges },
         });
         setToken(r.token);
         writeLocal(null, null);
@@ -218,6 +220,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       coach: [],
       badges: [],
       diagnostic: null,
+      completedChallenges: [],
     };
     modeRef.current = "guest";
     writeLocal("guest", account);
@@ -311,6 +314,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     deleteProgram: () => withAccount(async (b, s) => apply(await b.deleteProgram(s))),
     finalizeDiagnostic: (steps) => withAccount(async (b, s) => apply(await b.finalizeDiagnostic(s, steps))),
     markLibraryRead: (lessonId) => withAccount(async (b, s) => apply(await b.markLibraryRead(s, lessonId))),
+    completeChallenge: (challengeId, date) => withAccount(async (b, s) => apply(await b.completeChallenge(s, challengeId, date))),
+    uncompleteChallenge: (challengeId, date) => withAccount(async (b, s) => apply(await b.uncompleteChallenge(s, challengeId, date))),
     rewrite: (sessionId, transcript) => withAccount((b) => b.rewrite(sessionId, transcript)),
     modelAnswer: (session) => withAccount((b) => b.modelAnswer(session)),
     weeklyGoals: () => withAccount((b, s) => b.weeklyGoals(s)),

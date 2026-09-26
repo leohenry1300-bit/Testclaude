@@ -6,8 +6,8 @@ import path from "node:path";
 import { z } from "zod";
 import {
   CATEGORIES, DEFAULT_SETTINGS, DIMENSIONS, analyzeSpeech, buildDiagnosticReport, buildSessionResult,
-  buildTemplateProgram, computeWeeklyGoals, generateProgram, markProgramProgress, programCompleted,
-  ruleBasedCoachReply, summarize, uid, weakestDimension,
+  buildTemplateProgram, computeWeeklyGoals, generateProgram, getChallenge, historyContextText,
+  markProgramProgress, programCompleted, ruleBasedCoachReply, summarize, uid, weakestDimension,
   type AccountState, type DiagnosticStepResult, type Session, type User,
 } from "@eloquence/core";
 import type { Exercise } from "@eloquence/core";
@@ -63,6 +63,7 @@ const ImportState = z.object({
   program: z.any().nullable().optional(),
   badges: z.array(z.object({ id: z.string(), earnedAt: z.string() })).max(100).optional(),
   diagnostic: z.any().nullable().optional(),
+  completedChallenges: z.array(z.object({ challengeId: z.string(), date: z.string(), completedAt: z.string() })).max(1000).optional(),
 }).optional();
 
 const Signup = z.object({
@@ -172,8 +173,9 @@ export function createApp(deps: Deps) {
   const stateFor = async (userId: string): Promise<AccountState> => {
     const user = await store.userById(userId);
     if (!user) throw new HttpError(401, "unauthorized", "Compte introuvable.");
-    const [sessions, program, coach, badges, diagnostic] = await Promise.all([
+    const [sessions, program, coach, badges, diagnostic, completedChallenges] = await Promise.all([
       store.sessions(userId), store.program(userId), store.coach(userId), store.badges(userId), store.diagnostic(userId),
+      store.completedChallenges(userId),
     ]);
     return {
       user: publicUser(user),
@@ -182,6 +184,7 @@ export function createApp(deps: Deps) {
       coach,
       badges,
       diagnostic,
+      completedChallenges,
     };
   };
 
@@ -332,8 +335,12 @@ export function createApp(deps: Deps) {
     if (!capture.transcript.trim()) capture.transcript = (capture.segments ?? []).map((s) => s.text).join(" ");
 
     const analysis = analyzeSpeech(capture, { exercise, constraint: meta.constraint });
+    const previous = await store.sessions(user.id);
     if (analysis.metrics.wordCount >= 8) {
-      const feedbackInput = { analysis, transcript: capture.transcript, exercise, firstName: user.firstName };
+      const feedbackInput = {
+        analysis, transcript: capture.transcript, exercise, firstName: user.firstName,
+        historyNote: historyContextText(previous),
+      };
       try {
         const fb = await llm.feedback(feedbackInput);
         if (fb) { analysis.feedback = fb; analysis.engine = "llm"; }
@@ -363,9 +370,7 @@ export function createApp(deps: Deps) {
       await storage.put(audioKey, audio.buffer, audio.mimetype);
     }
 
-    const [previous, badges, ctx] = await Promise.all([
-      store.sessions(user.id), store.badges(user.id), badgeContext(store, user.id),
-    ]);
+    const [badges, ctx] = await Promise.all([store.badges(user.id), badgeContext(store, user.id)]);
     const result = buildSessionResult({
       userId: user.id, exercise, source: meta.source, analysis, transcript: capture.transcript,
       durationSec: analysis.metrics.durationSec, audioUrl: null, previous, badges,
@@ -466,6 +471,25 @@ export function createApp(deps: Deps) {
 
   app.post("/api/library/:id/read", auth, wrap(async (req, res) => {
     await store.markLibraryRead(req.userId!, String(req.params.id));
+    res.json({ ok: true });
+  }));
+
+  // ---- Défis vie réelle ------------------------------------------------------
+  // dailyChallenges() is a pure, deterministic function of the date, so the
+  // client computes today's picks itself (like dailyExercise already does)
+  // — the server only needs to persist which ones were marked done.
+
+  app.post("/api/challenges/:id/done", auth, wrap(async (req, res) => {
+    const { date } = z.object({ date: z.string().min(1).max(20) }).parse(req.body);
+    if (!getChallenge(String(req.params.id))) throw new HttpError(404, "not_found", "Défi introuvable.");
+    await store.completeChallenge(req.userId!, String(req.params.id), date);
+    res.status(201).json({ ok: true });
+  }));
+
+  app.delete("/api/challenges/:id/done", auth, wrap(async (req, res) => {
+    const date = String(req.query.date ?? "");
+    if (!date) throw new HttpError(400, "invalid_request", "Date manquante.");
+    await store.uncompleteChallenge(req.userId!, String(req.params.id), date);
     res.json({ ok: true });
   }));
 

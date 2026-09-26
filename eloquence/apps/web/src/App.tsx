@@ -16,6 +16,7 @@ import { Diagnostic, DiagnosticReportPage } from "./pages/Diagnostic";
 import { Exercise } from "./pages/Exercise";
 import { SessionResult } from "./pages/SessionResult";
 import { Progress } from "./pages/Progress";
+import { Defis } from "./pages/Defis";
 import { Badges, History } from "./pages/History";
 import { Coach } from "./pages/Coach";
 import { Program } from "./pages/Program";
@@ -105,6 +106,7 @@ function Root() {
           <Route path="/historique" element={<History />} />
           <Route path="/badges" element={<Badges />} />
           <Route path="/programme" element={<Program />} />
+          <Route path="/defis" element={<Defis />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

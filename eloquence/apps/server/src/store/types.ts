@@ -1,5 +1,5 @@
 import type {
-  AccountState, CoachMessage, DiagnosticReport, EarnedBadge, Program, Session, User,
+  AccountState, CoachMessage, CompletedChallenge, DiagnosticReport, EarnedBadge, Program, Session, User,
 } from "@eloquence/core";
 
 export interface UserRecord extends User {
@@ -58,5 +58,9 @@ export interface Store {
   saveReset(tokenHash: string, userId: string, expiresAt: string): Promise<void>;
   consumeReset(tokenHash: string): Promise<string | null>;
 
-  importState(userId: string, state: Partial<Pick<AccountState, "sessions" | "coach" | "program" | "badges" | "diagnostic">>): Promise<void>;
+  completedChallenges(userId: string): Promise<CompletedChallenge[]>;
+  completeChallenge(userId: string, challengeId: string, date: string): Promise<void>;
+  uncompleteChallenge(userId: string, challengeId: string, date: string): Promise<void>;
+
+  importState(userId: string, state: Partial<Pick<AccountState, "sessions" | "coach" | "program" | "badges" | "diagnostic" | "completedChallenges">>): Promise<void>;
 }

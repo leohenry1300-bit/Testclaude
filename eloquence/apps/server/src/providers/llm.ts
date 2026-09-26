@@ -16,6 +16,10 @@ export interface FeedbackInput {
   transcript: string;
   exercise: Exercise;
   firstName: string;
+  /** Compact, factual summary of the user's recent history (trend, recurring
+   * issue) — null when there isn't enough history yet. Lets the coach
+   * reference real progress instead of treating every session as the first. */
+  historyNote?: string | null;
 }
 
 export interface RewriteResult {
@@ -120,14 +124,17 @@ export class AnthropicLlm implements LlmProvider {
     ].join("\n");
   }
 
-  async feedback({ analysis, transcript, exercise, firstName }: FeedbackInput): Promise<Feedback | null> {
+  async feedback({ analysis, transcript, exercise, firstName, historyNote }: FeedbackInput): Promise<Feedback | null> {
+    const history = historyNote
+      ? `\n\nHistorique réel de la personne (utilise-le seulement si c'est vraiment pertinent pour cette réponse précise — jamais de comparaison forcée) :\n${historyNote}`
+      : "";
     const response = await this.client.messages.parse({
       model: this.model,
       max_tokens: 4000,
       system: `${COACH_VOICE}\nTu rédiges le retour après un exercice oral. Les scores sont mesurés : ne les contredis pas. Le champ "example" doit être une phrase copiée mot pour mot depuis la transcription fournie — jamais reformulée ni inventée.`,
       messages: [{
         role: "user",
-        content: `Prénom : ${firstName}\n${this.facts(analysis, exercise)}\n\nTranscription :\n"""${transcript.slice(0, 6000)}"""`,
+        content: `Prénom : ${firstName}\n${this.facts(analysis, exercise)}${history}\n\nTranscription :\n"""${transcript.slice(0, 6000)}"""`,
       }],
       output_config: { format: zodOutputFormat(FeedbackSchema), effort: "medium" },
     });

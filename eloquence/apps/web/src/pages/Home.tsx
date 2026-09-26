@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarCheck, ChevronRight, Clock, ClipboardCheck, Flame, Mic, Repeat, Sparkles, Target, Timer, TrendingUp } from "lucide-react";
+import { CalendarCheck, ChevronRight, Clock, ClipboardCheck, Flame, Mic, Repeat, Sparkles, Target, Timer, TrendingUp, Users } from "lucide-react";
 import {
-  DIMENSION_POSSESSIVE, dailyExercise, getCategory, getGame, nextProgramDay, weakestDimension,
+  DIMENSION_POSSESSIVE, dailyChallenges, dailyExercise, dayKey, getCategory, getGame, nextProgramDay, weakestDimension,
   buildQuickSession, buildGameActivity, getExercise, formatDuration, type WeeklyGoals,
 } from "@eloquence/core";
 import { useAccount } from "../lib/store";
@@ -20,6 +20,9 @@ export function Home() {
   const doneToday = summary.todayCount > 0;
   const recurring = summary.recurringIssue;
   const [weekly, setWeekly] = useState<WeeklyGoals | null>(null);
+  const todayKey = dayKey(new Date());
+  const todayChallenges = dailyChallenges(new Date(), 3);
+  const challengesDone = todayChallenges.filter((c) => account.completedChallenges.some((d) => d.challengeId === c.id && d.date === todayKey)).length;
 
   useEffect(() => { void weeklyGoals().then(setWeekly).catch(() => setWeekly(null)); }, [weeklyGoals, sessions.length]);
 
@@ -75,6 +78,17 @@ export function Home() {
           </button>
         ))}
       </div>
+
+      <Link to="/defis" className="card card-link" style={{ background: "var(--success-soft, var(--primary-soft))", boxShadow: "none" }}>
+        <div className="row">
+          <span className="stat-tile" style={{ padding: 0, boxShadow: "none", background: "transparent" }}><span className="icon tone-success" style={{ width: 44, height: 44, borderRadius: 14 }}><Users size={20} /></span></span>
+          <div className="grow">
+            <div className="strong">Défis vie réelle</div>
+            <div className="small muted">{challengesDone}/{todayChallenges.length} faits aujourd'hui · pour t'entraîner avec de vraies personnes</div>
+          </div>
+          <ChevronRight size={20} className="faint" />
+        </div>
+      </Link>
 
       {recurring && (
         <button className="card card-link" style={{ width: "100%", textAlign: "left", border: 0, background: "var(--warning-soft)", boxShadow: "none" }}

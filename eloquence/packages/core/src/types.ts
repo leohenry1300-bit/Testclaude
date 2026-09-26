@@ -364,6 +364,9 @@ export interface ProgressSummary {
   byCategory: Partial<Record<CategoryId, { average: number; count: number }>>;
   distinctTopics: number;
   recurringIssue: RecurringChallenge | null;
+  /** Per-dimension score change over the last 30 days, in points — null for
+   * a dimension without enough recent data to compare. */
+  dimensionTrend30: Partial<Record<Dimension, number>>;
 }
 
 export interface RecurringChallenge {
@@ -373,6 +376,25 @@ export interface RecurringChallenge {
   occurrences: number;
   sessionsAffected: number;
   suggestedGameId: string;
+}
+
+export type ChallengeCategory = "contact" | "audace" | "expression" | "ecoute" | "quotidien";
+
+/** A real-life social challenge, done away from the app — self-reported
+ * only, never scored. Separate from the spoken exercises: the point is
+ * building the habit of actually speaking up with real people. */
+export interface RealLifeChallenge {
+  id: string;
+  title: string;
+  description: string;
+  category: ChallengeCategory;
+}
+
+export interface CompletedChallenge {
+  challengeId: string;
+  /** Day key (local calendar day) the challenge was shown/done for. */
+  date: string;
+  completedAt: string;
 }
 
 export interface WeeklyGoals {
@@ -393,6 +415,7 @@ export interface AccountState {
   coach: CoachMessage[];
   badges: EarnedBadge[];
   diagnostic: DiagnosticReport | null;
+  completedChallenges: CompletedChallenge[];
 }
 
 export interface DiagnosticStepResult {

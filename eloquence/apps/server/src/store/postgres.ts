@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import type {
-  AccountState, CoachMessage, DiagnosticReport, EarnedBadge, Program, Session, User, UserSettings,
+  AccountState, CoachMessage, CompletedChallenge, DiagnosticReport, EarnedBadge, Program, Session, User, UserSettings,
 } from "@eloquence/core";
 import { DEFAULT_SETTINGS, DIMENSIONS, summarize, scoreSeries } from "@eloquence/core";
 import type { Store, UserRecord, SessionRow } from "./types";
@@ -105,6 +105,13 @@ CREATE TABLE IF NOT EXISTS password_resets (
   token_hash TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   expires_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS challenge_completions (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  challenge_id TEXT NOT NULL,
+  date TEXT NOT NULL,
+  completed_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, challenge_id, date)
 );
 `;
 
@@ -413,9 +420,27 @@ export class PostgresStore implements Store {
     return new Date(r.expires_at as string) > new Date() ? (r.user_id as string) : null;
   }
 
+  // ---- Défis vie réelle ---------------------------------------------------
+
+  async completedChallenges(userId: string): Promise<CompletedChallenge[]> {
+    const rows = await this.q("SELECT challenge_id, date, completed_at FROM challenge_completions WHERE user_id = $1", [userId]);
+    return rows.map((r) => ({ challengeId: r.challenge_id as string, date: r.date as string, completedAt: r.completed_at as string }));
+  }
+
+  async completeChallenge(userId: string, challengeId: string, date: string) {
+    await this.q(
+      "INSERT INTO challenge_completions (user_id, challenge_id, date, completed_at) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING",
+      [userId, challengeId, date, new Date().toISOString()],
+    );
+  }
+
+  async uncompleteChallenge(userId: string, challengeId: string, date: string) {
+    await this.q("DELETE FROM challenge_completions WHERE user_id = $1 AND challenge_id = $2 AND date = $3", [userId, challengeId, date]);
+  }
+
   // ---- Bulk import (guest → account) ------------------------------------
 
-  async importState(userId: string, state: Partial<Pick<AccountState, "sessions" | "coach" | "program" | "badges" | "diagnostic">>) {
+  async importState(userId: string, state: Partial<Pick<AccountState, "sessions" | "coach" | "program" | "badges" | "diagnostic" | "completedChallenges">>) {
     await this.tx(async (client) => {
       for (const s of state.sessions ?? []) {
         const sess = { ...s, id: `${s.id}_${userId.slice(-6)}`, userId, audioUrl: null } as Session;
@@ -447,6 +472,12 @@ export class PostgresStore implements Store {
       }
       for (const b of state.badges ?? []) {
         await client.query("INSERT INTO badges (user_id, badge_id, earned_at) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING", [userId, b.id, b.earnedAt]);
+      }
+      for (const c of state.completedChallenges ?? []) {
+        await client.query(
+          "INSERT INTO challenge_completions (user_id, challenge_id, date, completed_at) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING",
+          [userId, c.challengeId, c.date, c.completedAt],
+        );
       }
       if (state.diagnostic) {
         await client.query(

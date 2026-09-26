@@ -144,7 +144,7 @@ export function createDemoAccount(now = new Date()): AccountState {
   ];
 
   return {
-    user, sessions: sorted, program, coach, badges,
+    user, sessions: sorted, program, coach, badges, completedChallenges: [],
     diagnostic: {
       completedAt: new Date(now.getTime() - 29 * 86_400_000).toISOString(),
       steps: [],
