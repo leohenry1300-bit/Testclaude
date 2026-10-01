@@ -158,7 +158,7 @@ Object.assign(SuperAnki.prototype, {
                 <label class="stats-scope"><span class="sr-only">Paquet</span>
                     <select class="select" data-input="stats-deck">
                         <option value="all" ${ui.deck === 'all' ? 'selected' : ''}>📂 Collection (tous les paquets)</option>
-                        ${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${ui.deck === d.id ? 'selected' : ''}>${esc(d.emoji)} ${esc(d.name)}</option>`).join('')}
+                        ${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${ui.deck === d.id ? 'selected' : ''}>${esc(d.emoji)} ${esc(this.deckPath(d.id))}</option>`).join('')}
                     </select>
                 </label>
             </div>
@@ -179,8 +179,8 @@ Object.assign(SuperAnki.prototype, {
             <div class="panel panel-pad">
                 <h4 class="stat-title" style="margin-bottom:8px">Maîtrise par paquet</h4>
                 ${deckRows.map(r => `
-                <button class="deck-progress-row" data-action="stats-deck" data-deck="${esc(r.dk.id)}" data-tip="${esc(tipRows(`${esc(r.dk.emoji)} ${esc(r.dk.name)}`, ['new', 'learn', 'due', 'mature'].map(k => ({ label: STATUS[k].label, value: r.c[k], color: STATUS[k].color }))))}">
-                    <span class="nm">${esc(r.dk.emoji)} ${esc(r.dk.name)}</span>
+                <button class="deck-progress-row" data-action="stats-deck" data-deck="${esc(r.dk.id)}" data-tip="${esc(tipRows(`${esc(r.dk.emoji)} ${esc(this.deckPath(r.dk.id))}`, ['new', 'learn', 'due', 'mature'].map(k => ({ label: STATUS[k].label, value: r.c[k], color: STATUS[k].color }))))}">
+                    <span class="nm">${esc(r.dk.emoji)} ${esc(this.deckPath(r.dk.id))}</span>
                     <div class="progress"><i style="width:${r.n ? r.c.mature / r.n * 100 : 0}%;background:var(--mature)"></i><i style="width:${r.n ? r.c.learn / r.n * 100 : 0}%;background:var(--learn)"></i><i style="width:${r.n ? r.c.due / r.n * 100 : 0}%;background:var(--due)"></i></div>
                     <b>${r.pct}%</b>
                 </button>`).join('') || '<p class="small muted">Aucun paquet.</p>'}
@@ -280,7 +280,7 @@ Object.assign(SuperAnki.prototype, {
         for (let i = 0; i < lead; i++) cells += '<i class="pad"></i>';
         let yearTotal = 0, activeDays = 0;
         for (let d = new Date(year, 0, 1); d.getFullYear() === year; d.setDate(d.getDate() + 1)) {
-            const k = dayKey(d.getTime()), v = counts[k] || 0;
+            const k = dateKey(d), v = counts[k] || 0;
             yearTotal += v; if (v) activeDays++;
             const lvl = !v ? '' : v <= q1 ? 'l1' : v <= q2 ? 'l2' : v <= q3 ? 'l3' : 'l4';
             cells += `<i class="${lvl}${k === today ? ' today' : ''}${k > today ? ' future' : ''}" data-tip="${esc(`<b>${longDate(d.getTime())}</b><div>${v ? plural(v, 'révision') : 'Aucune révision'}</div>`)}"></i>`;

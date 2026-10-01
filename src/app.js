@@ -65,12 +65,15 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const MIN = 60000, DAY = 86400000;
 const pad = n => String(n).padStart(2, '0');
-const dayKey = (t = Date.now()) => { const d = new Date(t); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+let ROLLOVER = 4 * 3600000;
+const setRollover = h => { ROLLOVER = clamp(Math.round(num(h, 4)), 0, 12) * 3600000; };
+const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const dayKey = (t = Date.now()) => dateKey(new Date(t - ROLLOVER));
 const keyToUTC = k => { const [y, m, d] = k.split('-').map(Number); return Date.UTC(y, m - 1, d); };
 const daysBetweenKeys = (a, b) => Math.round((keyToUTC(b) - keyToUTC(a)) / DAY);
-const startOfDay = (t = Date.now()) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
-const endOfDay = (t = Date.now()) => { const d = new Date(t); d.setHours(23, 59, 59, 999); return d.getTime(); };
-const addDays = (t, n) => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + n); return d.getTime(); };
+const startOfDay = (t = Date.now()) => { const d = new Date(t - ROLLOVER); d.setHours(0, 0, 0, 0); return d.getTime() + ROLLOVER; };
+const addDays = (t, n) => { const d = new Date(startOfDay(t) - ROLLOVER); d.setDate(d.getDate() + n); return d.getTime() + ROLLOVER; };
+const endOfDay = (t = Date.now()) => addDays(t, 1) - 1;
 const num = (v, def = 0) => { const n = Number(v); return Number.isFinite(n) ? n : def; };
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const plural = (n, one, many) => `${n} ${n > 1 ? (many || one + 's') : one}`;
@@ -192,6 +195,8 @@ function sanitizeHtml(html, opts = {}) {
                     if (kept) ch.setAttribute('style', kept); else ch.removeAttribute('style');
                 } else if (tag === 'IMG' && (n === 'src' || n === 'alt')) {
                     /* keep */
+                } else if (tag === 'SPAN' && n === 'class' && /^(cloze|cloze-hide)$/.test(a.value)) {
+                    /* keep (cloze deletions) */
                 } else if (tag === 'A' && n === 'href') {
                     if (!/^https?:\/\//i.test(a.value)) ch.removeAttribute('href');
                 } else if (tag === 'FONT' && n === 'color' && keepColors) {
@@ -204,6 +209,7 @@ function sanitizeHtml(html, opts = {}) {
             });
             if (tag === 'A') { ch.setAttribute('target', '_blank'); ch.setAttribute('rel', 'noopener noreferrer'); }
             if (tag === 'SPAN' && !ch.attributes.length) ch.replaceWith(...ch.childNodes);
+            if (tag === 'SPAN' && ch.className === 'cloze-hide') { /* placeholder only */ }
         });
     };
     walk(doc.body);
@@ -241,14 +247,47 @@ const THEMES = [
 ];
 const THEME_GROUPS = [['clair', 'Clairs'], ['sombre', 'Sombres'], ['fun', 'Originaux']];
 const CARD_SIZES = { s: '1.1rem', m: '1.35rem', l: '1.6rem', xl: '1.9rem' };
-const DEFAULT_SETTINGS = {
-    theme: 'auto', cardSize: 'm', newPerDay: 20, newOrder: 'random', showIntervals: true,
-    autoSpeak: false, answerMode: 'flip', learnAhead: 20, cloudSync: true,
-    quizCount: 20, writeCount: 20, chronoDuration: 60
+/* Study options: global defaults, can be overridden per deck (deck.opts) */
+const OPT_DEFAULTS = {
+    scheduler: 'sm2', retention: 0.9, learnSteps: '1 10', relearnSteps: '10', gradIvl: 1, easyIvl: 4,
+    startEase: 2.5, easyBonus: 1.3, hardMult: 1.2, ivlMult: 1, lapseMult: 0.5, maxIvl: 3650,
+    leechThreshold: 8, leechAction: 'suspend', burySiblings: true, newPerDay: 20, maxReviews: 9999
 };
+const DEFAULT_SETTINGS = {
+    theme: 'auto', cardSize: 'm', newOrder: 'random', showIntervals: true,
+    autoSpeak: false, answerMode: 'flip', learnAhead: 20, cloudSync: true,
+    quizCount: 20, writeCount: 20, chronoDuration: 60,
+    rolloverHour: 4, autoShow: 0, syncKey: '', settingsMod: 0, autoBackup: true,
+    ...OPT_DEFAULTS
+};
+function parseSteps(str, def) {
+    const out = [];
+    String(str ?? '').split(/[\s,;]+/).forEach(tok => {
+        const m = /^(\d+(?:[.,]\d+)?)(m|min|h|d|j)?$/i.exec(tok.trim());
+        if (!m) return;
+        const v = parseFloat(m[1].replace(',', '.')) * ({ h: 60, d: 1440, j: 1440 }[(m[2] || 'm').toLowerCase()] || 1);
+        if (v > 0 && v <= 60 * 24 * 30) out.push(v);
+    });
+    return out.length ? out : def;
+}
+function buildCfg(o) {
+    const g = (k, d) => (o[k] === undefined || o[k] === null || o[k] === '' ? d : o[k]);
+    return {
+        scheduler: g('scheduler', 'sm2') === 'fsrs' ? 'fsrs' : 'sm2',
+        retention: clamp(num(g('retention', 0.9), 0.9), 0.7, 0.99),
+        learnSteps: parseSteps(g('learnSteps', '1 10'), [1, 10]), relearnSteps: parseSteps(g('relearnSteps', '10'), [10]),
+        gradIvl: clamp(Math.round(num(g('gradIvl', 1), 1)), 1, 365), easyIvl: clamp(Math.round(num(g('easyIvl', 4), 4)), 1, 365),
+        startEase: clamp(num(g('startEase', 2.5), 2.5), 1.3, 5), easyBonus: clamp(num(g('easyBonus', 1.3), 1.3), 1, 3),
+        hardMult: clamp(num(g('hardMult', 1.2), 1.2), 1, 2), ivlMult: clamp(num(g('ivlMult', 1), 1), 0.3, 3),
+        lapseMult: clamp(num(g('lapseMult', 0.5), 0.5), 0, 1), maxIvl: clamp(Math.round(num(g('maxIvl', 3650), 3650)), 1, 36500),
+        leechThreshold: clamp(Math.round(num(g('leechThreshold', 8), 8)), 0, 99), leechAction: g('leechAction', 'suspend') === 'tag' ? 'tag' : 'suspend',
+        burySiblings: g('burySiblings', true) !== false && g('burySiblings', true) !== 'false',
+        newPerDay: clamp(Math.round(num(g('newPerDay', 20), 20)), 0, 9999), maxReviews: clamp(Math.round(num(g('maxReviews', 9999), 9999)), 0, 9999)
+    };
+}
 const DEFAULT_STATS = () => ({
     streak: 0, longestStreak: 0, lastStudyDate: null, freezes: 1,
-    newSeen: { date: null, count: 0 }, history: {}, timeByDay: {}, studySeconds: 0,
+    newSeen: { date: null, count: 0, by: {} }, revSeen: { date: null, count: 0, by: {} }, history: {}, timeByDay: {}, studySeconds: 0,
     gradeCounts: { 1: 0, 2: 0, 3: 0, 4: 0 }, hourly: new Array(24).fill(0),
     chronoBest: {}, quizBest: 0
 });
@@ -258,7 +297,8 @@ const STATUS = {
     learn: { label: 'En cours', one: 'En cours', color: 'var(--learn)', icon: 'sprout' },
     due: { label: 'À revoir', one: 'À revoir', color: 'var(--due)', icon: 'repeat' },
     mature: { label: 'Maîtrisées', one: 'Maîtrisée', color: 'var(--mature)', icon: 'award' },
-    susp: { label: 'Suspendues', one: 'Suspendue', color: '#eab308', icon: 'pause' }
+    susp: { label: 'Suspendues', one: 'Suspendue', color: '#eab308', icon: 'pause' },
+    buried: { label: 'Enfouies', one: 'Enfouie', color: '#94a3b8', icon: 'pause' }
 };
 const MATURE_IVL = 21;
 const REVLOG_MAX = 40000;
@@ -297,7 +337,11 @@ function normalizeCard(c) {
         ease: clamp(num(c.ease ?? c.easeFactor, 2.5), 1.3, 5), due, reps, lapses,
         lastReview: c.lastReview ? num(c.lastReview, null) : null,
         errors: Math.max(0, num(c.errors, lapses >= 2 ? 1 : 0)), wrong: num(c.wrong, 0), right: num(c.right, 0),
-        suspended: !!c.suspended
+        suspended: !!c.suspended, flag: clamp(Math.round(num(c.flag, 0)), 0, 7), marked: !!c.marked, buriedUntil: num(c.buriedUntil, 0),
+        nid: c.nid ? String(c.nid) : '', kind: ['rev', 'cloze'].includes(c.kind) ? c.kind : 'basic', ord: Math.max(0, num(c.ord, 0)),
+        nf: c.nf && typeof c.nf === 'object' ? { front: sanitizeHtml(c.nf.front || ''), back: sanitizeHtml(c.nf.back || ''), text: sanitizeHtml(c.nf.text || ''), extra: sanitizeHtml(c.nf.extra || '') } : null,
+        fs: c.fs && num(c.fs.s, 0) > 0 ? { s: num(c.fs.s), d: clamp(num(c.fs.d, 5), 1, 10), t: num(c.fs.t, 0) } : null,
+        mod: num(c.mod, 0)
     };
 }
 function normalizeStats(s) {
@@ -310,8 +354,9 @@ function normalizeStats(s) {
         studySeconds: num(s.studySeconds, num(s.totalStudyMinutes, 0) * 60),
         quizBest: num(s.quizBest, 0)
     });
-    if (s.newSeen && typeof s.newSeen === 'object') out.newSeen = { date: s.newSeen.date || null, count: num(s.newSeen.count, 0) };
-    else if (s.newSeenDate) out.newSeen = { date: String(s.newSeenDate).slice(0, 10), count: num(s.newSeenToday, 0) };
+    if (s.newSeen && typeof s.newSeen === 'object') out.newSeen = { date: s.newSeen.date || null, count: num(s.newSeen.count, 0), by: { ...(s.newSeen.by || {}) } };
+    else if (s.newSeenDate) out.newSeen = { date: String(s.newSeenDate).slice(0, 10), count: num(s.newSeenToday, 0), by: {} };
+    if (s.revSeen && typeof s.revSeen === 'object') out.revSeen = { date: s.revSeen.date || null, count: num(s.revSeen.count, 0), by: { ...(s.revSeen.by || {}) } };
     if (s.history && typeof s.history === 'object') {
         Object.entries(s.history).forEach(([k, v]) => { if (/^\d{4}-\d{2}-\d{2}$/.test(k)) out.history[k] = num(typeof v === 'object' && v ? v.reviews ?? v.n : v, 0); });
     }
@@ -328,8 +373,11 @@ function normalizeState(raw) {
     const seenDecks = new Set();
     const decks = toArray(raw.decks).filter(d => d && typeof d === 'object').map(d => ({
         id: String(d.id || uid('d')), name: String(d.name || d.title || 'Sans nom').slice(0, 80),
-        emoji: String(d.emoji || '📁').slice(0, 8), description: String(d.description || '').slice(0, 300), created: num(d.created, 0)
+        emoji: String(d.emoji || '📁').slice(0, 8), description: String(d.description || '').slice(0, 300), created: num(d.created, 0),
+        parent: d.parent ? String(d.parent) : null, opts: d.opts && typeof d.opts === 'object' ? { ...d.opts } : null, mod: num(d.mod, 0)
     })).filter(d => (seenDecks.has(d.id) ? false : seenDecks.add(d.id)));
+    decks.forEach(d => { if (d.parent && (d.parent === d.id || !seenDecks.has(d.parent))) d.parent = null; });
+    decks.forEach(d => { let n = 0, p = d; while (p && p.parent && n++ < 20) p = decks.find(x => x.id === p.parent); if (n >= 20) d.parent = null; });
     const seenCards = new Set();
     const cards = toArray(raw.cards).map(normalizeCard).filter(Boolean).map(c => {
         if (seenCards.has(c.id)) c.id = uid('c');
@@ -350,9 +398,19 @@ function normalizeState(raw) {
     if (!THEMES.some(t => t.id === settings.theme)) settings.theme = 'auto';
     if (!CARD_SIZES[settings.cardSize]) settings.cardSize = 'm';
     settings.newPerDay = clamp(num(settings.newPerDay, 20), 0, 9999);
+    settings.rolloverHour = clamp(Math.round(num(settings.rolloverHour, 4)), 0, 12);
+    settings.autoShow = clamp(Math.round(num(settings.autoShow, 0)), 0, 120);
+    settings.syncKey = String(settings.syncKey || '');
+    const deleted = {};
+    if (raw.deleted && typeof raw.deleted === 'object') Object.entries(raw.deleted).forEach(([k, v]) => { if (num(v, 0) > 0) deleted[k] = num(v); });
     const revlog = toArray(raw.revlog).filter(r => Array.isArray(r) && r.length >= 4 && Number.isFinite(r[0])).slice(-REVLOG_MAX);
-    return { version: 4, decks, cards, stats: normalizeStats(raw.stats), settings, revlog, updatedAt: num(raw.updatedAt, 0) };
+    return { version: 5, decks, cards, stats: normalizeStats(raw.stats), settings, revlog, deleted, updatedAt: num(raw.updatedAt, 0) };
 }
+function cardSig(c) {
+    return [c.deckId, c.state, c.step, c.due, c.interval, c.ease, c.reps, c.lapses, c.suspended ? 1 : 0, c.flag, c.marked ? 1 : 0, c.buriedUntil, c.errors, c.wrong, c.right,
+        c.front.length, c.back.length, c.hint.length, c.detail.length, c.tags.join(','), c.fs ? c.fs.s.toFixed(3) : '', c.lastReview, c.nid, c.kind, c.ord].join('|');
+}
+const deckSig = d => JSON.stringify([d.name, d.emoji, d.description, d.parent, d.opts]);
 function seedState() {
     const now = Date.now();
     return normalizeState({
@@ -402,68 +460,118 @@ const Storage = {
         }
         localStorage.setItem(LS_KEY, json);
     },
-    legacy() { try { return localStorage.getItem(LEGACY_KEY); } catch { return null; } }
+    legacy() { try { return localStorage.getItem(LEGACY_KEY); } catch { return null; } },
+    async backups() {
+        if (!this.db) return [];
+        try { return JSON.parse((await this.tx('readonly', st => st.get('backups'))) || '[]'); } catch { return []; }
+    },
+    async backupSave(label, json, data) {
+        const key = `backup:${Date.now()}`, meta = await this.backups();
+        await this.tx('readwrite', st => st.put(json, key));
+        meta.push({ key, label, at: Date.now(), cards: data.cards.length, decks: data.decks.length, size: json.length });
+        const drop = new Set(meta.filter(b => b.label === 'auto').sort((a, b) => b.at - a.at).slice(7).map(b => b.key));
+        let kept = meta.filter(b => !drop.has(b.key)).sort((a, b) => b.at - a.at);
+        kept.slice(14).forEach(b => drop.add(b.key));
+        kept = kept.slice(0, 14);
+        await this.tx('readwrite', st => { drop.forEach(k => st.delete(k)); st.put(JSON.stringify(kept), 'backups'); });
+    },
+    async backupLoad(key) { return this.db ? this.tx('readonly', st => st.get(key)) : null; },
+    async backupDelete(key) {
+        const meta = (await this.backups()).filter(b => b.key !== key);
+        await this.tx('readwrite', st => { st.delete(key); st.put(JSON.stringify(meta), 'backups'); });
+    }
 };
 
 /* ============================================================
    Spaced repetition (SM-2 as in Anki, with learning steps)
    ============================================================ */
-const SRS = { learnSteps: [1, 10], relearnSteps: [10], gradIvl: 1, easyIvl: 4, easyBonus: 1.3, hardMult: 1.2, lapseMult: 0.5, maxIvl: 3650, minEase: 1.3 };
 function fuzzIvl(ivl) {
     if (ivl < 3) return ivl;
     const f = Math.max(1, Math.round(ivl * 0.05));
     return ivl + Math.floor(Math.random() * (2 * f + 1)) - f;
 }
-function schedule(card, grade, now = Date.now(), useFuzz = false) {
-    const r = { state: card.state, step: card.step || 0, interval: card.interval || 0, ease: card.ease || 2.5, lapses: card.lapses || 0, due: card.due };
+/* Returns the new scheduling fields for `card` after answering `grade` (1 = raté .. 4 = facile). */
+function schedule(card, grade, now = Date.now(), useFuzz = false, cfg = buildCfg(OPT_DEFAULTS)) {
+    const fsr = cfg.scheduler === 'fsrs';
+    const r = { state: card.state, step: card.step || 0, interval: card.interval || 0, ease: card.ease || 2.5, lapses: card.lapses || 0, due: card.due, fs: card.fs || null };
     const inMin = m => now + Math.round(m * MIN);
-    const toReview = ivl => {
-        ivl = clamp(Math.round(useFuzz ? fuzzIvl(ivl) : ivl), 1, SRS.maxIvl);
+    let fs = fsr ? fsrsFromCard(card) : null;
+    const finish = ivl => {
+        ivl = clamp(Math.round(useFuzz ? fuzzIvl(ivl) : ivl), 1, cfg.maxIvl);
         r.state = 'review'; r.step = 0; r.interval = ivl; r.due = addDays(now, ivl);
     };
+    const keepFs = () => { if (fs) r.fs = { s: fs.s, d: fs.d, t: now }; };
     if (r.state === 'new' || r.state === 'learning') {
-        const steps = SRS.learnSteps;
+        const steps = cfg.learnSteps;
+        if (r.state === 'new') r.ease = cfg.startEase;
         const cur = steps[Math.min(r.step, steps.length - 1)];
+        if (fsr) {
+            if (!fs || r.state === 'new') fs = { s: fsrsInitS(grade), d: fsrsInitD(grade), t: now };
+            else { fs.s = fsrsShortS(fs.s, grade); fs.d = fsrsNextD(fs.d, grade); }
+            keepFs();
+        }
+        const grad = g => finish(fsr ? Math.max(g === 4 ? cfg.easyIvl : 1, fsrsIvl(fs.s, cfg.retention)) : (g === 4 ? cfg.easyIvl : cfg.gradIvl));
         if (grade === 1) { r.state = 'learning'; r.step = 0; r.due = inMin(steps[0]); }
         else if (grade === 2) { r.state = 'learning'; r.due = inMin(r.step === 0 && steps[1] ? (steps[0] + steps[1]) / 2 : cur); }
         else if (grade === 3) {
             if (r.step + 1 < steps.length) { r.state = 'learning'; r.step++; r.due = inMin(steps[r.step]); }
-            else toReview(SRS.gradIvl);
-        } else toReview(SRS.easyIvl);
+            else grad(3);
+        } else grad(4);
     } else if (r.state === 'relearning') {
-        const steps = SRS.relearnSteps;
+        const steps = cfg.relearnSteps;
+        if (fsr && fs) { fs.s = fsrsShortS(fs.s, grade); fs.d = fsrsNextD(fs.d, grade); keepFs(); }
+        const back = bonus => finish(fsr && fs ? Math.max(1, fsrsIvl(fs.s, cfg.retention)) : Math.max(1, r.interval) + bonus);
         if (grade === 1) { r.step = 0; r.due = inMin(steps[0]); }
         else if (grade === 2) { r.due = inMin(steps[Math.min(r.step, steps.length - 1)]); }
         else if (grade === 3) {
             if (r.step + 1 < steps.length) { r.step++; r.due = inMin(steps[r.step]); }
-            else toReview(Math.max(1, r.interval));
-        } else toReview(Math.max(1, r.interval) + 1);
+            else back(0);
+        } else back(1);
     } else {
         const ivl = Math.max(1, r.interval);
         const elapsed = card.lastReview ? (now - card.lastReview) / DAY : ivl;
         const delay = Math.max(0, elapsed - ivl);
-        if (grade === 1) {
+        if (fsr) {
+            if (!fs) fs = { s: ivl, d: 5, t: now };
+            const rr = fsrsR(card.lastReview ? elapsed : ivl, fs.s);
+            if (grade === 1) {
+                r.lapses++;
+                fs = { s: fsrsForgetS(fs.s, fs.d, rr), d: fsrsNextD(fs.d, 1), t: now };
+                r.interval = clamp(Math.round(fsrsIvl(fs.s, cfg.retention)), 1, cfg.maxIvl);
+                r.state = 'relearning'; r.step = 0; r.due = inMin(cfg.relearnSteps[0]);
+                keepFs();
+            } else {
+                const raw = g => Math.round(clamp(fsrsIvl(fsrsRecallS(fs.s, fs.d, rr, g), cfg.retention) * cfg.ivlMult, 1, cfg.maxIvl));
+                let hard = raw(2), good = raw(3), easy = raw(4);
+                hard = Math.min(hard, good); good = Math.max(good, hard + 1); easy = Math.max(easy, good + 1);
+                const ivlFor = { 2: hard, 3: good, 4: easy }[grade];
+                fs = { s: fsrsRecallS(fs.s, fs.d, rr, grade), d: fsrsNextD(fs.d, grade), t: now };
+                keepFs();
+                finish(Math.min(ivlFor, cfg.maxIvl));
+            }
+        } else if (grade === 1) {
             r.lapses++;
-            r.ease = Math.max(SRS.minEase, r.ease - 0.2);
-            r.interval = Math.max(1, Math.round(ivl * SRS.lapseMult));
-            r.state = 'relearning'; r.step = 0; r.due = inMin(SRS.relearnSteps[0]);
+            r.ease = Math.max(1.3, r.ease - 0.2);
+            r.interval = Math.max(1, Math.round(ivl * cfg.lapseMult));
+            r.state = 'relearning'; r.step = 0; r.due = inMin(cfg.relearnSteps[0]);
         } else {
-            const hard = Math.max(ivl + 1, Math.round(ivl * SRS.hardMult));
-            const good = Math.max(hard + 1, Math.round((ivl + delay / 2) * r.ease));
-            const easy = Math.max(good + 1, Math.round((ivl + delay) * r.ease * SRS.easyBonus));
-            if (grade === 2) { r.ease = Math.max(SRS.minEase, r.ease - 0.15); toReview(hard); }
-            else if (grade === 3) toReview(good);
-            else { r.ease = r.ease + 0.15; toReview(easy); }
+            const hard = Math.max(ivl + 1, Math.round(ivl * cfg.hardMult * cfg.ivlMult));
+            const good = Math.max(hard + 1, Math.round((ivl + delay / 2) * r.ease * cfg.ivlMult));
+            const easy = Math.max(good + 1, Math.round((ivl + delay) * r.ease * cfg.easyBonus * cfg.ivlMult));
+            if (grade === 2) { r.ease = Math.max(1.3, r.ease - 0.15); finish(hard); }
+            else if (grade === 3) finish(good);
+            else { r.ease = r.ease + 0.15; finish(easy); }
         }
     }
     return r;
 }
-function previewLabel(card, grade, now) {
-    const r = schedule(card, grade, now, false);
+function previewLabel(card, grade, now, cfg) {
+    const r = schedule(card, grade, now, false, cfg);
     return r.state === 'review' ? fmtDays(r.interval) : fmtDelay(r.due - now);
 }
 function cardStatus(c, now, eod) {
     if (c.suspended) return 'susp';
+    if (c.buriedUntil > now) return 'buried';
     if (c.state === 'new') return 'new';
     if (c.state === 'review' ? c.due <= eod : c.due <= now) return 'due';
     if (c.state === 'review' && c.interval >= MATURE_IVL) return 'mature';
@@ -492,94 +600,13 @@ function checkAnswer(typed, correctHtml) {
 }
 
 /* ============================================================
-   Cloud sync (Supabase, optional)
-   ============================================================ */
-const SUPABASE_URL = 'https://opmkdjkvbzfxbeygdvpo.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_yor28RXd0IEXDGyz6S9jCA_DOZ3wOYf';
-const Cloud = {
-    client: null, status: 'off', timer: null, busy: false, pending: false, lastPull: 0,
-    async ensure() {
-        if (this.client) return true;
-        try {
-            if (!window.supabase) await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js');
-            if (!window.supabase || !window.supabase.createClient) return false;
-            this.client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            return true;
-        } catch { return false; }
-    },
-    setStatus(s) { this.status = s; app && app.renderSyncIndicator(); if (app && app.popover && app.popover.dataset.kind === 'sync') app.refreshPopover(); },
-    async pull() {
-        if (!(await this.ensure())) { this.setStatus('err'); return null; }
-        const res = await this.client.from('game_state').select('data, updated_at').eq('id', 'main').maybeSingle();
-        if (res.error) throw new Error(res.error.message);
-        this.lastPull = Date.now();
-        return res.data;
-    },
-    schedulePush() {
-        if (!app.data.settings.cloudSync) return;
-        clearTimeout(this.timer);
-        this.timer = setTimeout(() => this.push(), 2000);
-    },
-    async push() {
-        if (!app.data.settings.cloudSync) return;
-        if (this.busy) { this.pending = true; return; }
-        this.busy = true; this.setStatus('busy');
-        try {
-            if (!(await this.ensure())) throw new Error('client');
-            const payload = JSON.parse(app.serialize());
-            const res = await this.client.from('game_state').upsert({ id: 'main', data: payload, updated_at: new Date(app.data.updatedAt || Date.now()).toISOString() });
-            if (res.error) throw new Error(res.error.message);
-            this.lastSync = Date.now();
-            this.setStatus('ok');
-        } catch (e) {
-            console.warn('Sync cloud:', e.message);
-            this.setStatus('err');
-        } finally {
-            this.busy = false;
-            if (this.pending) { this.pending = false; this.schedulePush(); }
-        }
-    },
-    async sync(manual = false) {
-        if (!app.data.settings.cloudSync) { this.setStatus('off'); return; }
-        this.setStatus('busy');
-        try {
-            const row = await this.pull();
-            if (!row || !row.data) { await this.push(); if (manual) app.toast('Sauvegarde envoyée dans le cloud', 'success'); return; }
-            const remoteAt = Math.max(num(row.data.updatedAt, 0), Date.parse(row.updated_at) || 0);
-            if (remoteAt > (app.data.updatedAt || 0) + 1000) {
-                const remote = normalizeState(row.data);
-                if (remote && remote.cards.length) {
-                    remote.updatedAt = remoteAt;
-                    if (!row.data.settings) remote.settings = Object.assign({}, app.data.settings);
-                    app.replaceData(remote, false);
-                    app.toast('Progression synchronisée depuis le cloud', 'success', ic('cloud'));
-                }
-                this.lastSync = Date.now();
-                this.setStatus('ok');
-            } else if ((app.data.updatedAt || 0) > remoteAt + 1000) {
-                await this.push();
-                if (manual) app.toast('Cloud mis à jour', 'success');
-            } else {
-                this.lastSync = Date.now();
-                this.setStatus('ok');
-                if (manual) app.toast('Déjà à jour', 'success');
-            }
-        } catch (e) {
-            console.warn('Sync cloud:', e.message);
-            this.setStatus('err');
-            if (manual) app.toast('Synchronisation impossible (hors ligne ?)', 'error');
-        }
-    }
-};
-
-/* ============================================================
    Application
    ============================================================ */
 class SuperAnki {
     constructor() {
         this.data = null;
         this.view = 'dashboard';
-        this.ui = { deck: 'all', filter: 'all', search: '', sort: 'auto', limit: 60 };
+        this.ui = { deck: 'all', filter: 'all', search: '', sort: 'auto', limit: 60, selMode: false, sel: new Set() };
         this.session = null;
         this.modals = [];
         this.saveTimer = null;
@@ -587,6 +614,9 @@ class SuperAnki {
         this.imageTarget = null;
         this.saveErrorShown = false;
         this.searchCache = new Map();
+        this.cfgCache = new Map();
+        this.sigs = new Map(); this.dsigs = new Map();
+        this.undoStack = []; this.redoStack = [];
         this.chartDefs = {};
         this.statsUi = { deck: 'all', fcRange: 31, fcCumul: true, rvRange: 30, rvTime: false, ivRange: '1m', hrRange: 30, btRange: 30, adRange: 30, calYear: new Date().getFullYear(), hidden: {} };
     }
@@ -608,8 +638,10 @@ class SuperAnki {
         if (!data || !data.cards.length && !data.decks.length) { data = seedState(); source = 'seed'; }
         this.data = data;
         this.applySettings();
+        this.initSigs();
         this.checkStreak();
         this.writeNow();
+        this.autoBackup(source);
         $('#boot').remove();
         this.go('dashboard');
         if (source === 'legacy') this.toast('Tes cartes et ta progression ont été récupérées', 'success');
@@ -618,11 +650,36 @@ class SuperAnki {
     }
 
     serialize() {
-        const { version, decks, cards, stats, settings, revlog, updatedAt } = this.data;
-        return JSON.stringify({ version, decks, cards, stats, settings, revlog, updatedAt });
+        const { version, decks, cards, stats, settings, revlog, deleted, updatedAt } = this.data;
+        return JSON.stringify({ version, decks, cards, stats, settings, revlog, deleted, updatedAt });
+    }
+    /* Change tracking: per-card modification times let two devices merge instead of overwriting each other */
+    initSigs() {
+        this.sigs = new Map(this.data.cards.map(c => [c.id, cardSig(c)]));
+        this.dsigs = new Map(this.data.decks.map(d => [d.id, deckSig(d)]));
+    }
+    detectChanges(now) {
+        const d = this.data, seen = new Set();
+        d.cards.forEach(c => {
+            seen.add(c.id);
+            const sig = cardSig(c);
+            if (this.sigs.get(c.id) !== sig) { c.mod = now; this.sigs.set(c.id, sig); delete d.deleted[c.id]; }
+        });
+        [...this.sigs.keys()].forEach(id => { if (!seen.has(id)) { this.sigs.delete(id); d.deleted[id] = now; } });
+        const seenD = new Set();
+        d.decks.forEach(k => {
+            seenD.add(k.id);
+            const sig = deckSig(k);
+            if (this.dsigs.get(k.id) !== sig) { k.mod = now; this.dsigs.set(k.id, sig); delete d.deleted[k.id]; }
+        });
+        [...this.dsigs.keys()].forEach(id => { if (!seenD.has(id)) { this.dsigs.delete(id); d.deleted[id] = now; } });
+        const keys = Object.keys(d.deleted);
+        if (keys.length > 6000) keys.sort((a, b) => d.deleted[a] - d.deleted[b]).slice(0, keys.length - 5000).forEach(k => delete d.deleted[k]);
     }
     save(sync = true) {
         this.data.updatedAt = Date.now();
+        this.detectChanges(this.data.updatedAt);
+        this.cfgCache.clear();
         clearTimeout(this.saveTimer);
         this.saveTimer = setTimeout(() => this.writeNow(), 250);
         if (sync) Cloud.schedulePush();
@@ -641,9 +698,20 @@ class SuperAnki {
             }
         }
     }
+    applyMerged(merged) {
+        this.data = merged;
+        this.searchCache.clear(); this.cfgCache.clear();
+        this.initSigs();
+        this.applySettings();
+        this.checkStreak();
+        this.writeNow();
+        this.render();
+    }
     replaceData(newData, sync = true) {
         this.data = newData;
-        this.searchCache.clear();
+        this.searchCache.clear(); this.cfgCache.clear();
+        this.undoStack = []; this.redoStack = [];
+        this.initSigs();
         this.applySettings();
         this.checkStreak();
         this.writeNow();
@@ -655,6 +723,7 @@ class SuperAnki {
     /* ---------- settings / theme ---------- */
     applySettings() {
         const s = this.data.settings;
+        setRollover(s.rolloverHour);
         const resolved = s.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'nuit' : 'clair') : s.theme;
         document.documentElement.dataset.theme = resolved;
         document.documentElement.style.setProperty('--card-size', CARD_SIZES[s.cardSize] || CARD_SIZES.m);
@@ -665,6 +734,7 @@ class SuperAnki {
     }
     setSetting(key, value) {
         this.data.settings[key] = value;
+        this.data.settings.settingsMod = Date.now();
         this.save();
         this.applySettings();
     }
@@ -672,7 +742,7 @@ class SuperAnki {
     /* ---------- streak ---------- */
     checkStreak() {
         const st = this.data.stats, today = dayKey();
-        if (st.newSeen.date !== today) st.newSeen = { date: today, count: 0 };
+        this.rollSeen();
         if (!st.lastStudyDate || st.lastStudyDate === today) return;
         const gap = daysBetweenKeys(st.lastStudyDate, today);
         if (gap <= 1) return;
@@ -712,9 +782,50 @@ class SuperAnki {
     /* ---------- data helpers ---------- */
     card(id) { return this.data.cards.find(c => c.id === id); }
     deck(id) { return this.data.decks.find(d => d.id === id); }
-    sortedDecks() { return [...this.data.decks].sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' })); }
-    cardsOf(deckId) { return deckId ? this.data.cards.filter(c => c.deckId === deckId) : this.data.cards; }
+    descendantIds(id) {
+        const out = [id];
+        for (let i = 0; i < out.length; i++) this.data.decks.forEach(d => { if (d.parent === out[i] && !out.includes(d.id)) out.push(d.id); });
+        return out;
+    }
+    deckChain(id) {
+        const chain = []; let d = this.deck(id), n = 0;
+        while (d && n++ < 20) { chain.unshift(d); d = d.parent ? this.deck(d.parent) : null; }
+        return chain;
+    }
+    deckPath(id) { return this.deckChain(id).map(d => d.name).join(' › '); }
+    deckDepth(id) { return Math.max(0, this.deckChain(id).length - 1); }
+    deckLabel(d) { return `${d.emoji} ${this.deckPath(d.id)}`; }
+    sortedDecks() {
+        const by = new Map();
+        this.data.decks.forEach(d => { const k = d.parent || ''; if (!by.has(k)) by.set(k, []); by.get(k).push(d); });
+        const out = [], visit = k => (by.get(k) || []).sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base', numeric: true })).forEach(d => { out.push(d); visit(d.id); });
+        visit('');
+        return out;
+    }
+    cardsOf(deckId) {
+        if (!deckId) return this.data.cards;
+        const set = new Set(this.descendantIds(deckId));
+        return this.data.cards.filter(c => set.has(c.deckId));
+    }
     errorCards() { return this.data.cards.filter(c => c.errors > 0 && !c.suspended); }
+    /* Study options for a deck: global defaults overridden by the deck's ancestors, then the deck itself */
+    deckCfg(deckId) {
+        let cfg = this.cfgCache.get(deckId);
+        if (cfg) return cfg;
+        const o = {};
+        Object.keys(OPT_DEFAULTS).forEach(k => { o[k] = this.data.settings[k]; });
+        this.deckChain(deckId).forEach(d => { if (d.opts) Object.assign(o, d.opts); });
+        cfg = buildCfg(o);
+        this.cfgCache.set(deckId, cfg);
+        return cfg;
+    }
+    cfgFor(card) { return this.deckCfg(card.deckId); }
+    /* Deck that owns a per-deck daily limit (nearest deck on the path that overrides it), or null for the global limit */
+    limitOwner(deckId, key) {
+        const chain = this.deckChain(deckId);
+        for (let i = chain.length - 1; i >= 0; i--) if (chain[i].opts && chain[i].opts[key] !== undefined && chain[i].opts[key] !== '') return chain[i].id;
+        return null;
+    }
     logReview(card, grade, type, prevIvl, ms) {
         const log = this.data.revlog;
         log.push([Date.now(), card.id, grade, type, card.state === 'review' ? card.interval : 0, prevIvl || 0, Math.round(ms)]);
@@ -722,26 +833,45 @@ class SuperAnki {
     }
     countStatuses(cards) {
         const now = Date.now(), eod = endOfDay(now);
-        const out = { new: 0, learn: 0, due: 0, mature: 0, susp: 0, total: cards.length };
+        const out = { new: 0, learn: 0, due: 0, mature: 0, susp: 0, buried: 0, total: cards.length };
         cards.forEach(c => { out[cardStatus(c, now, eod)]++; });
         return out;
     }
+    rollSeen() {
+        const st = this.data.stats, t = dayKey();
+        ['newSeen', 'revSeen'].forEach(k => { if (!st[k] || st[k].date !== t) st[k] = { date: t, count: 0, by: {} }; });
+    }
     newBudget() {
-        const st = this.data.stats;
-        if (st.newSeen.date !== dayKey()) st.newSeen = { date: dayKey(), count: 0 };
-        return Math.max(0, this.data.settings.newPerDay - st.newSeen.count);
+        this.rollSeen();
+        return Math.max(0, this.data.settings.newPerDay - this.data.stats.newSeen.count);
+    }
+    /* Applies the global + per-deck daily limit to an ordered list of cards */
+    applyLimit(list, key, seen, globalLeft) {
+        const used = {}, out = [];
+        for (const c of list) {
+            if (out.length >= globalLeft) break;
+            const owner = this.limitOwner(c.deckId, key);
+            if (owner) {
+                const left = this.deckCfg(c.deckId)[key] - (seen.by[owner] || 0) - (used[owner] || 0);
+                if (left <= 0) continue;
+                used[owner] = (used[owner] || 0) + 1;
+            }
+            out.push(c);
+        }
+        return out;
     }
     studyPlan(deckIds, extraNew = 0) {
         const now = Date.now(), eod = endOfDay(now);
-        const set = deckIds ? new Set(deckIds) : null;
-        const pool = this.data.cards.filter(c => !c.suspended && (!set || set.has(c.deckId)));
+        this.rollSeen();
+        const st = this.data.stats, set = deckIds ? new Set(deckIds.flatMap(id => this.descendantIds(id))) : null;
+        const pool = this.data.cards.filter(c => !c.suspended && !(c.buriedUntil > now) && (!set || set.has(c.deckId)));
         const learning = pool.filter(c => c.state === 'learning' || c.state === 'relearning').map(c => ({ id: c.id, due: c.due }));
-        const reviews = pool.filter(c => c.state === 'review' && c.due <= eod).sort((a, b) => a.due - b.due);
+        const dueAll = pool.filter(c => c.state === 'review' && c.due <= eod).sort((a, b) => a.due - b.due);
+        const reviews = this.applyLimit(dueAll, 'maxReviews', st.revSeen, Math.max(0, this.data.settings.maxReviews - st.revSeen.count));
         let fresh = pool.filter(c => c.state === 'new');
         fresh = this.data.settings.newOrder === 'random' ? shuffle(fresh) : fresh.sort((a, b) => a.created - b.created);
-        const budget = extraNew || this.newBudget();
-        const news = fresh.slice(0, budget);
-        return { reviews, news, learning, learningDue: learning.filter(l => l.due <= now).length, freshTotal: fresh.length };
+        const news = extraNew ? fresh.slice(0, extraNew) : this.applyLimit(fresh, 'newPerDay', st.newSeen, this.newBudget());
+        return { reviews, news, learning, learningDue: learning.filter(l => l.due <= now).length, freshTotal: fresh.length, dueTotal: dueAll.length };
     }
     nextDueTime() {
         let min = Infinity;
@@ -788,7 +918,7 @@ class SuperAnki {
         el.classList.remove('ok', 'busy', 'err');
         if (on && ['ok', 'busy', 'err'].includes(Cloud.status)) el.classList.add(Cloud.status);
         el.title = { ok: 'Synchronisé avec le cloud', busy: 'Synchronisation...', err: 'Synchronisation impossible (hors ligne ?)', off: 'Synchronisation désactivée' }[Cloud.status] || 'Synchronisation cloud';
-        if (this.view === 'settings') { const s = $('#sync-status'); if (s) s.textContent = el.title; }
+        if (this.view === 'settings') { const st = $('#sync-status'); if (st) st.textContent = el.title + (Cloud.status === 'err' && Cloud.lastError ? ` : ${Cloud.lastError}` : '') + (Cloud.lastSync ? ` · dernière synchro ${fmtAgo(Cloud.lastSync)}` : ''); }
     }
 
     /* ---------- Dashboard ---------- */
@@ -843,7 +973,7 @@ class SuperAnki {
             </div>
 
             <div>
-                <div class="section-head"><h3 class="section-title">Modes d'entraînement</h3></div>
+                <div class="section-head"><h3 class="section-title">Modes d'entraînement</h3><button class="link" data-action="custom-study">${ic('sliders')}Révisions personnalisées</button></div>
                 <div class="mode-grid">
                     <button class="panel mode-tile" style="--c:#0ea5e9" data-action="mode" data-mode="write">
                         <span class="mode-ico">${ic('keyboard')}</span>
@@ -873,7 +1003,7 @@ class SuperAnki {
     dashboardDeckCards() {
         const now = Date.now(), eod = endOfDay(now);
         const budget = this.newBudget();
-        const rows = this.sortedDecks().map(deck => {
+        const rows = this.sortedDecks().filter(d => !d.parent).map(deck => {
             const cards = this.cardsOf(deck.id);
             const c = { new: 0, learn: 0, due: 0, mature: 0 };
             cards.forEach(x => { c[cardStatus(x, now, eod)]++; });
@@ -886,7 +1016,7 @@ class SuperAnki {
             <div class="panel deck-card" data-action="open-deck" data-deck="${esc(deck.id)}">
                 <div class="deck-head">
                     <span class="deck-emoji">${esc(deck.emoji)}</span>
-                    <div style="min-width:0"><div class="deck-name">${esc(deck.name)}</div><div class="deck-meta">${plural(cards.length, 'carte')} · ${mastery}% maîtrisé</div></div>
+                    <div style="min-width:0"><div class="deck-name">${esc(this.deckPath(deck.id))}</div><div class="deck-meta">${plural(cards.length, 'carte')} · ${mastery}% maîtrisé</div></div>
                 </div>
                 <div class="counts">
                     <span style="color:var(--new)" title="Nouvelles">${ic('sparkle')}${c.new}</span>
@@ -914,9 +1044,13 @@ class SuperAnki {
         if (ui.deck !== 'all' && ui.deck !== 'errors' && !this.deck(ui.deck)) ui.deck = 'all';
         $('#view-decks').innerHTML = `
         <div class="stack">
-            <div>
-                <h2 class="page-title">Paquets &amp; Cartes</h2>
-                <p class="page-sub">Choisis un paquet pour gérer tes fiches et lancer une révision.</p>
+            <div class="stats-head">
+                <div><h2 class="page-title">Paquets &amp; Cartes</h2>
+                <p class="page-sub">Choisis un paquet pour gérer tes fiches et lancer une révision.</p></div>
+                <div class="head-tools">
+                    <button class="icon-btn" data-action="undo-global" title="Annuler la dernière modification (Ctrl+Z)" ${this.undoStack.length ? '' : 'disabled style="opacity:.35"'}>${ic('undo')}</button>
+                    <button class="icon-btn" data-action="redo-global" title="Rétablir (Ctrl+Maj+Z)" ${this.redoStack.length ? '' : 'disabled style="opacity:.35"'}>${ic('redo')}</button>
+                </div>
             </div>
             <div class="decks-toolbar">
                 <button class="btn btn-primary" data-action="new-deck">${ic('folderPlus')}<span>Nouveau paquet</span></button>
@@ -936,7 +1070,7 @@ class SuperAnki {
                             .map(([v, l]) => `<option value="${v}" ${ui.sort === v ? 'selected' : ''}>${l}</option>`).join('')}
                     </select>
                 </label>
-                <p class="search-help">Astuces : plusieurs mots = toutes les cartes qui les contiennent · <code>"mot exact"</code> · <code>-exclure</code> · les accents et petites fautes de frappe sont tolérés.</p>
+                <details class="search-help"><summary>Astuces de recherche</summary><p>Plusieurs mots = tous requis · <code>"mot exact"</code> · <code>-exclure</code> · <code>deck:nom</code> · <code>tag:x</code> · <code>is:due</code> <code>is:new</code> <code>is:suspended</code> <code>is:marked</code> <code>is:leech</code> · <code>flag:1</code> · <code>prop:ivl&gt;30</code> · <code>added:7</code> · <code>rated:1</code> · accents et petites fautes tolérés.</p></details>
             </div>
             <div class="manager">
                 <aside class="panel deck-list" id="deck-sidebar" aria-label="Paquets"></aside>
@@ -951,27 +1085,69 @@ class SuperAnki {
         if (!box) return;
         const q = this.searchMatches();
         const count = list => (q ? list.filter(c => q.has(c.id)).length : list.length);
-        const item = (id, em, name, n, cls = '') => `<button class="dl-item ${cls} ${ui.deck === id ? 'active' : ''} ${q && !n ? 'dim' : ''}" data-action="select-deck" data-deck="${esc(id)}"><span class="em">${em}</span><span class="nm">${esc(name)}</span><span class="ct">${n}</span></button>`;
+        const item = (id, em, name, n, cls = '', depth = 0) => `<button class="dl-item ${cls} ${ui.deck === id ? 'active' : ''} ${q && !n ? 'dim' : ''}" style="--d:${depth}" data-action="select-deck" data-deck="${esc(id)}"><span class="em">${em}</span><span class="nm">${esc(name)}</span><span class="ct">${n}</span></button>`;
         box.innerHTML = `
             <div class="dl-title">${q ? 'Résultats par paquet' : 'Paquets'}</div>
             ${item('all', '📂', 'Toutes les cartes', count(this.data.cards))}
             ${item('errors', ic('target'), 'Mes erreurs', count(this.errorCards()), 'errors')}
             <div class="dl-sep"></div>
-            ${this.sortedDecks().map(dk => item(dk.id, esc(dk.emoji), dk.name, count(this.cardsOf(dk.id)))).join('')}`;
+            ${this.sortedDecks().map(dk => item(dk.id, esc(dk.emoji), dk.name, count(this.cardsOf(dk.id)), '', this.deckDepth(dk.id))).join('')}`;
     }
-    /* Search: accent-insensitive, AND between words, "exact phrase", -exclude, typo tolerant */
+    /* Search: accent-insensitive, AND between words, "exact phrase", -exclude, typo tolerant,
+       plus Anki-style filters (deck:, tag:, is:, flag:, prop:, added:, rated:, front:, back:, type:) */
     parseQuery(q) {
-        const out = { terms: [], phrases: [], excludes: [] };
-        const re = /(-?)"([^"]*)"?|(-?)(\S+)/g;
+        const out = { terms: [], phrases: [], excludes: [], filters: [] };
+        const KEYS = ['deck', 'tag', 'is', 'flag', 'prop', 'added', 'rated', 'front', 'back', 'type', 'kind'];
+        const re = /(-?)(?:(\w+):)?(?:"([^"]*)"?|(\S+))/g;
         let m;
         while ((m = re.exec(q))) {
-            if (m[2] !== undefined) { const p = fold(m[2]).trim(); if (p) (m[1] ? out.excludes : out.phrases).push(p); continue; }
-            const t = fold(m[4]).replace(/^[^\p{L}\p{N}#]+|[^\p{L}\p{N}]+$/gu, '');
+            const neg = !!m[1], key = m[2] ? m[2].toLowerCase() : null, quoted = m[3], bare = m[4];
+            if (key && KEYS.includes(key)) { const val = quoted !== undefined ? quoted : bare; if (val) out.filters.push({ neg, key, val: fold(val) }); continue; }
+            if (quoted !== undefined && !key) { const p = fold(quoted).trim(); if (p) (neg ? out.excludes : out.phrases).push(p); continue; }
+            const t = fold((key ? `${key}:` : '') + (quoted !== undefined ? quoted : bare)).replace(/^[^\p{L}\p{N}#]+|[^\p{L}\p{N}]+$/gu, '');
             if (!t) continue;
-            (m[3] && t.length > 0 ? out.excludes : out.terms).push(t.replace(/^#/, ''));
+            (neg ? out.excludes : out.terms).push(t.replace(/^#/, ''));
         }
-        out.empty = !out.terms.length && !out.phrases.length && !out.excludes.length;
+        out.empty = !out.terms.length && !out.phrases.length && !out.excludes.length && !out.filters.length;
         return out;
+    }
+    matchFilter(c, f, ctx) {
+        const v = f.val;
+        let ok = false;
+        switch (f.key) {
+            case 'deck': ok = fold(this.deckPath(c.deckId)).includes(v); break;
+            case 'tag': ok = v === 'none' ? !c.tags.length : c.tags.some(t => fold(t) === v || fold(t).startsWith(v)); break;
+            case 'flag': ok = c.flag === Number(v); break;
+            case 'type': case 'kind': ok = c.kind === v || (v === 'reversed' && c.kind === 'rev'); break;
+            case 'front': ok = fold(stripHtml(c.front)).includes(v); break;
+            case 'back': ok = fold(stripHtml(c.back)).includes(v); break;
+            case 'added': ok = c.created >= ctx.now - Number(v) * DAY; break;
+            case 'rated': { const n = Number(v); ctx.rated[n] = ctx.rated[n] || new Set(this.data.revlog.filter(r => r[0] >= ctx.now - n * DAY).map(r => r[1])); ok = ctx.rated[n].has(c.id); break; }
+            case 'is': {
+                const st = cardStatus(c, ctx.now, ctx.eod);
+                ok = ({
+                    due: st === 'due', new: c.state === 'new', learn: c.state === 'learning' || c.state === 'relearning', learning: c.state === 'learning' || c.state === 'relearning',
+                    review: c.state === 'review', suspended: c.suspended, buried: c.buriedUntil > ctx.now, marked: c.marked, leech: c.tags.some(t => fold(t) === 'leech'),
+                    mature: c.state === 'review' && c.interval >= MATURE_IVL, young: c.state === 'review' && c.interval < MATURE_IVL, flagged: c.flag > 0, error: c.errors > 0, errors: c.errors > 0
+                })[v] === true;
+                break;
+            }
+            case 'prop': {
+                const m = /^(ivl|ease|lapses|reps|due|errors|s|d)(<=|>=|!=|=|<|>)(-?\d+(?:[.,]\d+)?)$/.exec(v.replace(/\s/g, ''));
+                if (!m) { ok = false; break; }
+                let x, y = parseFloat(m[3].replace(',', '.'));
+                if (m[1] === 'ivl') x = c.state === 'new' ? null : c.interval;
+                else if (m[1] === 'ease') { x = c.ease; if (y > 10) y /= 100; }
+                else if (m[1] === 'due') x = c.state === 'new' ? null : daysBetweenKeys(dayKey(ctx.now), dayKey(c.due));
+                else if (m[1] === 's' || m[1] === 'd') { const fs = fsrsFromCard(c); x = fs ? fs[m[1]] : null; }
+                else x = c[m[1] === 'lapses' ? 'lapses' : m[1]];
+                if (x === null || x === undefined) { ok = false; break; }
+                ok = { '<': x < y, '>': x > y, '<=': x <= y, '>=': x >= y, '=': x === y, '!=': x !== y }[m[2]];
+                break;
+            }
+            default: ok = false;
+        }
+        return f.neg ? !ok : ok;
     }
     searchIndex(c) {
         const deck = this.deck(c.deckId);
@@ -985,10 +1161,11 @@ class SuperAnki {
         this.searchCache.set(c.id, idx);
         return idx;
     }
-    matchCard(c, q) {
+    matchCard(c, q, ctx) {
         const x = this.searchIndex(c);
         if (q.excludes.some(t => x.all.includes(t))) return null;
         if (q.phrases.some(p => !x.all.includes(p))) return null;
+        if (q.filters.some(f => !this.matchFilter(c, f, ctx))) return null;
         let score = q.phrases.length * 4;
         const fuzzy = [];
         for (const t of q.terms) {
@@ -1014,7 +1191,8 @@ class SuperAnki {
         if (this._sm && this._sm.raw === raw && this._sm.n === this.data.cards.length && this._sm.at === this.data.updatedAt) return this._sm.map;
         const q = this.parseQuery(raw);
         const map = new Map();
-        if (!q.empty) this.data.cards.forEach(c => { const m = this.matchCard(c, q); if (m) map.set(c.id, m); });
+        const ctx = { now: Date.now(), eod: endOfDay(), rated: {} };
+        if (!q.empty) this.data.cards.forEach(c => { const m = this.matchCard(c, q, ctx); if (m) map.set(c.id, m); });
         else this.data.cards.forEach(c => map.set(c.id, { score: 0, fuzzy: [] }));
         this._sm = { raw, n: this.data.cards.length, at: this.data.updatedAt, map, q };
         return map;
@@ -1025,7 +1203,7 @@ class SuperAnki {
         const matches = this.searchMatches();
         const globalHits = matches ? matches.size : 0;
         if (matches) list = list.filter(c => matches.has(c.id));
-        const statusCounts = { all: list.length, new: 0, learn: 0, due: 0, mature: 0, susp: 0 };
+        const statusCounts = { all: list.length, new: 0, learn: 0, due: 0, mature: 0, susp: 0, buried: 0 };
         const withStatus = list.map(c => { const s = cardStatus(c, now, eod); statusCounts[s]++; return { c, s }; });
         let rows = ui.filter === 'all' ? withStatus : withStatus.filter(r => r.s === ui.filter);
         const txt = c => { const x = this.searchIndex(c); return x.front.replace(/^[^\p{L}\p{N}]+/u, ''); };
@@ -1086,37 +1264,43 @@ class SuperAnki {
             title = `${ic('target')} Mes erreurs`;
             actions = statusCounts.all ? `<button class="btn btn-primary btn-sm" data-action="practice-errors">${ic('play')}Retravailler</button>` : '';
         } else {
-            title = `<span>${esc(deck.emoji)}</span> ${esc(deck.name)}`;
+            title = `<span>${esc(deck.emoji)}</span> ${esc(this.deckPath(deck.id))}`;
             actions = `
                 <button class="btn btn-primary btn-sm" data-action="study" data-deck="${esc(deck.id)}">${ic('play')}Réviser</button>
                 <button class="btn btn-soft btn-sm" data-action="new-card" data-deck="${esc(deck.id)}">${ic('plus')}Carte</button>
+                <button class="icon-btn" title="Options d'étude du paquet" data-action="deck-options" data-deck="${esc(deck.id)}">${ic('sliders')}</button>
+                <button class="icon-btn" title="Sous-paquet" data-action="new-subdeck" data-deck="${esc(deck.id)}">${ic('folderPlus')}</button>
                 <button class="icon-btn" title="Modifier le paquet" data-action="edit-deck" data-deck="${esc(deck.id)}">${ic('pencil')}</button>
                 <button class="icon-btn danger" title="Supprimer le paquet" data-action="delete-deck" data-deck="${esc(deck.id)}">${ic('trash')}</button>`;
         }
         const chipDefs = [['all', 'Toutes'], ['new', 'Nouvelles'], ['learn', 'En cours'], ['due', 'À revoir'], ['mature', 'Maîtrisées']];
         if (statusCounts.susp || ui.filter === 'susp') chipDefs.push(['susp', 'Suspendues']);
+        if (statusCounts.buried || ui.filter === 'buried') chipDefs.push(['buried', 'Enfouies']);
         const chips = chipDefs.map(([k, l]) => `<button class="chip ${ui.filter === k ? 'active' : ''}" data-action="filter" data-filter="${k}">${k !== 'all' ? `<span class="dot" style="background:${STATUS[k].color}"></span>` : ''}${l} <span class="count">${statusCounts[k]}</span></button>`).join('');
         const shown = rows.slice(0, ui.limit);
         const showDeck = ui.deck === 'all' || ui.deck === 'errors';
         const list = shown.map(({ c, s }) => {
             const dk = showDeck ? this.deck(c.deckId) : null;
-            const when = s === 'susp' ? 'Suspendue' : c.state === 'new' ? 'Jamais vue' : s === 'due' ? 'À revoir maintenant' : `Révision ${fmtRelativeFuture(c.due, now)}`;
+            const when = s === 'susp' ? 'Suspendue' : s === 'buried' ? 'Enfouie jusqu\'à demain' : c.state === 'new' ? 'Jamais vue' : s === 'due' ? 'À revoir maintenant' : `Révision ${fmtRelativeFuture(c.due, now)}`;
+            const checked = ui.sel.has(c.id);
             return `
-            <div class="card-row ${s === 'susp' ? 'is-susp' : ''}" data-action="edit-card" data-card="${esc(c.id)}">
+            <div class="card-row ${s === 'susp' || s === 'buried' ? 'is-susp' : ''} ${checked ? 'selected' : ''}" data-action="row-click" data-card="${esc(c.id)}">
+                ${ui.selMode ? `<span class="row-check ${checked ? 'on' : ''}">${checked ? ic('check') : ''}</span>` : ''}
                 <span class="dot" style="background:${STATUS[s].color}" title="${STATUS[s].one}"></span>
                 <div class="body">
                     <div class="q rich">${c.front}</div>
                     <div class="a">${esc(truncate(stripHtml(c.back), 220)) || (hasImage(c.back) ? '[image]' : '')}</div>
                     <div class="meta">
-                        ${dk ? `<span class="tag">${esc(dk.emoji)} ${esc(dk.name)}</span>` : ''}
+                        ${c.flag ? `<span style="color:${FLAGS[c.flag].color}" title="Drapeau ${FLAGS[c.flag].name.toLowerCase()}">${ic('flag', 'i-flag')}</span>` : ''}${c.marked ? `<span style="color:#eab308" title="Marquée">${ic('star', 'i-fill')}</span>` : ''}
+                        ${dk ? `<span class="tag">${esc(dk.emoji)} ${esc(this.deckPath(dk.id))}</span>` : ''}
+                        ${c.kind !== 'basic' ? `<span class="tag">${c.kind === 'cloze' ? `trou ${c.ord}` : c.ord ? 'inversée' : 'liée'}</span>` : ''}
                         <span>${when}</span>
                         ${c.errors ? `<span style="color:var(--due)">${plural(c.errors, 'erreur')}</span>` : ''}
                         ${c.tags.map(t => `<span>#${esc(t)}</span>`).join('')}
                     </div>
                 </div>
                 <div class="actions">
-                    <button class="icon-btn icon-btn-sm" title="Modifier" data-action="edit-card" data-card="${esc(c.id)}">${ic('pencil')}</button>
-                    <button class="icon-btn icon-btn-sm danger" title="Supprimer" data-action="delete-card" data-card="${esc(c.id)}">${ic('trash')}</button>
+                    <button class="icon-btn icon-btn-sm" title="Plus d'actions" data-action="row-menu" data-card="${esc(c.id)}">${ic('more')}</button>
                 </div>
             </div>`;
         }).join('');
@@ -1128,12 +1312,22 @@ class SuperAnki {
             if (!globalHits || ui.deck === 'all') emptyMsg += `<br><button class="btn btn-soft btn-sm" style="margin-top:12px" data-action="new-card-from-search">${ic('plus')}Créer une carte « ${esc(truncate(ui.search.trim(), 30))} »</button>`;
         } else emptyMsg = ui.deck === 'errors' ? 'Aucune erreur à retravailler. Les cartes que tu rates apparaîtront ici. 🎉' : 'Aucune carte ici pour le moment.';
         const resultLine = searching && statusCounts.all ? `<div class="result-line">${ic('search')}<span><b>${plural(statusCounts.all, 'résultat')}</b>${ui.deck !== 'all' ? ' dans ce paquet' : ''}${ui.deck !== 'all' && globalHits > statusCounts.all ? ` · <button class="link" data-action="select-deck" data-deck="all">${globalHits} dans tous les paquets</button>` : ''}</span></div>` : '';
+        const selCount = ui.selMode ? [...ui.sel].filter(id => this.card(id)).length : 0;
+        const bulk = ui.selMode ? `<div class="bulk-bar"><span><b>${selCount}</b> sélectionnée${selCount > 1 ? 's' : ''}</span>
+                <button class="btn btn-soft btn-sm" data-action="sel-all">Tout (${rows.length})</button>
+                <button class="btn btn-soft btn-sm" data-action="sel-none">Aucune</button>
+                <button class="btn btn-primary btn-sm" data-action="bulk-menu" ${selCount ? '' : 'disabled'}>${ic('more')}Actions</button>
+                <button class="icon-btn" title="Quitter la sélection" data-action="sel-exit">${ic('x')}</button></div>` : '';
         panel.innerHTML = `
-            <div class="deck-panel-head"><h3>${title} <span class="tag">${plural(statusCounts.all, 'carte')}</span></h3><div class="deck-panel-actions">${actions}</div></div>
+            <div class="deck-panel-head"><h3>${title} <span class="tag">${plural(statusCounts.all, 'carte')}</span></h3><div class="deck-panel-actions">${actions}
+                <button class="btn ${ui.selMode ? 'btn-primary' : 'btn-soft'} btn-sm" data-action="sel-toggle" title="Sélectionner plusieurs cartes">${ic('checkSq')}<span class="hide-mobile">Sélection</span></button>
+                <button class="btn btn-soft btn-sm" data-action="custom-study" data-deck="${deck ? esc(deck.id) : ''}" title="Révisions personnalisées">${ic('sliders')}<span class="hide-mobile">Perso</span></button></div></div>
             <div class="filter-row"><div class="chip-row">${chips}</div></div>
             ${resultLine}
             <div id="card-list">${list || `<div class="empty">${ic('search')}<p>${emptyMsg}</p></div>`}</div>
-            ${rows.length > ui.limit ? `<div class="load-more"><button class="btn btn-soft" data-action="more">Afficher plus (${rows.length - ui.limit} restantes)</button></div>` : ''}`;
+            ${rows.length > ui.limit ? `<div class="load-more"><button class="btn btn-soft" data-action="more">Afficher plus (${rows.length - ui.limit} restantes)</button></div>` : ''}
+            ${bulk}`;
+        this.visibleIds = rows.map(r => r.c.id);
         this.highlightResults();
     }
 
@@ -1193,6 +1387,21 @@ class SuperAnki {
                     <div class="txt"><b>Lecture audio automatique</b><span>Lit la question à voix haute à chaque carte.</span></div>
                     ${sw('autoSpeak', 'Lecture audio automatique')}
                 </div>
+                <div class="set-row">
+                    <div class="txt"><b>Afficher la réponse automatiquement</b><span>Retourne la carte après quelques secondes (utile en marchant).</span></div>
+                    ${seg('autoShow', [[0, 'Non'], [5, '5 s'], [10, '10 s'], [20, '20 s']])}
+                </div>
+                <div class="set-row">
+                    <div class="txt"><b>Le jour change à</b><span>Les révisions de la nuit comptent pour la veille, comme dans Anki (4 h par défaut).</span></div>
+                    ${seg('rolloverHour', [[0, 'Minuit'], [3, '3 h'], [4, '4 h'], [6, '6 h']])}
+                </div>
+            </div>
+
+            <div class="panel panel-pad set-section" id="study-options">
+                <h3>${ic('brain')} Algorithme et options d'étude</h3>
+                <p class="small muted">Réglages par défaut de tous les paquets. Chaque paquet peut avoir les siens (bouton ${ic('sliders')} dans Paquets &amp; Cartes).</p>
+                ${this.optionsFormHtml(s, 'gs')}
+                <div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn btn-primary" data-action="save-options">${ic('check')}Enregistrer les options</button></div>
             </div>
 
             <div class="panel panel-pad set-section">
@@ -1204,6 +1413,12 @@ class SuperAnki {
                         ${sw('cloudSync', 'Synchronisation cloud')}
                     </div>
                 </div>
+                <div class="set-row">
+                    <div class="txt"><b>${ic('lock')} Clé de synchronisation (chiffrement)</b><span>Une phrase secrète que toi seul connais. Tes données sont chiffrées sur ton appareil avant d'être envoyées : sans la clé, personne ne peut les lire. <b>Entre la même phrase sur tous tes appareils</b> et garde-la : elle ne peut pas être récupérée.</span></div>
+                    <div class="opt-ctl" style="min-width:260px;display:flex;gap:8px"><input class="input" id="sync-key-input" type="password" value="${esc(s.syncKey)}" placeholder="${s.syncKey ? '••••••••' : 'au moins 8 caractères'}" autocomplete="off"><button class="btn btn-soft" data-action="save-sync-key">OK</button></div>
+                </div>
+                ${s.syncKey ? '' : `<p class="small" style="color:var(--learn)">${ic('alert')} Sans clé, tes données sont stockées sans chiffrement dans un espace partagé.</p>`}
+                <p class="small muted">Les appareils sont <b>fusionnés carte par carte</b> : tu peux réviser hors ligne sur plusieurs appareils sans rien perdre.</p>
             </div>
 
             <div class="panel panel-pad set-section">
@@ -1216,8 +1431,15 @@ class SuperAnki {
                     </div>
                 </div>
                 <div class="set-row">
-                    <div class="txt"><b>Importer des fiches</b><span>Depuis un fichier TXT / CSV (ou un export Anki en texte).</span></div>
-                    <button class="btn btn-soft btn-sm" data-action="import">${ic('file')}Importer</button>
+                    <div class="txt"><b>Importer des fiches</b><span>Depuis un fichier TXT / CSV (ou un export texte d'Anki ou de Quizlet).</span></div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <button class="btn btn-soft btn-sm" data-action="import">${ic('import')}Importer</button>
+                        <button class="btn btn-soft btn-sm" data-action="export-txt">${ic('export')}Exporter en TXT</button>
+                    </div>
+                </div>
+                <div class="set-row" style="align-items:flex-start">
+                    <div class="txt"><b>Sauvegardes automatiques</b><span>Une copie est faite chaque jour dans ton navigateur (7 gardées). Utile en cas d'erreur.</span><div id="backup-list" class="backup-list"></div></div>
+                    <div style="display:flex;gap:10px;align-items:center">${sw('autoBackup', 'Sauvegardes automatiques')}<button class="btn btn-soft btn-sm" data-action="backup-now">${ic('plus')}Maintenant</button></div>
                 </div>
                 <div class="set-row">
                     <div class="txt"><b>Remettre la progression à zéro</b><span>Toutes les cartes redeviennent nouvelles. Les cartes sont conservées.</span></div>
@@ -1235,7 +1457,10 @@ class SuperAnki {
                     <span><kbd class="k">Espace</kbd></span><span>Afficher la réponse, puis « Bien »</span>
                     <span><kbd class="k">1</kbd> <kbd class="k">2</kbd> <kbd class="k">3</kbd> <kbd class="k">4</kbd></span><span>Raté · Difficile · Bien · Facile (ou choix du quiz)</span>
                     <span><kbd class="k">Z</kbd></span><span>Annuler la dernière réponse</span>
-                    <span><kbd class="k">E</kbd></span><span>Modifier la carte en cours</span>
+                    <span><kbd class="k">E</kbd> · <kbd class="k">I</kbd></span><span>Modifier · informations de la carte</span>
+                    <span><kbd class="k">*</kbd> · <kbd class="k">@</kbd> · <kbd class="k">!</kbd></span><span>Marquer · suspendre la carte · suspendre la note</span>
+                    <span><kbd class="k">-</kbd> · <kbd class="k">=</kbd></span><span>Enfouir la carte · la note (jusqu'à demain)</span>
+                    <span><kbd class="k">Ctrl</kbd> + <kbd class="k">Z</kbd> / <kbd class="k">Y</kbd></span><span>Annuler / rétablir une modification (hors révision)</span>
                     <span><kbd class="k">H</kbd></span><span>Afficher l'indice</span>
                     <span><kbd class="k">Échap</kbd></span><span>Quitter la session / fermer une fenêtre</span>
                     <span><kbd class="k">Ctrl</kbd> + <kbd class="k">Entrée</kbd></span><span>Enregistrer une carte</span>
@@ -1243,9 +1468,21 @@ class SuperAnki {
                 </div>
             </div>
 
-            <p class="tiny faint" style="text-align:center">SuperAnki Pro · Algorithme de répétition espacée SM-2 (celui d'Anki) · ${plural(this.data.cards.length, 'carte')} · Stockage ${Storage.db ? 'IndexedDB' : 'local'}</p>
+            <p class="tiny faint" style="text-align:center">SuperAnki Pro · ${s.scheduler === 'fsrs' ? 'FSRS' : 'SM-2'} · ${plural(this.data.cards.length, 'carte')} · Stockage ${Storage.db ? 'IndexedDB' : 'local'}</p>
         </div>`;
+        this.bindOptionsForm($('#study-options'));
         this.renderSyncIndicator();
+        this.fillBackups();
+    }
+    async fillBackups() {
+        const box = $('#backup-list');
+        if (!box) return;
+        const list = (await Storage.backups()).sort((a, b) => b.at - a.at);
+        const el = $('#backup-list');
+        if (!el) return;
+        el.innerHTML = list.length ? list.map(b => `<div class="backup-row"><span><b>${new Date(b.at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</b> · ${b.label} · ${plural(b.cards, 'carte')}</span>
+            <span><button class="btn btn-soft btn-sm" data-action="backup-restore" data-key="${esc(b.key)}">Restaurer</button><button class="icon-btn icon-btn-sm" title="Télécharger" data-action="backup-download" data-key="${esc(b.key)}">${ic('export')}</button><button class="icon-btn icon-btn-sm danger" title="Supprimer" data-action="backup-delete" data-key="${esc(b.key)}">${ic('trash')}</button></span></div>`).join('')
+            : `<span class="small faint">${Storage.db ? 'Aucune sauvegarde pour l\'instant.' : 'Indisponible sur ce navigateur.'}</span>`;
     }
 
     /* ============================================================
@@ -1256,9 +1493,9 @@ class SuperAnki {
         const plan = this.studyPlan(deckIds, extraNew);
         const queue = interleave(shuffle(plan.reviews.map(c => c.id)), plan.news.map(c => c.id));
         if (!queue.length && !plan.learning.length) {
-            if (plan.freshTotal > 0) {
+            if (plan.freshTotal > 0 && !extraNew) {
                 this.confirm({
-                    title: 'Objectif du jour atteint 🎉', message: `Tu as déjà découvert tes ${this.data.settings.newPerDay} nouvelles cartes du jour. Veux-tu en apprendre 10 de plus ?`,
+                    title: 'Objectif du jour atteint 🎉', message: `Tu as déjà découvert tes nouvelles cartes du jour (limite : ${this.data.settings.newPerDay}). Veux-tu en apprendre 10 de plus ?`,
                     ok: 'Apprendre 10 de plus'
                 }).then(y => { if (y) this.startStudy(deckId, 10); });
             } else {
@@ -1268,9 +1505,18 @@ class SuperAnki {
             return;
         }
         const deck = deckId && this.deck(deckId);
+        this.beginSrs(deck ? this.deckLabel(deck) : 'Révision du jour', queue, plan.learning);
+    }
+    /* Starts a scheduled (Anki-style) session on an explicit list of cards: custom study, review ahead... */
+    startSrsIds(title, ids) {
+        const queue = shuffle(ids.filter(id => { const c = this.card(id); return c && !c.suspended; }));
+        const learning = [];
+        if (!queue.length) { this.toast('Aucune carte à étudier.', 'warning'); return; }
+        this.beginSrs(title, queue, learning);
+    }
+    beginSrs(title, queue, learning) {
         this.session = {
-            kind: 'srs', title: deck ? `${deck.emoji} ${deck.name}` : 'Révision du jour',
-            answer: this.data.settings.answerMode, queue, learning: plan.learning, current: null, lastId: null,
+            kind: 'srs', title, answer: this.data.settings.answerMode, queue, learning, current: null, lastId: null,
             revealed: false, typed: null, done: 0, correct: 0, missed: [], history: [], startedAt: Date.now(), cardStart: Date.now()
         };
         this.go('session');
@@ -1282,7 +1528,7 @@ class SuperAnki {
         ids = shuffle([...ids]).slice(0, count >= 9999 ? ids.length : count);
         const deck = deckIds && deckIds.length === 1 && this.deck(deckIds[0]);
         this.session = {
-            kind: 'practice', title: title || (answer === 'type' ? 'Écrire' : 'Entraînement') + (deck ? ` · ${deck.name}` : ''),
+            kind: 'practice', title: title || (answer === 'type' ? 'Écrire' : 'Entraînement') + (deck ? ` · ${this.deckPath(deck.id)}` : ''),
             answer, queue: ids, total: ids.length, retries: {}, current: null, revealed: false, typed: null,
             done: 0, correct: 0, missed: [], history: [], startedAt: Date.now(), cardStart: Date.now()
         };
@@ -1291,16 +1537,18 @@ class SuperAnki {
     }
     poolFor(deckIds) {
         if (deckIds === 'errors') return this.errorCards();
-        const set = deckIds ? new Set(deckIds) : null;
+        const set = deckIds ? new Set(deckIds.flatMap(id => this.descendantIds(id))) : null;
         return this.data.cards.filter(c => !c.suspended && (!set || set.has(c.deckId)));
     }
     endSession(goHome = true) {
         const s = this.session;
         if (!s) return;
         if (s.timer) clearInterval(s.timer);
+        clearTimeout(this.autoTimer);
         if ('speechSynthesis' in window) speechSynthesis.cancel();
         this.session = null;
         document.body.classList.remove('in-session');
+        if (Cloud.deferred) { Cloud.deferred = false; setTimeout(() => Cloud.sync(), 300); }
         if (goHome) this.go('dashboard');
     }
     quitSession() {
@@ -1332,6 +1580,9 @@ class SuperAnki {
         s.current = id; s.revealed = false; s.typed = null; s.cardStart = Date.now();
         this.renderSession();
         if (this.data.settings.autoSpeak) this.speak('front');
+        clearTimeout(this.autoTimer);
+        const auto = this.data.settings.autoShow;
+        if (auto > 0 && s.answer === 'flip') this.autoTimer = setTimeout(() => { if (this.session === s && s.current === id && !s.revealed && !this.modals.length) this.reveal(); }, auto * 1000);
     }
     sessionCounts() {
         const s = this.session;
@@ -1344,7 +1595,7 @@ class SuperAnki {
     }
     renderSession() {
         const s = this.session, card = this.card(s.current), deck = this.deck(card.deckId);
-        const set = this.data.settings, now = Date.now();
+        const set = this.data.settings, now = Date.now(), cfg = this.cfgFor(card);
         const typeMode = s.answer === 'type';
         let counter, progress;
         if (s.kind === 'srs') {
@@ -1360,7 +1611,7 @@ class SuperAnki {
         const grades = s.kind === 'srs'
             ? `<div class="grade-grid">${[[1, 'Raté', 'again'], [2, 'Difficile', 'hard'], [3, 'Bien', 'good'], [4, 'Facile', 'easy']].map(([g, l, v]) => `
                 <button class="grade-btn ${s.typed && s.typed.suggest === g ? 'suggested' : ''}" style="--c:var(--${v})" data-action="grade" data-grade="${g}">
-                    <span>${l} <kbd>${g}</kbd></span>${set.showIntervals ? `<small>${previewLabel(card, g, now)}</small>` : ''}
+                    <span>${l} <kbd>${g}</kbd></span>${set.showIntervals ? `<small>${previewLabel(card, g, now, cfg)}</small>` : ''}
                 </button>`).join('')}</div>`
             : `<div class="grade-grid two">
                 <button class="grade-btn ${s.typed && s.typed.suggest === 1 ? 'suggested' : ''}" style="--c:var(--again)" data-action="practice-answer" data-ok="0"><span>${ic('x')} Raté <kbd>1</kbd></span></button>
@@ -1384,12 +1635,13 @@ class SuperAnki {
                 <button class="icon-btn" title="Écouter" data-action="speak">${ic('volume')}</button>
                 <button class="icon-btn" title="Annuler la dernière réponse (Z)" data-action="undo" ${s.history.length ? '' : 'disabled style="opacity:.35"'}>${ic('undo')}</button>
                 <button class="icon-btn" title="Modifier la carte (E)" data-action="edit-current">${ic('pencil')}</button>
+                <button class="icon-btn" title="Plus d'actions" data-action="session-menu" aria-label="Plus d'actions">${ic('more')}</button>
             </div>
             <div class="pbar"><i style="width:${progress}%"></i></div>
             <div class="panel flashcard" ${s.revealed || typeMode ? '' : 'data-action="reveal" style="cursor:pointer"'}>
                 <div class="fc-top">
-                    <span class="tag">${esc(deck ? deck.emoji + ' ' + deck.name : '')}</span>
-                    <span class="tiny faint">${card.state === 'new' ? 'Nouvelle' : card.errors ? `${ic('target')} ${plural(card.errors, 'erreur')}` : ''}</span>
+                    <span class="tag">${esc(deck ? deck.emoji + ' ' + this.deckPath(deck.id) : '')}</span>
+                    <span class="tiny faint fc-badges">${card.flag ? `<span style="color:${FLAGS[card.flag].color}" title="${FLAGS[card.flag].name}">${ic('flag', 'i-flag')}</span>` : ''}${card.marked ? `<span style="color:#eab308" title="Marquée">${ic('star', 'i-fill')}</span>` : ''}${card.state === 'new' ? 'Nouvelle' : card.errors ? `${ic('target')} ${plural(card.errors, 'erreur')}` : ''}</span>
                 </div>
                 <div class="fc-content fc-front rich">${card.front}</div>
                 ${!s.revealed && card.hint ? `<div class="fc-extra"><button class="pill-btn hint" data-action="hint">${ic('bulb')}Indice</button><div id="hint-slot"></div></div>` : ''}
@@ -1426,7 +1678,7 @@ class SuperAnki {
         if (!s || s.revealed) return;
         const card = this.card(s.current);
         const text = ($('#type-answer') || {}).value || '';
-        const res = checkAnswer(text, card.back);
+        const res = checkAnswer(text, this.cardAnswer(card));
         res.text = text.trim();
         res.suggest = res.verdict === 'ok' ? 3 : res.verdict === 'close' ? 2 : 1;
         s.typed = res; s.revealed = true;
@@ -1434,9 +1686,10 @@ class SuperAnki {
     }
     elapsedSec() { return clamp((Date.now() - this.session.cardStart) / 1000, 1, 60); }
     snapshot() {
-        const s = this.session;
+        const s = this.session, c = this.card(s.current);
         s.history.push({
-            card: { ...this.card(s.current) }, stats: JSON.stringify(this.data.stats),
+            card: { ...c, tags: [...c.tags], fs: c.fs ? { ...c.fs } : null }, stats: JSON.stringify(this.data.stats),
+            sibs: c.nid ? this.data.cards.filter(x => x.nid === c.nid && x.id !== c.id).map(x => [x.id, x.buriedUntil]) : [],
             queue: [...s.queue], learning: s.learning ? s.learning.map(l => ({ ...l })) : null,
             done: s.done, correct: s.correct, missed: [...s.missed], retries: s.retries ? { ...s.retries } : null, current: s.current,
             revlogLen: this.data.revlog.length
@@ -1446,16 +1699,33 @@ class SuperAnki {
     grade(g) {
         const s = this.session;
         if (!s || s.kind !== 'srs' || !s.revealed) return;
-        const card = this.card(s.current), now = Date.now();
+        const card = this.card(s.current), now = Date.now(), cfg = this.cfgFor(card);
         this.snapshot();
         const prev = card.state, prevIvl = card.interval, secs = this.elapsedSec();
-        const res = schedule(card, g, now, true);
-        Object.assign(card, res);
+        Object.assign(card, schedule(card, g, now, true, cfg));
         card.reps++; card.lastReview = now;
         if (g === 1 && prev !== 'new' && prev !== 'learning') { card.errors++; card.wrong++; }
         else if (g >= 3 && prev === 'review') { card.errors = Math.max(0, card.errors - 1); card.right++; }
-        if (prev === 'new') this.data.stats.newSeen.count++;
-        if (card.state === 'learning' || card.state === 'relearning') s.learning.push({ id: card.id, due: card.due });
+        this.rollSeen();
+        const st = this.data.stats, bump = (seen, key) => {
+            seen.count++;
+            const owner = this.limitOwner(card.deckId, key);
+            if (owner) seen.by[owner] = (seen.by[owner] || 0) + 1;
+        };
+        if (prev === 'new') bump(st.newSeen, 'newPerDay');
+        else if (prev === 'review') bump(st.revSeen, 'maxReviews');
+        let leech = false;
+        if (g === 1 && prev === 'review' && cfg.leechThreshold > 0 && card.lapses >= cfg.leechThreshold && (card.lapses - cfg.leechThreshold) % Math.max(1, Math.ceil(cfg.leechThreshold / 2)) === 0) {
+            leech = true;
+            if (!card.tags.includes('leech')) card.tags.push('leech');
+            if (cfg.leechAction === 'suspend') card.suspended = true;
+        }
+        if (cfg.burySiblings && card.nid) {
+            const until = addDays(now, 1), isSib = id => { const x = this.card(id); return x && x.nid === card.nid && x.id !== card.id; };
+            this.data.cards.forEach(x => { if (x.nid === card.nid && x.id !== card.id && !x.suspended && !(x.buriedUntil > now)) x.buriedUntil = until; });
+            s.queue = s.queue.filter(id => !isSib(id)); s.learning = s.learning.filter(l => !isSib(l.id));
+        }
+        if ((card.state === 'learning' || card.state === 'relearning') && !card.suspended) s.learning.push({ id: card.id, due: card.due });
         s.done++;
         if (g >= 2) s.correct++;
         if (g === 1 && !s.missed.includes(card.id)) s.missed.push(card.id);
@@ -1463,6 +1733,7 @@ class SuperAnki {
         this.logReview(card, g, prev === 'review' ? 1 : prev === 'relearning' ? 2 : 0, prevIvl, secs * 1000);
         s.lastId = card.id;
         this.save();
+        if (leech) this.toast(cfg.leechAction === 'suspend' ? 'Carte « sangsue » : suspendue (ratée trop souvent). Reformule-la !' : 'Carte « sangsue » : ratée trop souvent', 'warning', ic('alert'));
         this.nextCard();
     }
     practiceAnswer(ok) {
@@ -1490,6 +1761,7 @@ class SuperAnki {
         const h = s.history.pop();
         const card = this.card(h.card.id);
         if (card) Object.assign(card, h.card);
+        (h.sibs || []).forEach(([id, until]) => { const x = this.card(id); if (x) x.buriedUntil = until; });
         this.data.stats = normalizeStats(JSON.parse(h.stats));
         if (this.data.revlog.length > h.revlogLen) this.data.revlog.length = h.revlogLen;
         s.queue = h.queue; if (h.learning) s.learning = h.learning;
@@ -1516,19 +1788,22 @@ class SuperAnki {
 
     /* ---------- Quiz & Chrono ---------- */
     optionHtml(card) {
-        const t = stripHtml(card.back);
-        return t ? esc(truncate(t, 170)) : `<span class="rich">${card.back}</span>`;
+        const ans = this.cardAnswer(card), t = stripHtml(ans);
+        return t ? esc(truncate(t, 170)) : `<span class="rich">${ans}</span>`;
     }
+    cardAnswer(c) { return c.kind === 'cloze' ? clozeAnswerHtml(c) : c.back; }
     buildOptions(card) {
-        const correctKey = normAnswer(card.back) || card.id;
+        const ans = c => this.cardAnswer(c);
+        const correctKey = normAnswer(ans(card)) || card.id;
         const seen = new Set([correctKey]);
-        const sameDeck = shuffle(this.data.cards.filter(c => c.deckId === card.deckId && c.id !== card.id));
-        const others = shuffle(this.data.cards.filter(c => c.deckId !== card.deckId)).slice(0, 40);
-        const len = stripHtml(card.back).length;
+        const usable = this.data.cards.filter(c => c.kind !== 'cloze' && c.id !== card.id);
+        const sameDeck = shuffle(usable.filter(c => c.deckId === card.deckId));
+        const others = shuffle(usable.filter(c => c.deckId !== card.deckId)).slice(0, 40);
+        const len = stripHtml(ans(card)).length;
         const pick = (list, n) => {
             const out = [];
-            list.slice(0, 24).sort((a, b) => Math.abs(stripHtml(a.back).length - len) - Math.abs(stripHtml(b.back).length - len))
-                .forEach(c => { const k = normAnswer(c.back) || c.id; if (out.length < n && !seen.has(k)) { seen.add(k); out.push(c); } });
+            list.slice(0, 24).sort((a, b) => Math.abs(stripHtml(ans(a)).length - len) - Math.abs(stripHtml(ans(b)).length - len))
+                .forEach(c => { const k = normAnswer(ans(c)) || c.id; if (out.length < n && !seen.has(k)) { seen.add(k); out.push(c); } });
             return out;
         };
         let wrong = pick(sameDeck, 3);
@@ -1536,8 +1811,8 @@ class SuperAnki {
         return shuffle([{ id: card.id, ok: true }, ...wrong.map(c => ({ id: c.id, ok: false }))]);
     }
     startQuiz(deckIds, count, chrono = 0) {
-        const pool = this.poolFor(deckIds);
-        if (this.data.cards.length < 4) { this.toast('Il faut au moins 4 cartes pour un quiz.', 'warning'); return; }
+        const pool = this.poolFor(deckIds).filter(c => c.kind !== 'cloze');
+        if (this.data.cards.filter(c => c.kind !== 'cloze').length < 4) { this.toast('Il faut au moins 4 cartes pour un quiz.', 'warning'); return; }
         if (!pool.length) { this.toast('Aucune carte dans cette sélection.', 'warning'); return; }
         const deck = Array.isArray(deckIds) && deckIds.length === 1 ? this.deck(deckIds[0]) : null;
         const label = deckIds === 'errors' ? 'Mes erreurs' : deck ? deck.name : 'Tous les paquets';
@@ -1593,7 +1868,7 @@ class SuperAnki {
             </div>
             ${hud}
             <div class="panel flashcard" style="min-height:0">
-                <div class="fc-top"><span class="tag">${esc(deck ? deck.emoji + ' ' + deck.name : '')}</span></div>
+                <div class="fc-top"><span class="tag">${esc(deck ? deck.emoji + ' ' + this.deckPath(deck.id) : '')}</span></div>
                 <div class="fc-content fc-front rich" style="padding:10px 0 4px">${card.front}</div>
             </div>
             <div class="quiz-options" id="quiz-options">
@@ -1763,13 +2038,15 @@ class SuperAnki {
     }
 
     /* ---------- Deck modal ---------- */
-    openDeckModal(deckId) {
+    openDeckModal(deckId, presetParent = '') {
         const deck = deckId ? this.deck(deckId) : null;
         const emoji = deck ? deck.emoji : '📚';
         const m = this.openModal({
             title: deck ? 'Modifier le paquet' : 'Nouveau paquet', size: 'narrow',
             body: `<form id="deck-form" novalidate>
                 <div class="field"><label class="label" for="deck-name">Nom du paquet</label><input class="input" id="deck-name" maxlength="80" placeholder="Ex : Biologie cellulaire" value="${esc(deck ? deck.name : '')}" autocomplete="off"></div>
+                <div class="field"><label class="label" for="deck-parent">Placer dans (sous-paquet)</label>
+                    <select class="select" id="deck-parent"><option value="">Aucun (paquet principal)</option>${this.sortedDecks().filter(d => !deck || !this.descendantIds(deck.id).includes(d.id)).map(d => `<option value="${esc(d.id)}" ${(deck ? deck.parent : presetParent) === d.id ? 'selected' : ''}>${'\u00a0\u00a0'.repeat(this.deckDepth(d.id))}${esc(d.emoji)} ${esc(d.name)}</option>`).join('')}</select></div>
                 <div class="field"><span class="label">Icône</span>
                     <div class="emoji-row" id="emoji-row">${EMOJIS.map(e => `<button type="button" class="${e === emoji ? 'active' : ''}" data-emoji="${e}">${e}</button>`).join('')}</div>
                     <input class="input" id="deck-emoji" maxlength="8" value="${esc(emoji)}" style="margin-top:8px;width:120px;text-align:center" aria-label="Emoji personnalisé">
@@ -1789,10 +2066,10 @@ class SuperAnki {
         const submit = () => {
             const name = $('#deck-name', m).value.trim();
             if (!name) { $('#deck-name', m).focus(); this.toast('Donne un nom au paquet.', 'warning'); return; }
-            const payload = { name, emoji: emojiInput.value.trim() || '📁', description: $('#deck-desc', m).value.trim() };
+            const payload = { name, emoji: emojiInput.value.trim() || '📁', description: $('#deck-desc', m).value.trim(), parent: $('#deck-parent', m).value || null };
             let id = deckId;
             if (deck) Object.assign(deck, payload);
-            else { id = uid('d'); this.data.decks.push({ id, created: Date.now(), ...payload }); }
+            else { id = uid('d'); this.data.decks.push({ id, created: Date.now(), opts: null, ...payload }); }
             this.save();
             this.closeModal(m);
             this.toast(deck ? 'Paquet modifié' : 'Paquet créé', 'success');
@@ -1806,19 +2083,20 @@ class SuperAnki {
     async deleteDeck(deckId) {
         const deck = this.deck(deckId);
         if (!deck) return;
-        const n = this.cardsOf(deckId).length;
-        const ok = await this.confirm({ title: 'Supprimer le paquet ?', message: `« ${esc(deck.name)} » et ses ${plural(n, 'carte')} seront supprimés définitivement.`, ok: 'Supprimer', danger: true });
+        const ids = this.descendantIds(deckId), set = new Set(ids), kids = ids.length - 1, n = this.cardsOf(deckId).length;
+        const ok = await this.confirm({ title: 'Supprimer le paquet ?', message: `« ${esc(this.deckPath(deck.id))} »${kids ? `, ${plural(kids, 'sous-paquet')}` : ''} et ${plural(n, 'carte')} seront supprimés. Tu pourras annuler juste après.`, ok: 'Supprimer', danger: true });
         if (!ok) return;
-        this.data.decks = this.data.decks.filter(d => d.id !== deckId);
-        this.data.cards = this.data.cards.filter(c => c.deckId !== deckId);
+        this.change('suppression de paquet', this.data.cards.filter(c => set.has(c.deckId)).map(c => c.id), () => {
+            this.data.decks = this.data.decks.filter(d => !set.has(d.id));
+            this.data.cards = this.data.cards.filter(c => !set.has(c.deckId));
+        }, { decks: true });
         this.ui.deck = 'all';
-        this.save();
         this.render();
-        this.toast('Paquet supprimé', 'success');
+        this.undoToast('Paquet supprimé', ic('trash'));
     }
 
     /* ---------- Card editor (rich text) ---------- */
-    editorHtml(id, placeholder, small = false) {
+    editorHtml(id, placeholder, small = false, cloze = false) {
         const b = (cmd, title, inner) => `<button type="button" class="tb-btn" data-cmd="${cmd}" title="${title}" aria-label="${title}">${inner}</button>`;
         return `<div class="editor ${small ? 'sm' : ''}">
             <div class="toolbar" role="toolbar">
@@ -1829,6 +2107,7 @@ class SuperAnki {
                 ${b('insertUnorderedList', 'Liste à puces', ic('list'))}${b('insertOrderedList', 'Liste numérotée', ic('listOrdered'))}
                 <span class="tb-sep"></span>
                 ${b('image', 'Ajouter une image', ic('image'))}${b('removeFormat', 'Effacer la mise en forme', ic('eraser'))}
+                ${cloze ? `<span class="tb-sep tb-cloze"></span><button type="button" class="tb-btn tb-cloze tb-wide" data-cmd="cloze" title="Créer un trou (Ctrl+Maj+C). Maj+clic : même numéro" aria-label="Créer un trou">[…]</button>` : ''}
             </div>
             <div class="editor-area rich" contenteditable="true" id="${id}" data-placeholder="${esc(placeholder)}" role="textbox" aria-multiline="true"></div>
         </div>`;
@@ -1838,53 +2117,80 @@ class SuperAnki {
         const card = cardId ? this.card(cardId) : null;
         const inSession = !!this.session;
         const deckId = card ? card.deckId : presetDeck || (this.ui.deck !== 'all' && this.ui.deck !== 'errors' ? this.ui.deck : this.lastDeckUsed) || this.sortedDecks()[0].id;
+        const nf = card ? noteFieldsOf(card) : { front: '', back: '' };
+        let type = card ? card.kind : (this.lastNoteType || 'basic');
         const m = this.openModal({
             title: card ? 'Modifier la carte' : 'Nouvelle carte', size: 'wide',
             body: `
-                <div class="field"><label class="label" for="cf-deck">Paquet</label>
-                    <select class="select" id="cf-deck">${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${d.id === deckId ? 'selected' : ''}>${esc(d.emoji)} ${esc(d.name)}</option>`).join('')}</select></div>
-                <div class="field"><span class="label">Recto · question</span>${this.editorHtml('cf-front', 'Question ou terme... (tu peux coller une image)')}</div>
-                <div class="field"><span class="label">Verso · réponse</span>${this.editorHtml('cf-back', 'Réponse...')}</div>
+                <div class="field two-col">
+                    <div><label class="label" for="cf-deck">Paquet</label>
+                    <select class="select" id="cf-deck">${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${d.id === deckId ? 'selected' : ''}>${esc(d.emoji)} ${esc(this.deckPath(d.id))}</option>`).join('')}</select></div>
+                    <div><label class="label" for="cf-type">Type de carte</label>
+                    ${card ? `<div class="input type-static">${NOTE_TYPES[card.kind] || 'Basique'}</div>`
+                        : `<select class="select" id="cf-type">${Object.entries(NOTE_TYPES).map(([k, l]) => `<option value="${k}" ${k === type ? 'selected' : ''}>${l}</option>`).join('')}</select>`}</div>
+                </div>
+                <div class="field"><span class="label" id="cf-front-label">Recto · question</span>${this.editorHtml('cf-front', 'Question ou terme... (tu peux coller une image)', false, true)}<p class="help hidden" id="cf-cloze-help">Sélectionne un mot puis clique sur <b>[…]</b> (ou <kbd class="k">Ctrl</kbd>+<kbd class="k">Maj</kbd>+<kbd class="k">C</kbd>) pour en faire un trou. Maj+clic réutilise le même numéro (plusieurs mots cachés ensemble). Indice : <code>{{c1::réponse::indice}}</code>.</p></div>
+                <div class="field"><span class="label" id="cf-back-label">Verso · réponse</span>${this.editorHtml('cf-back', 'Réponse...')}</div>
                 <details class="field" ${card && (card.hint || card.detail || card.tags.length || card.suspended) ? 'open' : ''}>
-                    <summary class="label" style="cursor:pointer;display:flex;align-items:center;gap:6px">${ic('chevronDown')}Plus d'options (indice, détails, tags${card ? ', suspendre' : ', sens inversé'})</summary>
+                    <summary class="label" style="cursor:pointer;display:flex;align-items:center;gap:6px">${ic('chevronDown')}Plus d'options (indice, détails, tags${card ? ', suspendre' : ''})</summary>
                     <div class="field" style="margin-top:12px"><label class="label" for="cf-hint">Indice (affiché sur demande avant la réponse)</label><input class="input" id="cf-hint" placeholder="Un petit coup de pouce..." value="${esc(card ? stripHtml(card.hint) : '')}"></div>
                     <div class="field"><span class="label">Détails (repliés sous « En savoir plus »)</span>${this.editorHtml('cf-detail', 'Explication plus poussée...', true)}</div>
                     <div class="field"><label class="label" for="cf-tags">Tags (séparés par des virgules)</label><input class="input" id="cf-tags" placeholder="chapitre1, dates" value="${esc(card ? card.tags.join(', ') : '')}"></div>
-                    ${card ? `<label class="field" style="display:flex;align-items:center;gap:12px;cursor:pointer"><span class="switch"><input type="checkbox" id="cf-susp" ${card.suspended ? 'checked' : ''}><span></span></span><span class="small"><b>Suspendre la carte</b><br><span class="muted">Elle ne sera plus proposée en révision, sans être supprimée.</span></span></label>` : `<label class="field" style="display:flex;align-items:center;gap:12px;cursor:pointer"><span class="switch"><input type="checkbox" id="cf-both"><span></span></span><span class="small"><b>Créer aussi la carte inversée</b><br><span class="muted">Réponse → question, utile pour le vocabulaire.</span></span></label>`}
+                    ${card ? `<label class="field" style="display:flex;align-items:center;gap:12px;cursor:pointer"><span class="switch"><input type="checkbox" id="cf-susp" ${card.suspended ? 'checked' : ''}><span></span></span><span class="small"><b>Suspendre la carte</b><br><span class="muted">Elle ne sera plus proposée en révision, sans être supprimée.</span></span></label>` : ''}
                 </details>
-                ${card ? `<p class="help">${card.state === 'new' ? 'Carte jamais révisée.' : `Prochaine révision ${fmtRelativeFuture(card.due)} · ${plural(card.reps, 'révision')} · ${plural(card.lapses, 'oubli')}`}</p>` : ''}`,
-            foot: `${card ? `<button class="btn btn-danger-soft" id="cf-delete" style="margin-right:auto">${ic('trash')}<span class="hide-mobile">Supprimer</span></button>` : ''}
+                ${card ? `<p class="help">${card.state === 'new' ? 'Carte jamais révisée.' : `Prochaine révision ${fmtRelativeFuture(card.due)} · ${plural(card.reps, 'révision')} · ${plural(card.lapses, 'oubli')}`}${card.nid ? ` · ${plural(this.noteSiblings(card).length, 'carte')} dans cette note` : ''}</p>` : ''}`,
+            foot: `${card ? `<button class="btn btn-danger-soft" id="cf-delete" title="Supprimer" style="margin-right:auto">${ic('trash')}<span class="hide-mobile">Supprimer</span></button><button class="btn btn-soft" id="cf-info" title="Informations">${ic('info')}<span class="hide-mobile">Infos</span></button>` : ''}
                 <button class="btn btn-soft hide-mobile" data-close>Annuler</button>
                 ${card ? '' : `<button class="btn btn-soft" id="cf-save-next" title="Enregistrer et créer une autre carte (Ctrl+Entrée)">${ic('plus')}Enregistrer + nouvelle</button>`}
                 <button class="btn btn-primary" id="cf-save">${ic('check')}Enregistrer</button>`
         });
         m.dataset.cardModal = '1';
-        const front = $('#cf-front', m), back = $('#cf-back', m), detail = $('#cf-detail', m);
-        if (card) { front.innerHTML = card.front; back.innerHTML = card.back; detail.innerHTML = card.detail; }
+        const front = $('#cf-front', m), back = $('#cf-back', m), detail = $('#cf-detail', m), typeSel = $('#cf-type', m);
+        if (card) { front.innerHTML = nf.front; back.innerHTML = nf.back; detail.innerHTML = card.detail; }
         else if (prefillFront) front.textContent = prefillFront;
-        const save = (keepOpen) => {
+        const relabel = () => {
+            const cloze = type === 'cloze';
+            $('#cf-front-label', m).textContent = cloze ? 'Texte à trous' : 'Recto · question';
+            $('#cf-back-label', m).textContent = cloze ? 'Infos supplémentaires (optionnel, affichées avec la réponse)' : 'Verso · réponse';
+            $('#cf-cloze-help', m).classList.toggle('hidden', !cloze);
+            front.closest('.editor').classList.toggle('cloze-on', cloze);
+            front.dataset.placeholder = cloze ? 'Ex : La capitale de la France est {{c1::Paris}}.' : 'Question ou terme... (tu peux coller une image)';
+            back.dataset.placeholder = cloze ? 'Source, explication, image...' : 'Réponse...';
+        };
+        if (typeSel) typeSel.addEventListener('change', () => { type = typeSel.value; relabel(); });
+        relabel();
+        const save = async keepOpen => {
             const f = sanitizeHtml(front.innerHTML), bk = sanitizeHtml(back.innerHTML);
-            if (isBlank(f)) { this.toast('Le recto (question) est vide.', 'warning'); front.focus(); return; }
-            if (isBlank(bk)) { this.toast('Le verso (réponse) est vide.', 'warning'); back.focus(); return; }
+            if (isBlank(f)) { this.toast(type === 'cloze' ? 'Le texte est vide.' : 'Le recto (question) est vide.', 'warning'); front.focus(); return; }
+            if (type === 'cloze') {
+                if (!clozeNumbers(f).length) { this.toast('Ajoute au moins un trou : sélectionne un mot puis clique sur […]', 'warning'); front.focus(); return; }
+            } else if (isBlank(bk)) { this.toast('Le verso (réponse) est vide.', 'warning'); back.focus(); return; }
             const fields = {
                 deckId: $('#cf-deck', m).value, front: f, back: bk,
                 hint: sanitizeHtml($('#cf-hint', m).value), detail: isBlank(detail.innerHTML) ? '' : sanitizeHtml(detail.innerHTML),
-                tags: $('#cf-tags', m).value.split(',').map(t => t.trim()).filter(Boolean)
+                tags: $('#cf-tags', m).value.split(/[,;]+/).map(t => t.trim().replace(/\s+/g, '_')).filter(Boolean)
             };
+            if (!card) {
+                const key = fold(stripHtml(f));
+                const dup = this.data.cards.some(c => c.deckId === fields.deckId && c.ord === 0 && fold(stripHtml(noteFieldsOf(c).front)) === key);
+                if (dup && !(await this.confirm({ title: 'Doublon', message: 'Une carte avec le même recto existe déjà dans ce paquet. L\'ajouter quand même ?', ok: 'Ajouter' }))) return;
+            }
             this.lastDeckUsed = fields.deckId;
             if (card) {
-                Object.assign(card, fields);
-                const susp = $('#cf-susp', m);
-                if (susp) card.suspended = susp.checked;
+                const ids = this.noteSiblings(card).map(c => c.id), susp = $('#cf-susp', m);
+                this.change('modification de carte', ids, () => {
+                    const made = this.updateNote(card, fields);
+                    if (susp) card.suspended = susp.checked;
+                    const t = Date.now();
+                    this.noteSiblings(card).forEach(c => { c.mod = t; });
+                    return made;
+                });
                 this.toast('Carte modifiée', 'success');
             } else {
-                const base = { state: 'new', step: 0, interval: 0, ease: 2.5, due: Date.now(), reps: 0, lapses: 0, lastReview: null, errors: 0, wrong: 0, right: 0 };
-                this.data.cards.push({ id: uid('c'), created: Date.now(), ...fields, ...base });
-                const both = $('#cf-both', m);
-                if (both && both.checked) this.data.cards.push({ id: uid('c'), created: Date.now() + 1, ...fields, front: bk, back: f, ...base });
-                this.toast(both && both.checked ? '2 cartes créées (dont l\'inversée)' : 'Carte créée', 'success');
+                this.lastNoteType = type;
+                const made = this.change('nouvelle carte', [], () => this.createNote({ type, ...fields }));
+                this.toast(made.length > 1 ? `${made.length} cartes créées` : 'Carte créée', 'success');
             }
-            this.save();
             if (keepOpen) {
                 front.innerHTML = ''; back.innerHTML = ''; detail.innerHTML = ''; $('#cf-hint', m).value = '';
                 front.focus();
@@ -1898,27 +2204,18 @@ class SuperAnki {
         const next = $('#cf-save-next', m);
         if (next) next.addEventListener('click', () => save(true));
         const del = $('#cf-delete', m);
-        if (del) del.addEventListener('click', async () => { if (await this.deleteCard(card.id)) this.closeModal(m); });
+        if (del) del.addEventListener('click', async () => { if (await this.opDelete([card.id], true)) this.closeModal(m); });
+        const info = $('#cf-info', m);
+        if (info) info.addEventListener('click', () => this.openCardInfo(card.id));
         setTimeout(() => (card ? null : front.focus()), 50);
     }
-    async deleteCard(cardId) {
-        const card = this.card(cardId);
-        if (!card) return false;
-        const ok = await this.confirm({ title: 'Supprimer la carte ?', message: `« ${esc(truncate(stripHtml(card.front), 90))} » sera supprimée définitivement.`, ok: 'Supprimer', danger: true });
-        if (!ok) return false;
-        this.data.cards = this.data.cards.filter(c => c.id !== cardId);
-        this.save();
-        if (this.session) {
-            const s = this.session;
-            s.queue = s.queue.filter(id => id !== cardId);
-            if (s.learning) s.learning = s.learning.filter(l => l.id !== cardId);
-            if (s.current === cardId) this.nextCard();
-            else if (s.quizCard === cardId) this.nextQuestion();
-        } else this.render();
-        this.toast('Carte supprimée', 'success');
-        return true;
+    deleteCard(cardId) { return this.opDelete([cardId], true); }
+    clozeSelection(area, same) {
+        const sel = getSelection(), text = sel.rangeCount && area.contains(sel.anchorNode) ? sel.toString() : '';
+        const nums = clozeNumbers(area.innerHTML), n = nums.length ? (same ? nums[nums.length - 1] : nums[nums.length - 1] + 1) : 1;
+        document.execCommand('insertText', false, `{{c${n}::${text || '...'}}}`);
     }
-    execEditor(cmd, area) {
+    execEditor(cmd, area, ev) {
         if (document.activeElement !== area) {
             area.focus();
             if (this.editorRange && area.contains(this.editorRange.startContainer)) {
@@ -1929,6 +2226,7 @@ class SuperAnki {
             }
         }
         if (cmd === 'image') { this.pickImage(area); return; }
+        if (cmd === 'cloze') { this.clozeSelection(area, !!(ev && ev.shiftKey)); return; }
         const css = ['red', 'blue', 'highlight'].includes(cmd);
         try { document.execCommand('styleWithCSS', false, css); } catch { /* ignore */ }
         if (cmd === 'red' || cmd === 'blue') {
@@ -2005,10 +2303,11 @@ class SuperAnki {
             body: `
                 <p class="small muted" style="margin-bottom:14px">Une fiche par ligne : <code>question ; réponse</code> (séparateur <code>;</code>, tabulation ou virgule). Une 3e colonne optionnelle sert d'indice. Compatible avec les exports texte d'Anki et Quizlet.</p>
                 <div class="field"><label class="label" for="im-deck">Paquet de destination</label>
-                    <select class="select" id="im-deck">${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${d.id === cur ? 'selected' : ''}>${esc(d.emoji)} ${esc(d.name)}</option>`).join('')}<option value="__new">+ Nouveau paquet...</option></select></div>
+                    <select class="select" id="im-deck">${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${d.id === cur ? 'selected' : ''}>${esc(d.emoji)} ${esc(this.deckPath(d.id))}</option>`).join('')}<option value="__new">+ Nouveau paquet...</option></select></div>
                 <div class="field hidden" id="im-newdeck-wrap"><label class="label" for="im-newdeck">Nom du nouveau paquet</label><input class="input" id="im-newdeck" placeholder="Ex : Vocabulaire anglais"></div>
                 <div class="field"><span class="label">Fichier</span><button class="btn btn-soft btn-block" id="im-file">${ic('file')}Choisir un fichier TXT / CSV</button></div>
                 <div class="field"><label class="label" for="im-text">... ou colle tes fiches ici</label><textarea class="textarea" id="im-text" rows="6" placeholder="Capitale de l'Italie ; Rome&#10;H2O ; L'eau"></textarea></div>
+                <label class="check hidden" id="im-usedecks-wrap" style="margin-bottom:10px"><input type="checkbox" id="im-usedecks" checked> Utiliser les paquets et tags indiqués dans le fichier</label>
                 <p class="help" id="im-preview">Aucune fiche détectée pour l'instant.</p>`,
             foot: `<button class="btn btn-soft" data-close>Annuler</button><button class="btn btn-primary" id="im-go" disabled>${ic('import')}Importer</button>`
         });
@@ -2017,6 +2316,8 @@ class SuperAnki {
             const rows = parseImport(ta.value);
             prev.innerHTML = rows.length ? `<b>${plural(rows.length, 'fiche')} détectée${rows.length > 1 ? 's' : ''}</b>. Ex. : « ${esc(truncate(stripHtml(rows[0].front), 50))} » → « ${esc(truncate(stripHtml(rows[0].back), 50))} »` : 'Aucune fiche détectée pour l\'instant.';
             go.disabled = !rows.length;
+            const hasDecks = rows.some(r => r.deck);
+            $('#im-usedecks-wrap', m).classList.toggle('hidden', !hasDecks);
             return rows;
         };
         ta.addEventListener('input', refresh);
@@ -2044,11 +2345,24 @@ class SuperAnki {
                 deckId = uid('d');
                 this.data.decks.push({ id: deckId, name, emoji: '📥', description: '', created: Date.now() });
             }
-            const now = Date.now();
-            rows.forEach((r, i) => this.data.cards.push({
-                id: uid('c'), deckId, front: r.front, back: r.back, hint: r.hint || '', detail: '', tags: [], created: now + i,
-                state: 'new', step: 0, interval: 0, ease: 2.5, due: now, reps: 0, lapses: 0, lastReview: null, errors: 0, wrong: 0, right: 0
-            }));
+            const now = Date.now(), useDecks = !$('#im-usedecks-wrap', m).classList.contains('hidden') && $('#im-usedecks', m).checked;
+            const deckFor = path => {
+                let parent = null, found = null;
+                String(path).split('::').map(x => x.trim()).filter(Boolean).forEach(name => {
+                    found = this.data.decks.find(d => d.name === name && (d.parent || null) === parent);
+                    if (!found) { found = { id: uid('d'), name, emoji: '📥', description: '', created: now, parent, opts: null, mod: 0 }; this.data.decks.push(found); }
+                    parent = found.id;
+                });
+                return found ? found.id : deckId;
+            };
+            this.change('import', [], () => {
+                const made = [];
+                rows.forEach((r, i) => {
+                    const c = { id: uid('c'), ...freshCard(), deckId: useDecks && r.deck ? deckFor(r.deck) : deckId, front: r.front, back: r.back, hint: r.hint || '', detail: '', tags: r.tags || [], created: now + i, nid: '', kind: 'basic', ord: 0, nf: null };
+                    this.data.cards.push(c); made.push(c.id);
+                });
+                return made;
+            }, { decks: true });
             this.save();
             this.closeModal(m);
             this.ui.deck = deckId; this.ui.filter = 'all';
@@ -2180,7 +2494,7 @@ class SuperAnki {
         pop.dataset.kind = anchor.dataset.action === 'pop-sync' ? 'sync' : 'streak';
         pop.innerHTML = build();
         document.body.appendChild(pop);
-        this.popover = pop; this.popoverAnchor = anchor; this.popoverBuild = build;
+        this.popover = pop; this.popoverAnchor = anchor; this.popoverBuild = build; this.popoverY = scrollY;
         const r = anchor.getBoundingClientRect(), w = pop.offsetWidth;
         pop.style.top = `${r.bottom + 8}px`;
         pop.style.left = `${clamp(r.right - w, 10, innerWidth - w - 10)}px`;
@@ -2223,15 +2537,17 @@ class SuperAnki {
     /* ============================================================
        Toasts
        ============================================================ */
-    toast(msg, type = 'success', icon) {
+    toast(msg, type = 'success', icon, action = null) {
         const box = $('#toasts');
         const t = document.createElement('div');
         t.className = `toast ${type}`;
         const ico = icon || ic(type === 'error' ? 'alert' : type === 'warning' ? 'info' : 'check');
-        t.innerHTML = `${ico}<span>${esc(msg)}</span>`;
+        t.innerHTML = `${ico}<span>${esc(msg)}</span>${action ? `<button type="button">${esc(action.label)}</button>` : ''}`;
+        const close = () => { t.classList.add('out'); setTimeout(() => t.remove(), 260); };
+        if (action) t.querySelector('button').addEventListener('click', () => { close(); action.fn(); });
         box.appendChild(t);
         while (box.children.length > 3) box.firstElementChild.remove();
-        setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 260); }, type === 'error' ? 5000 : 3000);
+        setTimeout(close, action ? 6500 : type === 'error' ? 5000 : 3000);
     }
 
     /* ============================================================
@@ -2244,7 +2560,7 @@ class SuperAnki {
             const nav = e.target.closest('[data-nav]');
             if (nav) { this.go(nav.dataset.nav); return; }
             const tb = e.target.closest('.tb-btn');
-            if (tb) { const area = tb.closest('.editor').querySelector('.editor-area'); this.execEditor(tb.dataset.cmd, area); return; }
+            if (tb) { const area = tb.closest('.editor').querySelector('.editor-area'); this.execEditor(tb.dataset.cmd, area, e); return; }
             const el = e.target.closest('[data-action]');
             if (!el || el.disabled) return;
             this.handleAction(el.dataset.action, el, e);
@@ -2312,7 +2628,7 @@ class SuperAnki {
         };
         document.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') tipAt(e); }, { passive: true });
         document.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') tipAt(e); }, { passive: true });
-        window.addEventListener('scroll', () => { if (this.tipEl && this.tipTouch) this.hideTip(); this.closePopover(); }, { passive: true });
+        window.addEventListener('scroll', () => { if (this.tipEl && this.tipTouch) this.hideTip(); if (this.popover && Math.abs(scrollY - (this.popoverY || 0)) > 80) this.closePopover(); }, { passive: true });
         let rz;
         window.addEventListener('resize', () => {
             clearTimeout(rz);
@@ -2329,6 +2645,7 @@ class SuperAnki {
     onKey(e) {
         const tag = (e.target.tagName || '').toLowerCase();
         const typing = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable;
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c' && e.target.classList && e.target.classList.contains('editor-area')) { e.preventDefault(); this.clozeSelection(e.target, e.altKey); return; }
         if (this.modals.length) {
             const top = this.modals[this.modals.length - 1];
             if (e.key === 'Escape') { e.preventDefault(); this.closeModal(top); }
@@ -2339,6 +2656,11 @@ class SuperAnki {
         if (e.target.id === 'card-search' && e.key === 'Escape') { e.preventDefault(); this.handleAction('clear-search'); return; }
         if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') || (e.key === '/' && !typing && this.view !== 'session')) {
             e.preventDefault(); this.handleAction('global-search'); return;
+        }
+        if ((e.ctrlKey || e.metaKey) && !typing && this.view !== 'session') {
+            const kk = e.key.toLowerCase();
+            if (kk === 'z' && !e.shiftKey) { e.preventDefault(); this.undoGlobal(); return; }
+            if (kk === 'y' || (kk === 'z' && e.shiftKey)) { e.preventDefault(); this.redoGlobal(); return; }
         }
         const s = this.session;
         if (this.view !== 'session') return;
@@ -2360,6 +2682,11 @@ class SuperAnki {
             if (['1', '2', '3', '4'].includes(k)) { e.preventDefault(); this.quizAnswer(Number(k) - 1, $$('.quiz-opt')[Number(k) - 1]); }
             else if ((k === 'enter' || k === ' ') && s.answered && s.kind === 'quiz') { e.preventDefault(); this.nextQuestion(); }
             return;
+        }
+        if (s.current && this.card(s.current)) {
+            const ids = [s.current];
+            const ops = { '*': () => this.opMark(ids), '@': () => this.opSuspend(ids, false), '!': () => this.opSuspend(ids, true), '-': () => this.opBury(ids, false), '=': () => this.opBury(ids, true), i: () => this.openCardInfo(s.current) };
+            if (ops[e.key] || ops[k]) { e.preventDefault(); (ops[e.key] || ops[k])(); return; }
         }
         if (k === 'z') { e.preventDefault(); this.undo(); return; }
         if (k === 'e') { e.preventDefault(); this.openCardModal(s.current); return; }
@@ -2431,7 +2758,7 @@ class SuperAnki {
                 const ok = await this.confirm({ title: 'Remettre la progression à zéro ?', message: 'Toutes les cartes redeviennent « nouvelles ». Tes cartes, tes images et ta série sont conservées.', ok: 'Remettre à zéro', danger: true });
                 if (!ok) break;
                 const now = Date.now();
-                this.data.cards.forEach(c => Object.assign(c, { state: 'new', step: 0, interval: 0, ease: 2.5, due: now, reps: 0, lapses: 0, lastReview: null, errors: 0 }));
+                this.data.cards.forEach(c => Object.assign(c, { state: 'new', step: 0, interval: 0, ease: this.deckCfg(c.deckId).startEase, due: now, reps: 0, lapses: 0, lastReview: null, errors: 0, fs: null, buriedUntil: 0 }));
                 this.data.revlog = [];
                 this.data.stats.newSeen = { date: dayKey(), count: 0 };
                 this.save(); this.render();
@@ -2441,11 +2768,68 @@ class SuperAnki {
             case 'reset-all': {
                 const ok = await this.confirm({ title: 'Tout réinitialiser ?', message: 'Tes paquets, cartes, images et statistiques seront effacés et remplacés par les cartes d\'origine. Pense à exporter une sauvegarde avant.', ok: 'Tout effacer', danger: true });
                 if (!ok) break;
+                if (Storage.db) await Storage.backupSave('avant réinitialisation', this.serialize(), this.data);
                 const fresh = seedState();
                 fresh.settings = Object.assign({}, this.data.settings);
                 this.replaceData(fresh);
                 this.save();
                 this.toast('Application réinitialisée', 'success');
+                break;
+            }
+            case 'undo-global': this.undoGlobal(); break;
+            case 'redo-global': this.redoGlobal(); break;
+            case 'deck-options': this.openDeckOptions(ds.deck); break;
+            case 'new-subdeck': this.openDeckModal(null, ds.deck); break;
+            case 'custom-study': this.openCustomStudy(ds.deck || undefined); break;
+            case 'session-menu': this.sessionMenu(el); break;
+            case 'sel-toggle': this.ui.selMode = !this.ui.selMode; if (!this.ui.selMode) this.ui.sel = new Set(); this.renderDeckPanel(); break;
+            case 'sel-exit': this.ui.selMode = false; this.ui.sel = new Set(); this.renderDeckPanel(); break;
+            case 'sel-all': (this.visibleIds || []).forEach(id => this.ui.sel.add(id)); this.renderDeckPanel(); break;
+            case 'sel-none': this.ui.sel = new Set(); this.renderDeckPanel(); break;
+            case 'row-click': {
+                const id = ds.card;
+                if (!this.ui.selMode) { this.openCardModal(id); break; }
+                if (e && e.shiftKey && this.lastSelId && this.visibleIds) {
+                    const a = this.visibleIds.indexOf(this.lastSelId), b = this.visibleIds.indexOf(id);
+                    if (a >= 0 && b >= 0) this.visibleIds.slice(Math.min(a, b), Math.max(a, b) + 1).forEach(x => this.ui.sel.add(x));
+                } else if (this.ui.sel.has(id)) this.ui.sel.delete(id); else this.ui.sel.add(id);
+                this.lastSelId = id;
+                this.renderDeckPanel();
+                break;
+            }
+            case 'row-menu': {
+                const id = ds.card, c = this.card(id);
+                if (c) this.showMenu(el, this.cardMenuItems([id]), { flagCur: c.flag, onFlag: n => this.opFlag([id], n) });
+                break;
+            }
+            case 'bulk-menu': {
+                const ids = [...this.ui.sel].filter(id => this.card(id));
+                if (ids.length) this.showMenu(el, this.cardMenuItems(ids), { onFlag: n => this.opFlag(ids, n) });
+                break;
+            }
+            case 'export-txt': this.exportTXT(); break;
+            case 'backup-now': this.manualBackup(); break;
+            case 'backup-restore': this.restoreBackup(ds.key); break;
+            case 'backup-download': this.downloadBackup(ds.key); break;
+            case 'backup-delete': await Storage.backupDelete(ds.key); this.renderSettings(); break;
+            case 'save-options': {
+                const o = this.readOptions($('#view-settings'));
+                Object.entries(o).forEach(([k, v]) => { this.data.settings[k] = v; });
+                this.data.settings.settingsMod = Date.now();
+                this.save(); this.applySettings();
+                this.toast('Options d\'étude enregistrées', 'success', ic('sliders'));
+                break;
+            }
+            case 'save-sync-key': {
+                const v = ($('#sync-key-input') || {}).value || '';
+                if (v && v.length < 8) { this.toast('Choisis une phrase d\'au moins 8 caractères.', 'warning'); break; }
+                this.data.settings.syncKey = v.trim();
+                this.data.settings.settingsMod = Date.now();
+                this.save(false);
+                Cloud.client && 0;
+                this.toast(v ? 'Clé enregistrée : synchronisation chiffrée' : 'Clé supprimée', 'success', ic('lock'));
+                Cloud.sync(true);
+                this.renderSettings();
                 break;
             }
             case 'quit-session': this.quitSession(); break;
@@ -2547,10 +2931,18 @@ function interleave(reviews, news) {
 
 /* CSV / TXT parser: ; tab or , separators, quoted fields, Anki "#" headers */
 function parseImport(text) {
-    const lines = String(text || '').replace(/^﻿/, '').split(/\r\n|\n|\r/).filter(l => l.trim() && !/^#(separator|html|tags|columns|notetype|deck)/i.test(l.trim()));
+    const all = String(text || '').replace(/^﻿/, '').split(/\r\n|\n|\r/);
+    const meta = { tagsCol: -1, deckCol: -1, sep: null };
+    all.forEach(l => {
+        let m;
+        if ((m = /^#separator:\s*(.+)$/i.exec(l.trim()))) meta.sep = { tab: '\t', comma: ',', semicolon: ';', pipe: '|', space: ' ' }[m[1].trim().toLowerCase()] || null;
+        if ((m = /^#tags column:\s*(\d+)/i.exec(l.trim()))) meta.tagsCol = Number(m[1]) - 1;
+        if ((m = /^#deck column:\s*(\d+)/i.exec(l.trim()))) meta.deckCol = Number(m[1]) - 1;
+    });
+    const lines = all.filter(l => l.trim() && !/^#(separator|html|tags|columns|notetype|deck|guid|file)/i.test(l.trim()));
     if (!lines.length) return [];
     const sample = lines.slice(0, 20);
-    const sep = sample.some(l => l.includes('\t')) ? '\t' : sample.some(l => l.includes(';')) ? ';' : ',';
+    const sep = meta.sep || (sample.some(l => l.includes('\t')) ? '\t' : sample.some(l => l.includes(';')) ? ';' : ',');
     const split = line => {
         const out = []; let cur = '', q = false;
         for (let i = 0; i < line.length; i++) {
@@ -2564,7 +2956,7 @@ function parseImport(text) {
             else cur += ch;
         }
         out.push(cur);
-        return out.map(s => s.trim());
+        return out.map(x => x.trim());
     };
     const rows = [];
     lines.forEach(l => {
@@ -2572,8 +2964,10 @@ function parseImport(text) {
         if (f.length < 2) return;
         const front = sanitizeHtml(f[0]), back = sanitizeHtml(f[1]);
         if (isBlank(front) || isBlank(back)) return;
-        rows.push({ front, back, hint: f[2] ? sanitizeHtml(f[2]) : '' });
+        const tags = meta.tagsCol >= 0 && f[meta.tagsCol] ? f[meta.tagsCol].split(/\s+/).filter(Boolean) : [];
+        const deck = meta.deckCol >= 0 && f[meta.deckCol] ? f[meta.deckCol] : '';
+        const hint = f[2] && meta.tagsCol !== 2 && meta.deckCol !== 2 ? sanitizeHtml(f[2]) : '';
+        rows.push({ front, back, hint, tags, deck });
     });
     return rows;
 }
-

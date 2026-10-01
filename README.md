@@ -13,3 +13,9 @@ Après une modification, régénérer le fichier final :
 ```
 python3 build.py
 ```
+
+## Fonctions principales
+
+SM-2 et FSRS, options par paquet, sous-paquets, textes à trous, cartes inversées liées, drapeaux / marquage / suspension / enfouissement,
+navigateur avec recherche à la Anki et édition en masse, annuler / rétablir, révisions personnalisées, statistiques,
+synchronisation Supabase fusionnée carte par carte (chiffrement optionnel), sauvegardes automatiques, export / import TXT.

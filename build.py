@@ -40,8 +40,11 @@ html = f"""<!DOCTYPE html>
 {read("seed-data.js").strip()}
 </script>
 <script>
+{read("fsrs.js")}
 {read("app.js")}
 {read("stats.js")}
+{read("features.js")}
+{read("sync.js")}
 {read("boot.js")}
 </script>
 </body>

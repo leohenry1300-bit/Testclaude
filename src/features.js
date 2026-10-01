@@ -1,0 +1,651 @@
+/* ============================================================
+   Features: note types (cloze, linked reverse), flags, bury / suspend,
+   undo / redo, card info, custom study, bulk editing, study options,
+   automatic backups and exports.
+   ============================================================ */
+Object.assign(ICONS, {
+    more: '<circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/>',
+    flag: '<path d="M4 22V4"/><path d="M4 4h13l-2 4.5 2 4.5H4"/>',
+    star: '<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
+    tag: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.3" fill="currentColor"/>',
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    eyeOff: '<path d="M17.9 17.9A10.1 10.1 0 0 1 12 20c-6.5 0-10-8-10-8a18 18 0 0 1 5.1-5.9M9.9 4.2A9 9 0 0 1 12 4c6.5 0 10 8 10 8a18 18 0 0 1-2.2 3.2"/><path d="M1 1l22 22M14.1 14.1a3 3 0 1 1-4.2-4.2"/>',
+    folder: '<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9l-.8-1.2A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/>',
+    redo: '<path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/>',
+    sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+    brain: '<path d="M9.5 2A2.5 2.5 0 0 0 7 4.5v0A2.5 2.5 0 0 0 4.5 7 2.5 2.5 0 0 0 3 9.4a3 3 0 0 0 .8 5.3A2.7 2.7 0 0 0 7 18a2.5 2.5 0 0 0 5 .5V4.5A2.5 2.5 0 0 0 9.5 2z"/><path d="M14.5 2A2.5 2.5 0 0 1 17 4.5 2.5 2.5 0 0 1 19.5 7 2.5 2.5 0 0 1 21 9.4a3 3 0 0 1-.8 5.3A2.7 2.7 0 0 1 17 18a2.5 2.5 0 0 1-5 .5"/>',
+    lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+    checkSq: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="m8 12 3 3 5-6"/>',
+    sparkles: '<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/><path d="M19 3v4M17 5h4"/>'
+});
+const FLAGS = [null,
+    { name: 'Rouge', color: '#ef4444' }, { name: 'Orange', color: '#f97316' }, { name: 'Vert', color: '#22c55e' },
+    { name: 'Bleu', color: '#3b82f6' }, { name: 'Rose', color: '#ec4899' }, { name: 'Turquoise', color: '#14b8a6' }, { name: 'Violet', color: '#8b5cf6' }];
+
+/* ---------- Note types ---------- */
+const CLOZE_RE = /\{\{c(\d+)::([\s\S]*?)(?:::([\s\S]*?))?\}\}/g;
+const NOTE_TYPES = { basic: 'Basique', rev: 'Basique + inversée (liées)', cloze: 'Texte à trous' };
+function clozeNumbers(text) {
+    const set = new Set();
+    String(text || '').replace(CLOZE_RE, (m, n) => { set.add(Number(n)); return m; });
+    return [...set].sort((a, b) => a - b);
+}
+function renderCloze(text, ord, side) {
+    return String(text || '').replace(CLOZE_RE, (m, n, ans, hint) => {
+        if (Number(n) !== ord) return ans;
+        return side === 'front' ? `<span class="cloze">[${hint ? hint : '...'}]</span>` : `<span class="cloze">${ans}</span>`;
+    });
+}
+function clozeAnswerHtml(c) {
+    if (!c.nf) return c.back;
+    const out = [];
+    c.nf.text.replace(CLOZE_RE, (m, n, ans) => { if (Number(n) === c.ord) out.push(ans); return m; });
+    return out.join(', ') || c.back;
+}
+/* front/back are always stored materialized, so the rest of the app never needs to know about note types */
+function materializeCard(c) {
+    if (c.kind === 'cloze' && c.nf) {
+        c.front = sanitizeHtml(renderCloze(c.nf.text, c.ord, 'front'));
+        const extra = isBlank(c.nf.extra) ? '' : `<br><br><div>${c.nf.extra}</div>`;
+        c.back = sanitizeHtml(renderCloze(c.nf.text, c.ord, 'back') + extra);
+    } else if (c.kind === 'rev' && c.nf) {
+        c.front = c.ord === 1 ? c.nf.back : c.nf.front;
+        c.back = c.ord === 1 ? c.nf.front : c.nf.back;
+    }
+    return c;
+}
+const freshCard = () => ({ state: 'new', step: 0, interval: 0, ease: 2.5, due: Date.now(), reps: 0, lapses: 0, lastReview: null, errors: 0, wrong: 0, right: 0, suspended: false, flag: 0, marked: false, buriedUntil: 0, fs: null, mod: 0 });
+const noteFieldsOf = c => (c.nf ? (c.kind === 'cloze' ? { front: c.nf.text, back: c.nf.extra } : { front: c.nf.front, back: c.nf.back }) : { front: c.front, back: c.back });
+
+/* Replaces text inside HTML without touching tags */
+function replaceInHtml(html, find, repl, caseSens) {
+    if (!find) return html;
+    const t = document.createElement('template');
+    t.innerHTML = html;
+    const rx = new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), caseSens ? 'g' : 'gi');
+    const w = document.createTreeWalker(t.content, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (w.nextNode()) nodes.push(w.currentNode);
+    nodes.forEach(n => { n.nodeValue = n.nodeValue.replace(rx, () => repl); });
+    return t.innerHTML;
+}
+function parseDueSpec(str) {
+    const m = /^\s*(\d+)(?:\s*-\s*(\d+))?\s*(!)?\s*$/.exec(String(str || ''));
+    if (!m) return null;
+    const a = Number(m[1]), b = m[2] !== undefined ? Number(m[2]) : a;
+    return { min: Math.min(a, b), max: Math.max(a, b), setIvl: !!m[3] };
+}
+
+Object.assign(SuperAnki.prototype, {
+    /* ============================================================
+       Undo / redo for card and deck edits (sessions keep their own "undo last answer")
+       ============================================================ */
+    snapCards(ids) {
+        const m = new Map();
+        ids.forEach(id => { const c = this.card(id); m.set(id, c ? structuredClone(c) : null); });
+        return m;
+    },
+    /* Runs fn (which edits cards) and records it so it can be undone. fn may return the ids of cards it created. */
+    change(label, ids, fn, { decks = false } = {}) {
+        const before = this.snapCards(ids), decksBefore = decks ? structuredClone(this.data.decks) : null;
+        const created = fn() || [];
+        created.forEach(id => { if (!before.has(id)) before.set(id, null); });
+        const after = this.snapCards([...before.keys()]);
+        this.undoStack.push({ label, before, after, decksBefore, decksAfter: decks ? structuredClone(this.data.decks) : null });
+        if (this.undoStack.length > 40) this.undoStack.shift();
+        this.redoStack = [];
+        this.searchCache.clear();
+        this.save();
+        return created;
+    },
+    applyEntry(entry, dir) {
+        const target = dir === 'undo' ? entry.before : entry.after;
+        target.forEach((state, id) => {
+            const i = this.data.cards.findIndex(c => c.id === id);
+            if (state === null) { if (i >= 0) this.data.cards.splice(i, 1); }
+            else if (i >= 0) this.data.cards[i] = structuredClone(state);
+            else this.data.cards.push(structuredClone(state));
+        });
+        const decks = dir === 'undo' ? entry.decksBefore : entry.decksAfter;
+        if (decks) this.data.decks = structuredClone(decks);
+        this.searchCache.clear();
+        this.save();
+        const s = this.session;
+        if (s) {
+            const gone = id => !this.card(id) || this.card(id).suspended;
+            s.queue = s.queue.filter(id => !gone(id));
+            if (s.learning) s.learning = s.learning.filter(l => !gone(l.id));
+            if (!s.current || gone(s.current)) this.nextCard(); else this.renderSession();
+        } else this.render();
+    },
+    undoGlobal() {
+        const e = this.undoStack.pop();
+        if (!e) { this.toast('Rien à annuler', 'warning'); return; }
+        this.applyEntry(e, 'undo');
+        this.redoStack.push(e);
+        this.toast(`Annulé : ${e.label}`, 'success', ic('undo'), { label: 'Rétablir', fn: () => this.redoGlobal() });
+    },
+    redoGlobal() {
+        const e = this.redoStack.pop();
+        if (!e) { this.toast('Rien à rétablir', 'warning'); return; }
+        this.applyEntry(e, 'redo');
+        this.undoStack.push(e);
+        this.toast(`Rétabli : ${e.label}`, 'success', ic('redo'));
+    },
+    undoToast(msg, icon) { this.toast(msg, 'success', icon, { label: 'Annuler', fn: () => this.undoGlobal() }); },
+
+    /* ============================================================
+       Notes (basic / linked reverse / cloze)
+       ============================================================ */
+    noteSiblings(card) { return card.nid ? this.data.cards.filter(c => c.nid === card.nid) : [card]; },
+    expandNotes(ids) {
+        const out = new Set(ids);
+        ids.forEach(id => { const c = this.card(id); if (c && c.nid) this.data.cards.forEach(x => { if (x.nid === c.nid) out.add(x.id); }); });
+        return [...out];
+    },
+    /* Creates the card(s) of a new note. Returns the created card ids, or null if the note is invalid. */
+    createNote({ type, deckId, front, back, hint, detail, tags }) {
+        const now = Date.now(), nid = uid('n'), made = [];
+        const common = { deckId, hint, detail, tags: [...tags], created: now, nid: type === 'basic' ? '' : nid };
+        const add = (extra, i) => { const c = { id: uid('c'), ...freshCard(), ...common, created: now + i, front: '', back: '', kind: type, ord: 0, nf: null, ...extra }; materializeCard(c); this.data.cards.push(c); made.push(c.id); };
+        if (type === 'basic') add({ front, back }, 0);
+        else if (type === 'rev') { const nf = { front, back, text: '', extra: '' }; add({ nf, ord: 0 }, 0); add({ nf: { ...nf }, ord: 1 }, 1); }
+        else {
+            const nums = clozeNumbers(front);
+            if (!nums.length) return null;
+            nums.forEach((n, i) => add({ nf: { front: '', back: '', text: front, extra: back }, ord: n }, i));
+        }
+        return made;
+    },
+    /* Applies edited fields to an existing note (all its sibling cards). Returns ids of created cards. */
+    updateNote(card, { deckId, front, back, hint, detail, tags }) {
+        const sibs = this.noteSiblings(card), created = [];
+        sibs.forEach(c => { Object.assign(c, { deckId, hint, detail, tags: [...tags] }); });
+        if (card.kind === 'basic' || !card.nf) { Object.assign(card, { front, back }); return created; }
+        if (card.kind === 'rev') {
+            sibs.forEach(c => { c.nf = { front, back, text: '', extra: '' }; materializeCard(c); });
+            return created;
+        }
+        const nums = clozeNumbers(front), now = Date.now();
+        sibs.forEach(c => { c.nf = { front: '', back: '', text: front, extra: back }; });
+        const have = new Set(sibs.map(c => c.ord));
+        sibs.filter(c => !nums.includes(c.ord)).forEach(c => { this.data.cards.splice(this.data.cards.indexOf(c), 1); });
+        nums.filter(n => !have.has(n)).forEach((n, i) => {
+            const c = { id: uid('c'), ...freshCard(), deckId, hint, detail, tags: [...tags], created: now + i, nid: card.nid, kind: 'cloze', ord: n, nf: { front: '', back: '', text: front, extra: back }, front: '', back: '' };
+            this.data.cards.push(c); created.push(c.id);
+        });
+        this.data.cards.filter(c => c.nid === card.nid).forEach(materializeCard);
+        return created;
+    },
+
+    /* ============================================================
+       Card operations (flag, mark, suspend, bury, due date, reset, move, tags, delete)
+       ============================================================ */
+    cardsByIds(ids) { return ids.map(id => this.card(id)).filter(Boolean); },
+    afterOp(ids) {
+        const s = this.session;
+        if (s) {
+            const hidden = id => { const c = this.card(id); return !c || c.suspended || c.buriedUntil > Date.now(); };
+            s.queue = s.queue.filter(id => !hidden(id));
+            if (s.learning) s.learning = s.learning.filter(l => !hidden(l.id));
+            if (s.kind !== 'quiz' && s.kind !== 'chrono') { if (s.current && hidden(s.current)) this.nextCard(); else this.renderSession(); }
+        } else this.render();
+    },
+    opFlag(ids, n) {
+        const cards = this.cardsByIds(ids);
+        const target = cards.every(c => c.flag === n) ? 0 : n;
+        this.change(target ? `drapeau ${FLAGS[n].name.toLowerCase()}` : 'drapeau retiré', ids, () => { cards.forEach(c => { c.flag = target; }); });
+        this.afterOp(ids);
+        this.toast(target ? `Drapeau ${FLAGS[n].name.toLowerCase()} posé` : 'Drapeau retiré', 'success', ic('flag'));
+    },
+    opMark(ids) {
+        const all = this.expandNotes(ids), cards = this.cardsByIds(all), target = !cards.every(c => c.marked);
+        this.change(target ? 'marquage' : 'marquage retiré', all, () => { cards.forEach(c => { c.marked = target; }); });
+        this.afterOp(all);
+        this.toast(target ? 'Note marquée ⭐' : 'Marque retirée', 'success', ic('star'));
+    },
+    opSuspend(ids, note) {
+        const all = note ? this.expandNotes(ids) : ids, cards = this.cardsByIds(all), target = !cards.every(c => c.suspended);
+        this.change(target ? 'suspension' : 'réactivation', all, () => { cards.forEach(c => { c.suspended = target; }); });
+        this.afterOp(all);
+        this.undoToast(target ? `${plural(cards.length, 'carte')} suspendue${cards.length > 1 ? 's' : ''}` : `${plural(cards.length, 'carte')} réactivée${cards.length > 1 ? 's' : ''}`, ic('pause'));
+    },
+    opBury(ids, note) {
+        const all = note ? this.expandNotes(ids) : ids, cards = this.cardsByIds(all), now = Date.now();
+        const target = cards.every(c => c.buriedUntil > now) ? 0 : addDays(now, 1);
+        this.change(target ? 'enfouissement' : 'déterrement', all, () => { cards.forEach(c => { c.buriedUntil = target; }); });
+        this.afterOp(all);
+        this.undoToast(target ? `${plural(cards.length, 'carte')} enfouie${cards.length > 1 ? 's' : ''} jusqu'à demain` : 'Cartes déterrées', ic('eyeOff'));
+    },
+    opDue(ids, spec) {
+        const cards = this.cardsByIds(ids), now = Date.now(), cfg = d => this.deckCfg(d);
+        this.change('date d\'échéance', ids, () => {
+            cards.forEach(c => {
+                const days = spec.min + Math.floor(Math.random() * (spec.max - spec.min + 1));
+                if (c.state !== 'review') { c.state = 'review'; c.step = 0; c.ease = cfg(c.deckId).startEase; c.interval = Math.max(1, days); if (!c.reps) c.reps = 0; }
+                else if (spec.setIvl) c.interval = Math.max(1, days);
+                c.due = addDays(now, days);
+                c.buriedUntil = 0;
+                if (c.fs && spec.setIvl) c.fs = { ...c.fs, s: Math.max(0.5, days) };
+            });
+        });
+        this.afterOp(ids);
+        this.undoToast(`Date d'échéance : ${spec.min === spec.max ? `dans ${plural(spec.min, 'jour')}` : `dans ${spec.min} à ${spec.max} jours`}`, ic('calendar'));
+    },
+    opReset(ids) {
+        const cards = this.cardsByIds(ids);
+        this.change('réinitialisation', ids, () => { cards.forEach(c => Object.assign(c, { state: 'new', step: 0, interval: 0, ease: this.deckCfg(c.deckId).startEase, due: Date.now(), reps: 0, lapses: 0, lastReview: null, errors: 0, fs: null, buriedUntil: 0 })); });
+        this.afterOp(ids);
+        this.undoToast(`${plural(cards.length, 'carte')} remise${cards.length > 1 ? 's' : ''} à zéro`, ic('reset'));
+    },
+    opMove(ids, deckId) {
+        const cards = this.cardsByIds(this.expandNotes(ids));
+        this.change('déplacement', cards.map(c => c.id), () => { cards.forEach(c => { c.deckId = deckId; }); });
+        this.render();
+        this.undoToast(`${plural(cards.length, 'carte')} déplacée${cards.length > 1 ? 's' : ''}`, ic('folder'));
+    },
+    opTags(ids, add, remove) {
+        const cards = this.cardsByIds(this.expandNotes(ids)), rm = remove.map(fold);
+        this.change('tags', cards.map(c => c.id), () => { cards.forEach(c => { c.tags = [...c.tags.filter(t => !rm.includes(fold(t))), ...add.filter(t => !c.tags.some(x => fold(x) === fold(t)))]; }); });
+        this.render();
+        this.undoToast(`Tags modifiés (${plural(cards.length, 'carte')})`, ic('tag'));
+    },
+    opReplace(ids, find, repl, scope, caseSens) {
+        const cards = this.cardsByIds(this.expandNotes(ids));
+        let n = 0;
+        this.change('chercher / remplacer', cards.map(c => c.id), () => {
+            const seen = new Set();
+            cards.forEach(c => {
+                const key = c.nid || c.id;
+                if (c.nf && seen.has(key)) return;
+                seen.add(key);
+                const sibs = this.noteSiblings(c), f = noteFieldsOf(c);
+                const nf = { front: f.front, back: f.back };
+                if (scope !== 'back') nf.front = replaceInHtml(f.front, find, repl, caseSens);
+                if (scope !== 'front') nf.back = replaceInHtml(f.back, find, repl, caseSens);
+                if (nf.front !== f.front || nf.back !== f.back) {
+                    n++;
+                    if (c.nf) sibs.forEach(x => { x.nf = c.kind === 'cloze' ? { ...x.nf, text: nf.front, extra: nf.back } : { ...x.nf, front: nf.front, back: nf.back }; materializeCard(x); });
+                    else { c.front = nf.front; c.back = nf.back; }
+                }
+            });
+        });
+        this.render();
+        this.undoToast(n ? `${plural(n, 'note modifiée', 'notes modifiées')}` : 'Aucune occurrence trouvée', ic('check'));
+    },
+    async opDelete(ids, note = true) {
+        const all = note ? this.expandNotes(ids) : ids, cards = this.cardsByIds(all);
+        if (!cards.length) return false;
+        const ok = await this.confirm({
+            title: cards.length > 1 ? `Supprimer ${cards.length} cartes ?` : 'Supprimer la carte ?',
+            message: cards.length > 1 ? `Ces ${cards.length} cartes seront supprimées. Tu pourras annuler juste après.` : `« ${esc(truncate(stripHtml(cards[0].front), 90))} » sera supprimée${cards[0].nid && all.length > 1 ? ' avec ses cartes liées' : ''}. Tu pourras annuler juste après.`,
+            ok: 'Supprimer', danger: true
+        });
+        if (!ok) return false;
+        const set = new Set(all);
+        this.change('suppression', all, () => { this.data.cards = this.data.cards.filter(c => !set.has(c.id)); });
+        this.ui.sel = new Set([...this.ui.sel].filter(id => !set.has(id)));
+        const s = this.session;
+        if (s) {
+            s.queue = s.queue.filter(id => !set.has(id));
+            if (s.learning) s.learning = s.learning.filter(l => !set.has(l.id));
+            if (set.has(s.current)) this.nextCard(); else if (set.has(s.quizCard)) this.nextQuestion();
+        } else this.render();
+        this.undoToast(`${plural(cards.length, 'carte supprimée', 'cartes supprimées')}`, ic('trash'));
+        return true;
+    },
+
+    /* ---------- Small dialogs ---------- */
+    askText({ title, label, value = '', help = '', ok = 'Valider', placeholder = '', multi = false }) {
+        return new Promise(resolve => {
+            let done = false;
+            const m = this.openModal({
+                title, size: 'narrow',
+                body: `<div class="field"><label class="label" for="ask-in">${label}</label>${multi ? `<textarea class="textarea" id="ask-in" placeholder="${esc(placeholder)}">${esc(value)}</textarea>` : `<input class="input" id="ask-in" value="${esc(value)}" placeholder="${esc(placeholder)}" autocomplete="off">`}${help ? `<p class="help">${help}</p>` : ''}</div>`,
+                foot: `<button class="btn btn-soft" data-close>Annuler</button><button class="btn btn-primary" id="ask-ok">${ok}</button>`,
+                onClose: () => { if (!done) resolve(null); }
+            });
+            const input = $('#ask-in', m), go = () => { done = true; this.closeModal(m); resolve(input.value); };
+            $('#ask-ok', m).addEventListener('click', go);
+            input.addEventListener('keydown', e => { if (e.key === 'Enter' && !multi) { e.preventDefault(); go(); } });
+            setTimeout(() => { input.focus(); input.select && input.select(); }, 40);
+        });
+    },
+    async promptDue(ids) {
+        const v = await this.askText({ title: 'Date d\'échéance', label: 'Dans combien de jours ?', value: '1', placeholder: '3  ou  3-7', help: 'Un nombre (<b>0</b> = aujourd\'hui) ou une plage (<b>3-7</b>, tirée au hasard). Ajoute <b>!</b> (ex. <b>10!</b>) pour changer aussi l\'intervalle.', ok: 'Valider' });
+        if (v === null) return;
+        const spec = parseDueSpec(v);
+        if (!spec) { this.toast('Format invalide : écris par exemple 5 ou 3-7', 'warning'); return; }
+        this.opDue(ids, spec);
+    },
+    promptMove(ids) {
+        const first = this.card(ids[0]);
+        const m = this.openModal({
+            title: 'Déplacer vers un paquet', size: 'narrow',
+            body: `<div class="pick-list">${this.sortedDecks().map(d => `<button class="pick-item ${first && d.id === first.deckId ? 'active' : ''}" data-deck="${esc(d.id)}" style="padding-left:${12 + this.deckDepth(d.id) * 14}px"><span>${esc(d.emoji)}</span>${esc(d.name)}<span class="ct">${this.cardsOf(d.id).length}</span></button>`).join('')}</div>`
+        });
+        m.addEventListener('click', e => { const b = e.target.closest('[data-deck]'); if (b) { this.closeModal(m); this.opMove(ids, b.dataset.deck); } });
+    },
+    async promptTags(ids) {
+        const m = this.openModal({
+            title: 'Modifier les tags', size: 'narrow',
+            body: `<div class="field"><label class="label" for="tg-add">Ajouter (séparés par des virgules)</label><input class="input" id="tg-add" placeholder="chapitre2, à revoir" autocomplete="off"></div>
+                   <div class="field"><label class="label" for="tg-rm">Retirer</label><input class="input" id="tg-rm" placeholder="ancien-tag" autocomplete="off"></div>
+                   <p class="help">Tags existants : ${[...new Set(this.data.cards.flatMap(c => c.tags))].slice(0, 20).map(t => `<code>${esc(t)}</code>`).join(' ') || 'aucun'}</p>`,
+            foot: `<button class="btn btn-soft" data-close>Annuler</button><button class="btn btn-primary" id="tg-ok">${ic('check')}Appliquer</button>`
+        });
+        const parse = id => $(id, m).value.split(/[,;]+/).map(t => t.trim().replace(/\s+/g, '_')).filter(Boolean);
+        $('#tg-ok', m).addEventListener('click', () => { const add = parse('#tg-add'), rm = parse('#tg-rm'); this.closeModal(m); if (add.length || rm.length) this.opTags(ids, add, rm); });
+        setTimeout(() => $('#tg-add', m).focus(), 40);
+    },
+    promptReplace(ids) {
+        const m = this.openModal({
+            title: 'Chercher et remplacer', size: 'narrow',
+            body: `<p class="small muted" style="margin-bottom:12px">Sur les ${plural(ids.length, 'carte sélectionnée', 'cartes sélectionnées')}.</p>
+                   <div class="field"><label class="label" for="rp-find">Chercher</label><input class="input" id="rp-find" autocomplete="off"></div>
+                   <div class="field"><label class="label" for="rp-repl">Remplacer par</label><input class="input" id="rp-repl" autocomplete="off"></div>
+                   <div class="field"><label class="label" for="rp-scope">Dans</label><select class="select" id="rp-scope"><option value="both">Recto et verso</option><option value="front">Recto seulement</option><option value="back">Verso seulement</option></select></div>
+                   <label class="check"><input type="checkbox" id="rp-case"> Respecter la casse</label>`,
+            foot: `<button class="btn btn-soft" data-close>Annuler</button><button class="btn btn-primary" id="rp-ok">${ic('check')}Remplacer</button>`
+        });
+        $('#rp-ok', m).addEventListener('click', () => {
+            const find = $('#rp-find', m).value;
+            if (!find) { $('#rp-find', m).focus(); return; }
+            const repl = $('#rp-repl', m).value, scope = $('#rp-scope', m).value, cs = $('#rp-case', m).checked;
+            this.closeModal(m);
+            this.opReplace(ids, find, repl, scope, cs);
+        });
+        setTimeout(() => $('#rp-find', m).focus(), 40);
+    },
+
+    /* ---------- Generic popover menu ---------- */
+    showMenu(anchor, items, { flagCur = null, onFlag = null } = {}) {
+        if (this.popover && this.popoverAnchor === anchor) { this.closePopover(); return; }
+        this.closePopover();
+        const pop = document.createElement('div');
+        pop.className = 'popover menu';
+        pop.dataset.kind = 'menu';
+        pop.innerHTML = items.map((it, i) => {
+            if (it.sep) return '<div class="menu-sep"></div>';
+            if (it.flags) return `<div class="menu-flags">${FLAGS.slice(1).map((f, k) => `<button data-flag="${k + 1}" class="${flagCur === k + 1 ? 'on' : ''}" title="${f.name}" style="--c:${f.color}">${ic('flag', 'i-flag')}</button>`).join('')}</div>`;
+            return `<button class="menu-item ${it.danger ? 'danger' : ''}" data-mi="${i}">${it.icon ? ic(it.icon) : '<span class="i"></span>'}<span>${it.label}</span>${it.kbd ? `<kbd class="k">${it.kbd}</kbd>` : ''}</button>`;
+        }).join('');
+        document.body.appendChild(pop);
+        this.popover = pop; this.popoverAnchor = anchor; this.popoverY = scrollY;
+        const r = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+        pop.style.left = `${clamp(r.right - w, 10, innerWidth - w - 10)}px`;
+        pop.style.top = `${r.bottom + 8 + h > innerHeight - 10 ? Math.max(10, r.top - h - 8) : r.bottom + 8}px`;
+        pop.addEventListener('click', e => {
+            const f = e.target.closest('[data-flag]');
+            if (f) { this.closePopover(); onFlag && onFlag(Number(f.dataset.flag)); return; }
+            const b = e.target.closest('[data-mi]');
+            if (b) { const it = items[Number(b.dataset.mi)]; this.closePopover(); it.fn && it.fn(); }
+        });
+    },
+    cardMenuItems(ids, { inSession = false } = {}) {
+        const cards = this.cardsByIds(ids), c = cards[0], single = cards.length === 1;
+        const allSusp = cards.every(x => x.suspended), allBur = cards.every(x => x.buriedUntil > Date.now());
+        const items = [];
+        if (single) {
+            items.push({ icon: 'pencil', label: 'Modifier', kbd: 'E', fn: () => this.openCardModal(c.id) });
+            items.push({ icon: 'info', label: 'Informations sur la carte', kbd: 'I', fn: () => this.openCardInfo(c.id) });
+            items.push({ sep: true });
+        }
+        items.push({ flags: true });
+        items.push({ icon: 'star', label: cards.every(x => x.marked) ? 'Retirer la marque' : 'Marquer la note', kbd: '*', fn: () => this.opMark(ids) });
+        items.push({ sep: true });
+        items.push({ icon: 'pause', label: allSusp ? 'Réactiver la carte' : 'Suspendre la carte', kbd: '@', fn: () => this.opSuspend(ids, false) });
+        if (cards.some(x => x.nid)) items.push({ icon: 'pause', label: 'Suspendre la note (toutes ses cartes)', kbd: '!', fn: () => this.opSuspend(ids, true) });
+        items.push({ icon: 'eyeOff', label: allBur ? 'Déterrer la carte' : 'Enfouir jusqu\'à demain', kbd: '-', fn: () => this.opBury(ids, false) });
+        if (cards.some(x => x.nid)) items.push({ icon: 'eyeOff', label: 'Enfouir la note', kbd: '=', fn: () => this.opBury(ids, true) });
+        items.push({ sep: true });
+        items.push({ icon: 'calendar', label: 'Définir la date d\'échéance…', fn: () => this.promptDue(ids) });
+        items.push({ icon: 'reset', label: 'Réinitialiser (remettre à zéro)', fn: () => this.opReset(ids) });
+        if (!inSession) {
+            items.push({ icon: 'folder', label: 'Déplacer vers un paquet…', fn: () => this.promptMove(ids) });
+            items.push({ icon: 'tag', label: 'Modifier les tags…', fn: () => this.promptTags(ids) });
+            items.push({ icon: 'refresh', label: 'Chercher / remplacer…', fn: () => this.promptReplace(ids) });
+        }
+        items.push({ sep: true });
+        items.push({ icon: 'trash', label: single ? 'Supprimer la note' : `Supprimer ${cards.length} cartes`, danger: true, fn: () => this.opDelete(ids, true) });
+        return items;
+    },
+    sessionMenu(anchor) {
+        const s = this.session;
+        if (!s || !s.current) return;
+        const ids = [s.current], c = this.card(s.current);
+        this.showMenu(anchor, this.cardMenuItems(ids, { inSession: true }), { flagCur: c.flag, onFlag: n => this.opFlag(ids, n) });
+    },
+
+    /* ============================================================
+       Card information
+       ============================================================ */
+    openCardInfo(id) {
+        const c = this.card(id);
+        if (!c) return;
+        const cfg = this.cfgFor(c), fsr = cfg.scheduler === 'fsrs', now = Date.now();
+        const log = this.data.revlog.filter(r => r[1] === id);
+        const fmt = t => (t ? new Date(t).toLocaleString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-');
+        const first = log.length ? log[0][0] : null, last = c.lastReview || (log.length ? log[log.length - 1][0] : null);
+        const fs = fsrsFromCard(c), R = fsrsRetrievability(c, now);
+        const total = log.reduce((a, r) => a + (r[6] || 0), 0) / 1000;
+        const typeName = ['Apprentissage', 'Révision', 'Réapprentissage', 'Entraînement'];
+        const btn = ['', 'Raté', 'Difficile', 'Bien', 'Facile'];
+        const stateName = { new: 'Nouvelle', learning: 'En apprentissage', review: c.interval >= MATURE_IVL ? 'Maîtrisée' : 'En révision', relearning: 'Réapprentissage' }[c.state];
+        const rows = [
+            ['Paquet', esc(this.deckPath(c.deckId))],
+            ['Type de note', NOTE_TYPES[c.kind] || 'Basique'],
+            ['État', stateName + (c.suspended ? ' · suspendue' : '') + (c.buriedUntil > now ? ' · enfouie' : '')],
+            ['Ajoutée le', fmt(c.created)],
+            ['Première révision', fmt(first)], ['Dernière révision', fmt(last)],
+            ['Prochaine révision', c.state === 'new' ? '-' : fmt(c.due) + ` (${fmtRelativeFuture(c.due)})`],
+            ['Intervalle', c.state === 'review' || c.state === 'relearning' ? fmtDays(Math.max(1, c.interval)) : '-'],
+            fsr && fs ? ['Stabilité', `${fmtNum(fs.s)} jours`] : ['Facilité', `${Math.round(c.ease * 100)} %`],
+            fsr && fs ? ['Difficulté', `${fmtNum(fs.d)} / 10`] : null,
+            fsr && R !== null ? ['Probabilité de souvenir', `${Math.round(R * 100)} %`] : null,
+            ['Révisions', c.reps], ['Oublis', c.lapses], ['Erreurs en cours', c.errors],
+            ['Temps total', fmtDuration(total)], ['Tags', c.tags.length ? esc(c.tags.join(', ')) : '-']
+        ].filter(Boolean);
+        this.openModal({
+            title: 'Informations sur la carte', size: 'wide',
+            body: `<div class="rich info-q">${c.front}</div>
+                <dl class="info-grid">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+                <h4 class="stat-title" style="margin:18px 0 8px">Historique des révisions</h4>
+                ${log.length ? `<div class="table-scroll"><table class="stat-table info-log"><thead><tr><th>Date</th><th>Type</th><th>Réponse</th><th>Intervalle</th><th>Durée</th></tr></thead><tbody>
+                    ${[...log].reverse().slice(0, 60).map(r => `<tr><td>${fmt(r[0])}</td><td>${typeName[r[3]] || ''}</td><td class="g${r[2]}">${btn[r[2]] || '-'}</td><td>${r[4] ? fmtDays(r[4]) : '-'}</td><td>${r[6] ? fmtDuration(r[6] / 1000) : '-'}</td></tr>`).join('')}
+                    </tbody></table></div>` : '<p class="muted small">Pas encore d\'historique pour cette carte.</p>'}`,
+            foot: `<button class="btn btn-soft" data-close>Fermer</button>`
+        });
+    },
+
+    /* ============================================================
+       Custom study
+       ============================================================ */
+    openCustomStudy(presetDeck) {
+        const modes = [
+            ['ahead', 'Réviser en avance', 'Les cartes qui ne sont pas encore à revoir mais le seront bientôt.', 'jours', 3],
+            ['forgot', 'Réviser les cartes oubliées', 'Les cartes que tu as ratées récemment.', 'derniers jours', 3],
+            ['new', 'Apprendre plus de nouvelles cartes', 'Dépasse la limite quotidienne.', 'cartes', 10],
+            ['hard', 'Les cartes les plus difficiles', 'Celles que tu rates le plus (sans impact sur le planning).', 'cartes', 20],
+            ['tag', 'Réviser par tag', 'Toutes les cartes portant un tag (sans impact sur le planning).', 'cartes max', 30],
+            ['all', 'Tout réviser (bachotage)', 'Un échantillon aléatoire, idéal avant un examen (sans impact sur le planning).', 'cartes', 50]
+        ];
+        let mode = 'ahead';
+        const m = this.openModal({
+            title: `${ic('sliders')} Révisions personnalisées`,
+            body: `<div class="field"><label class="label" for="cs-deck">Paquet</label><select class="select" id="cs-deck"><option value="">Tous les paquets</option>${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${d.id === presetDeck ? 'selected' : ''}>${esc(d.emoji)} ${esc(this.deckPath(d.id))}</option>`).join('')}</select></div>
+                <div class="field"><span class="label">Que veux-tu faire ?</span>
+                <div class="pick-list" id="cs-modes" style="max-height:none">${modes.map(([k, t, d]) => `<button class="pick-item ${k === mode ? 'active' : ''}" data-mode="${k}" style="flex-direction:column;align-items:flex-start;gap:2px"><b>${t}</b><span class="small muted" style="font-weight:500">${d}</span></button>`).join('')}</div></div>
+                <div class="field" id="cs-tag-wrap" style="display:none"><label class="label" for="cs-tag">Tag</label><input class="input" id="cs-tag" placeholder="chapitre1" autocomplete="off"></div>
+                <div class="field"><label class="label" for="cs-n" id="cs-n-label">Nombre</label><input class="input" id="cs-n" type="number" min="1" max="9999" value="3" inputmode="numeric"></div>
+                <p class="help" id="cs-count"></p>`,
+            foot: `<button class="btn btn-soft" data-close>Annuler</button><button class="btn btn-primary" id="cs-go">${ic('play')}Commencer</button>`
+        });
+        const deckIds = () => { const v = $('#cs-deck', m).value; return v ? [v] : null; };
+        const pool = () => { const set = deckIds() ? new Set(deckIds().flatMap(id => this.descendantIds(id))) : null; return this.data.cards.filter(c => !c.suspended && (!set || set.has(c.deckId))); };
+        const select = () => {
+            const meta = modes.find(x => x[0] === mode);
+            $('#cs-n-label', m).textContent = `Nombre de ${meta[3]}`;
+            $('#cs-n', m).value = meta[4];
+            $('#cs-tag-wrap', m).style.display = mode === 'tag' ? '' : 'none';
+            $$('[data-mode]', m).forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+            count();
+        };
+        const pick = () => {
+            const n = Math.max(1, Math.round(Number($('#cs-n', m).value) || 1)), now = Date.now(), eod = endOfDay(now), cards = pool();
+            if (mode === 'ahead') return cards.filter(c => c.state === 'review' && c.due > eod && c.due <= eod + n * DAY);
+            if (mode === 'forgot') { const since = now - n * DAY, ids = new Set(this.data.revlog.filter(r => r[0] >= since && r[2] === 1 && r[3] !== 3).map(r => r[1])); return cards.filter(c => ids.has(c.id)); }
+            if (mode === 'new') return cards.filter(c => c.state === 'new').slice(0, n);
+            if (mode === 'hard') return [...cards].filter(c => c.state !== 'new').sort((a, b) => b.errors - a.errors || b.lapses - a.lapses || a.ease - b.ease).slice(0, n);
+            if (mode === 'tag') { const t = fold($('#cs-tag', m).value.trim()); return t ? shuffle(cards.filter(c => c.tags.some(x => fold(x) === t))).slice(0, n) : []; }
+            return shuffle([...cards]).slice(0, n);
+        };
+        const count = () => { const k = pick().length; $('#cs-count', m).textContent = `${plural(k, 'carte trouvée')}.`; $('#cs-go', m).disabled = !k; };
+        $('#cs-modes', m).addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b) { mode = b.dataset.mode; select(); } });
+        ['#cs-deck', '#cs-n', '#cs-tag'].forEach(sel => $(sel, m).addEventListener('input', count));
+        $('#cs-go', m).addEventListener('click', () => {
+            const cards = pick();
+            if (!cards.length) return;
+            const ids = cards.map(c => c.id), title = `${modes.find(x => x[0] === mode)[1]}`;
+            this.closeModal(m);
+            if (mode === 'ahead' || mode === 'forgot') this.startSrsIds(title, ids);
+            else if (mode === 'new') this.startStudy(deckIds() ? deckIds()[0] : null, ids.length);
+            else this.startPractice(null, 'flip', 9999, title, ids);
+        });
+        select();
+    },
+
+    /* ============================================================
+       Study options (global + per deck)
+       ============================================================ */
+    optionFields() {
+        return [
+            { key: 'scheduler', label: 'Algorithme', type: 'select', options: [['sm2', 'SM-2 (Anki classique)'], ['fsrs', 'FSRS (moderne, recommandé)']], help: 'FSRS prédit ta probabilité de souvenir et espace les révisions pour la viser : en général moins de révisions pour le même résultat.' },
+            { key: 'retention', label: 'Rétention visée (FSRS)', type: 'pct', min: 70, max: 99, unit: '%', help: '90 % est un bon équilibre. Plus c\'est haut, plus tu révises souvent.', only: 'fsrs' },
+            { key: 'newPerDay', label: 'Nouvelles cartes / jour', type: 'int', min: 0, max: 9999 },
+            { key: 'maxReviews', label: 'Révisions max / jour', type: 'int', min: 0, max: 9999, help: '9999 = illimité.' },
+            { key: 'learnSteps', label: 'Étapes d\'apprentissage', type: 'text', help: 'En minutes, séparées par des espaces (ex. « 1 10 »). Accepte 1h, 1d.' },
+            { key: 'relearnSteps', label: 'Étapes de réapprentissage', type: 'text', help: 'Après un oubli (ex. « 10 »).' },
+            { key: 'gradIvl', label: 'Intervalle de fin d\'apprentissage (jours)', type: 'int', min: 1, max: 365, only: 'sm2' },
+            { key: 'easyIvl', label: 'Intervalle « Facile » (jours)', type: 'int', min: 1, max: 365 },
+            { key: 'startEase', label: 'Facilité de départ', type: 'pct', min: 130, max: 500, unit: '%', only: 'sm2' },
+            { key: 'easyBonus', label: 'Bonus « Facile »', type: 'pct', min: 100, max: 300, unit: '%', only: 'sm2' },
+            { key: 'hardMult', label: 'Intervalle « Difficile »', type: 'pct', min: 100, max: 200, unit: '%', only: 'sm2' },
+            { key: 'ivlMult', label: 'Modificateur d\'intervalle', type: 'pct', min: 30, max: 300, unit: '%', help: '100 % = normal. 80 % = révisions plus fréquentes.' },
+            { key: 'lapseMult', label: 'Nouvel intervalle après un oubli', type: 'pct', min: 0, max: 100, unit: '%', help: 'Part de l\'ancien intervalle conservée (0 % = repartir d\'1 jour).', only: 'sm2' },
+            { key: 'maxIvl', label: 'Intervalle maximum (jours)', type: 'int', min: 1, max: 36500 },
+            { key: 'leechThreshold', label: 'Seuil de « sangsue » (oublis)', type: 'int', min: 0, max: 99, help: '0 = désactivé.' },
+            { key: 'leechAction', label: 'Action sur une sangsue', type: 'select', options: [['suspend', 'Suspendre la carte'], ['tag', 'Seulement ajouter le tag « leech »']] },
+            { key: 'burySiblings', label: 'Enfouir les cartes sœurs', type: 'bool', help: 'Évite de voir la question et sa version inversée le même jour.' }
+        ];
+    },
+    optionsFormHtml(vals, idPrefix = 'op') {
+        const fsr = vals.scheduler === 'fsrs';
+        return this.optionFields().map(f => {
+            const id = `${idPrefix}-${f.key}`, v = vals[f.key];
+            const hide = f.only && ((f.only === 'fsrs') !== fsr) ? 'style="display:none"' : '';
+            let input;
+            if (f.type === 'select') input = `<select class="select" id="${id}" data-opt="${f.key}">${f.options.map(([o, l]) => `<option value="${o}" ${String(v) === o ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+            else if (f.type === 'bool') input = `<label class="switch"><input type="checkbox" id="${id}" data-opt="${f.key}" ${v === true || v === 'true' ? 'checked' : ''}><span></span></label>`;
+            else if (f.type === 'pct') input = `<div class="opt-num"><input class="input" id="${id}" data-opt="${f.key}" type="number" min="${f.min}" max="${f.max}" value="${Math.round(num(v, 0) * 100)}" inputmode="numeric"><span>${f.unit}</span></div>`;
+            else if (f.type === 'int') input = `<input class="input opt-short" id="${id}" data-opt="${f.key}" type="number" min="${f.min}" max="${f.max}" value="${num(v, 0)}" inputmode="numeric">`;
+            else input = `<input class="input" id="${id}" data-opt="${f.key}" value="${esc(v)}" autocomplete="off">`;
+            return `<div class="set-row opt-row" data-optrow="${f.key}" ${hide}><div class="txt"><b>${f.label}</b>${f.help ? `<span>${f.help}</span>` : ''}</div><div class="opt-ctl">${input}</div></div>`;
+        }).join('');
+    },
+    readOptions(root) {
+        const out = {};
+        this.optionFields().forEach(f => {
+            const el = $(`[data-opt="${f.key}"]`, root);
+            if (!el) return;
+            if (f.type === 'bool') out[f.key] = el.checked;
+            else if (f.type === 'pct') out[f.key] = clamp(num(el.value, f.min) / 100, f.min / 100, f.max / 100);
+            else if (f.type === 'int') out[f.key] = clamp(Math.round(num(el.value, f.min)), f.min, f.max);
+            else out[f.key] = el.value;
+        });
+        return out;
+    },
+    bindOptionsForm(root) {
+        const sync = () => {
+            const fsr = ($('[data-opt="scheduler"]', root) || {}).value === 'fsrs';
+            this.optionFields().forEach(f => { const row = $(`[data-optrow="${f.key}"]`, root); if (row && f.only) row.style.display = ((f.only === 'fsrs') === fsr) ? '' : 'none'; });
+        };
+        const sel = $('[data-opt="scheduler"]', root);
+        if (sel) sel.addEventListener('change', sync);
+        sync();
+    },
+    openDeckOptions(deckId) {
+        const deck = this.deck(deckId);
+        if (!deck) return;
+        const eff = this.deckCfg(deckId), parentVals = {};
+        Object.keys(OPT_DEFAULTS).forEach(k => { parentVals[k] = this.data.settings[k]; });
+        this.deckChain(deckId).slice(0, -1).forEach(d => { if (d.opts) Object.assign(parentVals, d.opts); });
+        const vals = { ...parentVals, ...(deck.opts || {}) };
+        const m = this.openModal({
+            title: `${ic('sliders')} Options du paquet`, size: 'wide',
+            body: `<p class="small muted" style="margin-bottom:6px"><b>${esc(this.deckPath(deckId))}</b> : ${deck.opts && Object.keys(deck.opts).length ? 'ce paquet a ses propres réglages.' : 'ce paquet utilise les réglages globaux (Paramètres).'} Les sous-paquets héritent de ces réglages.</p>
+                ${this.optionsFormHtml(vals, 'do')}`,
+            foot: `<button class="btn btn-danger-soft" id="do-reset" style="margin-right:auto">${ic('reset')}<span class="hide-mobile">Réglages globaux</span></button><button class="btn btn-soft" data-close>Annuler</button><button class="btn btn-primary" id="do-save">${ic('check')}Enregistrer</button>`
+        });
+        this.bindOptionsForm(m);
+        $('#do-save', m).addEventListener('click', () => {
+            const v = this.readOptions(m), diff = {};
+            Object.keys(v).forEach(k => { if (String(v[k]) !== String(parentVals[k])) diff[k] = v[k]; });
+            deck.opts = Object.keys(diff).length ? diff : null;
+            this.save();
+            this.closeModal(m);
+            this.render();
+            this.toast('Options du paquet enregistrées', 'success', ic('sliders'));
+        });
+        $('#do-reset', m).addEventListener('click', () => { deck.opts = null; this.save(); this.closeModal(m); this.render(); this.toast('Le paquet utilise de nouveau les réglages globaux', 'success'); });
+    },
+
+    /* ============================================================
+       Automatic backups (kept inside the browser's IndexedDB)
+       ============================================================ */
+    async autoBackup(source) {
+        if (!Storage.db || !this.data.settings.autoBackup || source === 'seed') return;
+        try {
+            const list = await Storage.backups();
+            const last = list.filter(b => b.label === 'auto').sort((a, b) => b.at - a.at)[0];
+            if (!last || Date.now() - last.at > 20 * 3600000) await Storage.backupSave('auto', this.serialize(), this.data);
+        } catch (e) { console.warn('Backup:', e); }
+    },
+    async manualBackup(label = 'manuel') {
+        if (!Storage.db) { this.toast('Sauvegardes automatiques indisponibles sur ce navigateur : utilise « Exporter ».', 'warning'); return; }
+        await Storage.backupSave(label, this.serialize(), this.data);
+        if (this.view === 'settings') this.renderSettings();
+        this.toast('Sauvegarde créée', 'success', ic('file'));
+    },
+    async restoreBackup(key) {
+        const json = await Storage.backupLoad(key);
+        const data = json && normalizeState(json);
+        if (!data) { this.toast('Sauvegarde illisible.', 'error'); return; }
+        const ok = await this.confirm({ title: 'Restaurer cette sauvegarde ?', message: `${plural(data.decks.length, 'paquet')} et ${plural(data.cards.length, 'carte')}. L'état actuel sera lui aussi sauvegardé avant.`, ok: 'Restaurer', danger: true });
+        if (!ok) return;
+        await Storage.backupSave('avant restauration', this.serialize(), this.data);
+        data.settings = Object.assign({}, data.settings, { syncKey: this.data.settings.syncKey, cloudSync: this.data.settings.cloudSync });
+        data.updatedAt = Date.now();
+        this.replaceData(data);
+        this.save();
+        this.toast('Sauvegarde restaurée', 'success');
+    },
+    async downloadBackup(key) {
+        const json = await Storage.backupLoad(key);
+        if (json) this.downloadFile(`superanki-sauvegarde-${dayKey()}.json`, json, 'application/json');
+    },
+    downloadFile(name, content, type = 'text/plain') {
+        const url = URL.createObjectURL(new Blob([content], { type: `${type};charset=utf-8` }));
+        const a = document.createElement('a');
+        a.href = url; a.download = name;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+    },
+    exportTXT() {
+        const cell = h => String(h || '').replace(/\t/g, ' ').replace(/\r?\n/g, '<br>');
+        const lines = ['#separator:tab', '#html:true', '#tags column:3', '#deck column:4'];
+        this.data.cards.forEach(c => lines.push([cell(c.front), cell(c.back), c.tags.map(t => t.replace(/\s+/g, '_')).join(' '), this.deckChain(c.deckId).map(d => d.name).join('::')].join('\t')));
+        this.downloadFile(`superanki-cartes-${dayKey()}.txt`, lines.join('\n'), 'text/plain');
+        this.toast(`${plural(this.data.cards.length, 'carte exportée', 'cartes exportées')} (importable dans Anki)`, 'success', ic('export'));
+    }
+});
