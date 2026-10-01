@@ -1118,3 +1118,6 @@ details.search-help p { margin-top: 6px; line-height: 1.9; }
 .lib-info { flex: 1; min-width: 0; }
 .lib-info b { display: block; }
 @media (max-width: 560px) { .lib-pack { flex-wrap: wrap; } .lib-pack .btn { width: 100%; } }
+
+.sort-pick { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); }
+.select-sm { min-height: 36px; padding: 6px 34px 6px 10px; font-size: .85rem; width: auto; }

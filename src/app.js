@@ -259,7 +259,7 @@ const DEFAULT_SETTINGS = {
     theme: 'auto', cardSize: 'm', showIntervals: true,
     autoSpeak: false, answerMode: 'flip', learnAhead: 20, cloudSync: true,
     quizCount: 20, writeCount: 20, chronoDuration: 60,
-    rolloverHour: 4, syncKey: '', settingsMod: 0, autoBackup: true, libSeen: false, goalName: '', goalDate: '',
+    rolloverHour: 4, syncKey: '', settingsMod: 0, autoBackup: true, libSeen: false, goalName: '', goalDate: '', deckSort: 'recent',
     ...OPT_DEFAULTS
 };
 function parseSteps(str, def) {
@@ -1056,7 +1056,8 @@ class SuperAnki {
             <div>
                 <div class="section-head">
                     <h3 class="section-title">Tes paquets</h3>
-                    <span style="display:flex;gap:14px"><button class="link" data-action="open-library">${ic('layers')}Bibliothèque</button><button class="link" data-nav="decks">Gérer ${ic('chevronRight')}</button></span>
+                    <span style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+                        <label class="sort-pick"><span class="sr-only">Trier les paquets</span>${ic('sliders')}<select class="select select-sm" data-input="deck-sort">${[['recent', 'Plus récents'], ['due', 'À revoir d\'abord'], ['studied', 'Révisés récemment'], ['alpha', 'A → Z'], ['size', 'Plus de cartes']].map(([v, l]) => `<option value="${v}" ${(d.settings.deckSort || 'recent') === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label><button class="link" data-action="open-library">${ic('layers')}Bibliothèque</button><button class="link" data-nav="decks">Gérer ${ic('chevronRight')}</button></span>
                 </div>
                 ${d.decks.length ? `<div class="deck-grid">${this.dashboardDeckCards()}</div>`
                     : `<div class="panel empty">${ic('layers')}<p>Aucun paquet pour l'instant.</p><button class="btn btn-primary" style="margin-top:14px" data-action="new-deck">${ic('folderPlus')}Créer un paquet</button></div>`}
@@ -1071,7 +1072,18 @@ class SuperAnki {
             const c = { new: 0, learn: 0, due: 0, mature: 0 };
             cards.forEach(x => { c[cardStatus(x, now, eod)]++; });
             return { deck, cards, c, todo: c.due + Math.min(c.new, budget) };
-        }).sort((a, b) => (b.c.due > 0) - (a.c.due > 0) || 0);
+        });
+        const lastReview = new Map();
+        this.data.cards.forEach(x => { if (x.lastReview) { const t = lastReview.get(x.deckId) || 0; if (x.lastReview > t) lastReview.set(x.deckId, x.lastReview); } });
+        const recency = ({ deck, cards }) => Math.max(deck.created || 0, ...cards.map(x => x.created || 0));
+        const studied = ({ deck }) => Math.max(0, ...this.descendantIds(deck.id).map(id => lastReview.get(id) || 0));
+        const byName = (a, b) => a.deck.name.localeCompare(b.deck.name, 'fr', { sensitivity: 'base' });
+        const mode = this.data.settings.deckSort || 'recent';
+        rows.sort(mode === 'due' ? (a, b) => (b.c.due > 0) - (a.c.due > 0) || b.c.due - a.c.due || byName(a, b)
+            : mode === 'studied' ? (a, b) => studied(b) - studied(a) || byName(a, b)
+            : mode === 'alpha' ? byName
+            : mode === 'size' ? (a, b) => b.cards.length - a.cards.length || byName(a, b)
+            : (a, b) => recency(b) - recency(a) || byName(a, b));
         return rows.map(({ deck, cards, c, todo }) => {
             const total = cards.length || 1;
             const mastery = Math.round(c.mature / total * 100);
@@ -2676,6 +2688,7 @@ class SuperAnki {
         document.addEventListener('change', e => {
             const el = e.target, k = el.dataset && el.dataset.input;
             if (k === 'sort') { this.ui.sort = el.value; this.renderDeckPanel(); }
+            else if (k === 'deck-sort') { this.setSetting('deckSort', el.value); this.renderDashboard(); }
             else if (k === 'stats-deck') { this.statsUi.deck = el.value; this.renderStats(); }
             else if (k === 'stats-check') { this.statsUi[el.dataset.key] = el.checked; this.renderStats(); }
             else if (k === 'toggle') {
