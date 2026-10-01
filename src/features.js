@@ -16,6 +16,7 @@ Object.assign(ICONS, {
     brain: '<path d="M9.5 2A2.5 2.5 0 0 0 7 4.5v0A2.5 2.5 0 0 0 4.5 7 2.5 2.5 0 0 0 3 9.4a3 3 0 0 0 .8 5.3A2.7 2.7 0 0 0 7 18a2.5 2.5 0 0 0 5 .5V4.5A2.5 2.5 0 0 0 9.5 2z"/><path d="M14.5 2A2.5 2.5 0 0 1 17 4.5 2.5 2.5 0 0 1 19.5 7 2.5 2.5 0 0 1 21 9.4a3 3 0 0 1-.8 5.3A2.7 2.7 0 0 1 17 18a2.5 2.5 0 0 1-5 .5"/>',
     lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
     checkSq: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="m8 12 3 3 5-6"/>',
+    copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
     sparkles: '<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/><path d="M19 3v4M17 5h4"/>'
 });
 const FLAGS = [null,
@@ -519,48 +520,83 @@ Object.assign(SuperAnki.prototype, {
        Study options (global + per deck)
        ============================================================ */
     optionFields() {
+        const S = (sec, key, label, type, extra = {}) => ({ sec, key, label, type, ...extra });
         return [
-            { key: 'scheduler', label: 'Algorithme', type: 'select', options: [['sm2', 'SM-2 (Anki classique)'], ['fsrs', 'FSRS (moderne, recommandé)']], help: 'FSRS prédit ta probabilité de souvenir et espace les révisions pour la viser : en général moins de révisions pour le même résultat.' },
-            { key: 'retention', label: 'Rétention visée (FSRS)', type: 'pct', min: 70, max: 99, unit: '%', help: '90 % est un bon équilibre. Plus c\'est haut, plus tu révises souvent.', only: 'fsrs' },
-            { key: 'newPerDay', label: 'Nouvelles cartes / jour', type: 'int', min: 0, max: 9999 },
-            { key: 'maxReviews', label: 'Révisions max / jour', type: 'int', min: 0, max: 9999, help: '9999 = illimité.' },
-            { key: 'learnSteps', label: 'Étapes d\'apprentissage', type: 'text', help: 'En minutes, séparées par des espaces (ex. « 1 10 »). Accepte 1h, 1d.' },
-            { key: 'relearnSteps', label: 'Étapes de réapprentissage', type: 'text', help: 'Après un oubli (ex. « 10 »).' },
-            { key: 'gradIvl', label: 'Intervalle de fin d\'apprentissage (jours)', type: 'int', min: 1, max: 365, only: 'sm2' },
-            { key: 'easyIvl', label: 'Intervalle « Facile » (jours)', type: 'int', min: 1, max: 365 },
-            { key: 'startEase', label: 'Facilité de départ', type: 'pct', min: 130, max: 500, unit: '%', only: 'sm2' },
-            { key: 'easyBonus', label: 'Bonus « Facile »', type: 'pct', min: 100, max: 300, unit: '%', only: 'sm2' },
-            { key: 'hardMult', label: 'Intervalle « Difficile »', type: 'pct', min: 100, max: 200, unit: '%', only: 'sm2' },
-            { key: 'ivlMult', label: 'Modificateur d\'intervalle', type: 'pct', min: 30, max: 300, unit: '%', help: '100 % = normal. 80 % = révisions plus fréquentes.' },
-            { key: 'lapseMult', label: 'Nouvel intervalle après un oubli', type: 'pct', min: 0, max: 100, unit: '%', help: 'Part de l\'ancien intervalle conservée (0 % = repartir d\'1 jour).', only: 'sm2' },
-            { key: 'maxIvl', label: 'Intervalle maximum (jours)', type: 'int', min: 1, max: 36500 },
-            { key: 'leechThreshold', label: 'Seuil de « sangsue » (oublis)', type: 'int', min: 0, max: 99, help: '0 = désactivé.' },
-            { key: 'leechAction', label: 'Action sur une sangsue', type: 'select', options: [['suspend', 'Suspendre la carte'], ['tag', 'Seulement ajouter le tag « leech »']] },
-            { key: 'burySiblings', label: 'Enfouir les cartes sœurs', type: 'bool', help: 'Évite de voir la question et sa version inversée le même jour.' }
+            S('Limites journalières', 'newPerDay', 'Nouvelles cartes par jour', 'limit', { min: 0, max: 9999 }),
+            S('Limites journalières', 'maxReviews', 'Révisions maximum par jour', 'limit', { min: 0, max: 9999, help: '9999 = illimité.' }),
+            S('Nouvelles cartes', 'learnSteps', 'Étapes d\'apprentissage', 'text', { help: 'Ex. « 1m 10m 1h » (m = minutes, h = heures, d = jours).' }),
+            S('Nouvelles cartes', 'gradIvl', 'Intervalle de passe (jours)', 'int', { min: 1, max: 365, only: 'sm2', help: 'Intervalle après la dernière étape.' }),
+            S('Nouvelles cartes', 'easyIvl', 'Intervalle pour les cartes faciles (jours)', 'int', { min: 1, max: 365 }),
+            S('Nouvelles cartes', 'newOrder', 'Ordre d\'insertion', 'select', { options: [['ordered', 'Séquentiel (les plus anciennes d\'abord)'], ['random', 'Aléatoire']] }),
+            S('Échecs', 'relearnSteps', 'Étapes de ré-apprentissage', 'text', { help: 'Après un oubli. Ex. « 10m 1h ».' }),
+            S('Échecs', 'minIvl', 'Intervalle minimum (jours)', 'int', { min: 1, max: 365, help: 'Plus petit intervalle après un oubli.' }),
+            S('Échecs', 'leechThreshold', 'Seuil de pénibilité (oublis)', 'int', { min: 0, max: 99, help: '0 = désactivé.' }),
+            S('Échecs', 'leechAction', 'Traitement des pénibles', 'select', { options: [['suspend', 'Suspendre la carte'], ['tag', 'Seulement ajouter le tag « leech »']] }),
+            S('Ordre d\'affichage', 'newReviewOrder', 'Ordre nouvelle / à réviser', 'select', { options: [['mix', 'Mélanger avec les cartes à réviser'], ['after', 'Après les cartes à réviser'], ['before', 'Avant les cartes à réviser']] }),
+            S('Ordre d\'affichage', 'reviewSort', 'Ordre de classement des cartes à réviser', 'select', { options: [['random', 'Aléatoire'], ['due', 'Par échéance'], ['added', 'Ordre d\'ajout'], ['ivlAsc', 'Intervalles croissants'], ['ivlDesc', 'Intervalles décroissants'], ['easeAsc', 'Plus difficiles d\'abord']] }),
+            S('Algorithme', 'scheduler', 'Algorithme de planification', 'select', { options: [['sm2', 'SM-2 (Anki classique)'], ['fsrs', 'FSRS (moderne, recommandé)']], help: 'FSRS prédit ta probabilité de souvenir et espace les révisions pour la viser : en général moins de révisions pour le même résultat.' }),
+            S('Algorithme', 'retention', 'Rétention visée (FSRS)', 'pct', { min: 70, max: 99, unit: '%', only: 'fsrs', help: '90 % est un bon équilibre. Plus c\'est haut, plus tu révises souvent.' }),
+            S('Enfouissement', 'buryNewSib', 'Enfouir les nouvelles cartes sœurs', 'bool'),
+            S('Enfouissement', 'buryRevSib', 'Enfouir les cartes sœurs à réviser', 'bool'),
+            S('Enfouissement', 'buryLearnSib', 'Enfouir les cartes sœurs en cours d\'apprentissage', 'bool', { help: 'Évite de voir la question et sa version inversée le même jour.' }),
+            S('Chronomètre', 'maxAnswerSecs', 'Temps de réponse maximum (s)', 'int', { min: 5, max: 600, help: 'Au-delà, le temps passé n\'est plus compté.' }),
+            S('Avance automatique', 'autoQSecs', 'Temps d\'affichage de la question (s)', 'float', { min: 0, max: 300, help: '0 = désactivé. Affiche la réponse tout seul.' }),
+            S('Avance automatique', 'autoASecs', 'Temps d\'affichage de la réponse (s)', 'float', { min: 0, max: 300 }),
+            S('Avance automatique', 'autoAAction', 'Action de la réponse', 'select', { options: [['none', 'Rien'], ['bury', 'Enfouir la carte'], ['again', 'Réponse à revoir'], ['hard', 'Réponse difficile'], ['good', 'Réponse correcte'], ['easy', 'Réponse facile']] }),
+            S('Jours faciles', 'easyDays', 'Jours de la semaine', 'days', { help: 'Les révisions évitent les jours « réduit » ou « minimum » quand c\'est possible.' }),
+            S('Avancé', 'maxIvl', 'Intervalle maximum (jours)', 'int', { min: 1, max: 36500 }),
+            S('Avancé', 'startEase', 'Facilité initiale', 'pct', { min: 130, max: 500, unit: '%', only: 'sm2' }),
+            S('Avancé', 'easyBonus', 'Bonus facile', 'pct', { min: 100, max: 300, unit: '%', only: 'sm2' }),
+            S('Avancé', 'ivlMult', 'Modificateur d\'intervalle', 'pct', { min: 30, max: 300, unit: '%', help: '100 % = normal. 80 % = révisions plus fréquentes.' }),
+            S('Avancé', 'hardMult', 'Intervalle difficile', 'pct', { min: 100, max: 200, unit: '%', only: 'sm2' }),
+            S('Avancé', 'lapseMult', 'Nouvel intervalle après un oubli', 'pct', { min: 0, max: 100, unit: '%', only: 'sm2', help: 'Part de l\'ancien intervalle conservée.' })
         ];
     },
-    optionsFormHtml(vals, idPrefix = 'op') {
-        const fsr = vals.scheduler === 'fsrs';
-        return this.optionFields().map(f => {
+    /* ctx.lim = per-deck limit state (deck options) or undefined (global form) */
+    optionsFormHtml(vals, idPrefix = 'op', ctx = {}) {
+        const fsr = vals.scheduler === 'fsrs', wd = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'], wdIdx = [1, 2, 3, 4, 5, 6, 0];
+        let html = '', cur = '';
+        this.optionFields().forEach(f => {
+            if (f.sec !== cur) { cur = f.sec; html += `<h4 class="opt-sec">${f.sec}</h4>`; }
             const id = `${idPrefix}-${f.key}`, v = vals[f.key];
             const hide = f.only && ((f.only === 'fsrs') !== fsr) ? 'style="display:none"' : '';
-            let input;
-            if (f.type === 'select') input = `<select class="select" id="${id}" data-opt="${f.key}">${f.options.map(([o, l]) => `<option value="${o}" ${String(v) === o ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+            let input = '', block = false;
+            if (f.type === 'limit' && ctx.lim) {
+                const L = ctx.lim[f.key], tabs = [['preset', 'Préréglage'], ['deck', 'Ce paquet'], ['today', 'Juste aujourd\'hui']];
+                block = true;
+                input = `<div class="segmented seg-sm limit-tabs" data-limtabs="${f.key}">${tabs.map(([k, l]) => `<button type="button" data-limtab="${k}" class="${L.tab === k ? 'active' : ''}">${l}</button>`).join('')}</div>
+                         <input class="input" data-lim="${f.key}" type="number" min="${f.min}" max="${f.max}" value="${L.vals[L.tab] ?? ''}" inputmode="numeric">`;
+            }
+            else if (f.type === 'select') input = `<select class="select" id="${id}" data-opt="${f.key}">${f.options.map(([o, l]) => `<option value="${o}" ${String(v) === o ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
             else if (f.type === 'bool') input = `<label class="switch"><input type="checkbox" id="${id}" data-opt="${f.key}" ${v === true || v === 'true' ? 'checked' : ''}><span></span></label>`;
             else if (f.type === 'pct') input = `<div class="opt-num"><input class="input" id="${id}" data-opt="${f.key}" type="number" min="${f.min}" max="${f.max}" value="${Math.round(num(v, 0) * 100)}" inputmode="numeric"><span>${f.unit}</span></div>`;
-            else if (f.type === 'int') input = `<input class="input opt-short" id="${id}" data-opt="${f.key}" type="number" min="${f.min}" max="${f.max}" value="${num(v, 0)}" inputmode="numeric">`;
+            else if (f.type === 'int' || f.type === 'limit') input = `<input class="input opt-short" id="${id}" data-opt="${f.key}" type="number" min="${f.min}" max="${f.max}" value="${num(v, 0)}" inputmode="numeric">`;
+            else if (f.type === 'float') input = `<input class="input opt-short" id="${id}" data-opt="${f.key}" type="number" min="${f.min}" max="${f.max}" step="0.5" value="${String(num(v, 0)).replace(',', '.')}" inputmode="decimal">`;
+            else if (f.type === 'days') {
+                block = true;
+                const str = String(v || '0000000');
+                input = `<div class="days-grid"><span></span><span>Normal</span><span>Réduit</span><span>Minimum</span>${wd.map((d, i) => `<span class="dname">${d}</span>${[0, 1, 2].map(k => `<label class="dradio"><input type="radio" name="${id}-${wdIdx[i]}" data-day="${wdIdx[i]}" value="${k}" ${str[wdIdx[i]] === String(k) ? 'checked' : ''}><i></i></label>`).join('')}`).join('')}</div>`;
+            }
             else input = `<input class="input" id="${id}" data-opt="${f.key}" value="${esc(v)}" autocomplete="off">`;
-            return `<div class="set-row opt-row" data-optrow="${f.key}" ${hide}><div class="txt"><b>${f.label}</b>${f.help ? `<span>${f.help}</span>` : ''}</div><div class="opt-ctl">${input}</div></div>`;
-        }).join('');
+            html += `<div class="set-row opt-row ${block ? 'opt-block' : ''}" data-optrow="${f.key}" ${hide}><div class="txt"><b>${f.label}</b>${f.help ? `<span>${f.help}</span>` : ''}</div><div class="opt-ctl">${input}</div></div>`;
+        });
+        return html;
     },
     readOptions(root) {
         const out = {};
         this.optionFields().forEach(f => {
+            if (f.type === 'days') {
+                const arr = ['0', '0', '0', '0', '0', '0', '0'];
+                $$('[data-day]', root).forEach(r => { if (r.checked) arr[Number(r.dataset.day)] = r.value; });
+                out.easyDays = arr.join('');
+                return;
+            }
             const el = $(`[data-opt="${f.key}"]`, root);
             if (!el) return;
             if (f.type === 'bool') out[f.key] = el.checked;
             else if (f.type === 'pct') out[f.key] = clamp(num(el.value, f.min) / 100, f.min / 100, f.max / 100);
-            else if (f.type === 'int') out[f.key] = clamp(Math.round(num(el.value, f.min)), f.min, f.max);
+            else if (f.type === 'int' || f.type === 'limit') out[f.key] = clamp(Math.round(num(el.value, f.min)), f.min, f.max);
+            else if (f.type === 'float') out[f.key] = clamp(num(String(el.value).replace(',', '.'), f.min), f.min, f.max);
             else out[f.key] = el.value;
         });
         return out;
@@ -574,30 +610,87 @@ Object.assign(SuperAnki.prototype, {
         if (sel) sel.addEventListener('change', sync);
         sync();
     },
+    /* Deck options, like Anki: named presets (shared by several decks), per-deck daily limits, "just today" limits */
     openDeckOptions(deckId) {
         const deck = this.deck(deckId);
         if (!deck) return;
-        const eff = this.deckCfg(deckId), parentVals = {};
-        Object.keys(OPT_DEFAULTS).forEach(k => { parentVals[k] = this.data.settings[k]; });
-        this.deckChain(deckId).slice(0, -1).forEach(d => { if (d.opts) Object.assign(parentVals, d.opts); });
-        const vals = { ...parentVals, ...(deck.opts || {}) };
-        const m = this.openModal({
-            title: `${ic('sliders')} Options du paquet`, size: 'wide',
-            body: `<p class="small muted" style="margin-bottom:6px"><b>${esc(this.deckPath(deckId))}</b> : ${deck.opts && Object.keys(deck.opts).length ? 'ce paquet a ses propres réglages.' : 'ce paquet utilise les réglages globaux (Paramètres).'} Les sous-paquets héritent de ces réglages.</p>
-                ${this.optionsFormHtml(vals, 'do')}`,
-            foot: `<button class="btn btn-danger-soft" id="do-reset" style="margin-right:auto">${ic('reset')}<span class="hide-mobile">Réglages globaux</span></button><button class="btn btn-soft" data-close>Annuler</button><button class="btn btn-primary" id="do-save">${ic('check')}Enregistrer</button>`
+        const today = dayKey(), L = deck.limits || {}, T = L.today && L.today.date === today ? L.today : {};
+        const work = { def: this.defaultOpts(), presets: structuredClone(this.data.presets), sel: this.presetIdFor(deckId), kids: false };
+        const valsOf = id => ({ ...work.def, ...(id ? (work.presets.find(p => p.id === id) || { opts: {} }).opts : {}) });
+        const lim = {};
+        ['newPerDay', 'maxReviews'].forEach(k => {
+            lim[k] = { tab: T[k] !== undefined ? 'today' : L[k] !== undefined ? 'deck' : 'preset', vals: { preset: valsOf(work.sel)[k], deck: L[k], today: T[k] } };
         });
-        this.bindOptionsForm(m);
+        const m = this.openModal({ title: `${ic('sliders')} Options du paquet`, size: 'wide', body: '<div id="do-root"></div>', foot: `<button class="btn btn-soft" data-close>Annuler</button><button class="btn btn-primary" id="do-save">${ic('check')}Enregistrer</button>` });
+        const root = $('#do-root', m);
+        const usedBy = id => this.data.decks.filter(d => this.presetIdFor(d.id) === id).length;
+        const stash = () => {
+            const o = this.readOptions(root);
+            ['newPerDay', 'maxReviews'].forEach(k => { o[k] = lim[k].vals.preset ?? o[k]; });
+            if (work.sel === '') work.def = { ...work.def, ...o };
+            else { const p = work.presets.find(x => x.id === work.sel); if (p) p.opts = { ...p.opts, ...o }; }
+        };
+        const render = () => {
+            const names = [{ id: '', name: 'Par défaut' }, ...work.presets];
+            root.innerHTML = `
+                <div class="preset-bar">
+                    <select class="select" id="do-preset" aria-label="Préréglage">${names.map(p => `<option value="${esc(p.id)}" ${p.id === work.sel ? 'selected' : ''}>${esc(p.name)} (utilisé par ${plural(usedBy(p.id) + (p.id === work.sel && this.presetIdFor(deckId) !== work.sel ? 1 : 0) - (p.id !== work.sel && this.presetIdFor(deckId) === p.id ? 1 : 0), 'paquet')})</option>`).join('')}</select>
+                    <button class="icon-btn" id="do-more" title="Gérer les préréglages" aria-label="Gérer les préréglages">${ic('more')}</button>
+                </div>
+                <p class="small muted" style="margin:8px 0 2px"><b>${esc(this.deckPath(deckId))}</b> : les sous-paquets héritent de ce préréglage. Un préréglage s'applique à tous les paquets qui l'utilisent.</p>
+                ${this.optionsFormHtml(valsOf(work.sel), 'do', { lim })}`;
+            this.bindOptionsForm(root);
+        };
+        render();
+        root.addEventListener('input', e => { const k = e.target.dataset && e.target.dataset.lim; if (k) lim[k].vals[lim[k].tab] = e.target.value === '' ? undefined : clamp(Math.round(num(e.target.value, 0)), 0, 9999); });
+        root.addEventListener('click', e => {
+            const t = e.target.closest('[data-limtab]');
+            if (!t) return;
+            const k = t.parentElement.dataset.limtabs, L2 = lim[k], inp = $(`[data-lim="${k}"]`, root);
+            L2.tab = t.dataset.limtab;
+            if (L2.vals[L2.tab] === undefined) L2.vals[L2.tab] = L2.vals.deck !== undefined && L2.tab === 'today' ? L2.vals.deck : L2.vals.preset;
+            inp.value = L2.vals[L2.tab];
+            $$('[data-limtab]', t.parentElement).forEach(b => b.classList.toggle('active', b === t));
+        });
+        root.addEventListener('change', e => {
+            if (e.target.id !== 'do-preset') return;
+            stash();
+            work.sel = e.target.value;
+            ['newPerDay', 'maxReviews'].forEach(k => { lim[k].vals.preset = valsOf(work.sel)[k]; });
+            render();
+        });
+        const names2 = () => [{ id: '', name: 'Par défaut' }, ...work.presets];
+        root.addEventListener('click', e => {
+            const btn = e.target.closest('#do-more');
+            if (!btn) return;
+            this.showMenu(btn, [
+                { icon: 'plus', label: 'Ajouter un préréglage…', fn: async () => { const n = await this.askText({ title: 'Nouveau préréglage', label: 'Nom', ok: 'Créer' }); if (!n || !n.trim()) return; stash(); const id = uid('p'); work.presets.push({ id, name: n.trim().slice(0, 60), opts: { ...this.defaultOpts() }, mod: 0 }); work.sel = id; ['newPerDay', 'maxReviews'].forEach(k => { lim[k].vals.preset = valsOf(id)[k]; }); render(); } },
+                { icon: 'copy', label: 'Cloner ce préréglage…', fn: async () => { const cur = names2().find(p => p.id === work.sel); const n = await this.askText({ title: 'Cloner le préréglage', label: 'Nom', value: `${cur.name} (copie)`, ok: 'Cloner' }); if (!n || !n.trim()) return; stash(); const id = uid('p'); work.presets.push({ id, name: n.trim().slice(0, 60), opts: { ...valsOf(work.sel) }, mod: 0 }); work.sel = id; render(); } },
+                ...(work.sel ? [{ icon: 'pencil', label: 'Renommer…', fn: async () => { const p = work.presets.find(x => x.id === work.sel); const n = await this.askText({ title: 'Renommer', label: 'Nom', value: p.name, ok: 'Renommer' }); if (n && n.trim()) { stash(); p.name = n.trim().slice(0, 60); render(); } } },
+                    { icon: 'trash', label: 'Supprimer ce préréglage', danger: true, fn: () => { stash(); work.presets = work.presets.filter(x => x.id !== work.sel); work.sel = ''; ['newPerDay', 'maxReviews'].forEach(k => { lim[k].vals.preset = valsOf('')[k]; }); render(); } }] : []),
+                { icon: 'folder', label: work.kids ? '✓ Appliquer aux sous-paquets' : 'Appliquer à tous les sous-paquets', fn: () => { work.kids = !work.kids; this.toast(work.kids ? 'Sera appliqué aux sous-paquets à l\'enregistrement' : 'Sous-paquets inchangés', 'success'); } }
+            ]);
+        });
         $('#do-save', m).addEventListener('click', () => {
-            const v = this.readOptions(m), diff = {};
-            Object.keys(v).forEach(k => { if (String(v[k]) !== String(parentVals[k])) diff[k] = v[k]; });
-            deck.opts = Object.keys(diff).length ? diff : null;
+            stash();
+            const now = Date.now(), inherited = deck.parent ? this.presetIdFor(deck.parent) : '';
+            Object.assign(this.data.settings, work.def);
+            this.data.settings.settingsMod = now;
+            this.data.presets = work.presets;
+            deck.preset = work.sel === inherited ? null : (work.sel === '' ? '__default' : work.sel);
+            if (work.kids) this.descendantIds(deckId).slice(1).forEach(id => { const d = this.deck(id); d.preset = null; d.limits = null; });
+            const nl = {};
+            ['newPerDay', 'maxReviews'].forEach(k => {
+                const x = lim[k];
+                if (x.tab === 'deck' && x.vals.deck !== undefined) nl[k] = x.vals.deck;
+                if (x.tab === 'today' && x.vals.today !== undefined) { nl.today = nl.today || { date: dayKey() }; nl.today[k] = x.vals.today; if (x.vals.deck !== undefined) nl[k] = x.vals.deck; }
+            });
+            deck.limits = Object.keys(nl).length ? nl : null;
             this.save();
             this.closeModal(m);
             this.render();
-            this.toast('Options du paquet enregistrées', 'success', ic('sliders'));
+            this.toast('Options enregistrées', 'success', ic('sliders'));
         });
-        $('#do-reset', m).addEventListener('click', () => { deck.opts = null; this.save(); this.closeModal(m); this.render(); this.toast('Le paquet utilise de nouveau les réglages globaux', 'success'); });
     },
 
     /* ============================================================

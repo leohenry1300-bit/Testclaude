@@ -251,13 +251,15 @@ const CARD_SIZES = { s: '1.1rem', m: '1.35rem', l: '1.6rem', xl: '1.9rem' };
 const OPT_DEFAULTS = {
     scheduler: 'sm2', retention: 0.9, learnSteps: '1 10', relearnSteps: '10', gradIvl: 1, easyIvl: 4,
     startEase: 2.5, easyBonus: 1.3, hardMult: 1.2, ivlMult: 1, lapseMult: 0.5, maxIvl: 3650,
-    leechThreshold: 8, leechAction: 'suspend', burySiblings: true, newPerDay: 20, maxReviews: 9999
+    leechThreshold: 8, leechAction: 'suspend', newPerDay: 20, maxReviews: 9999,
+    minIvl: 1, buryNewSib: true, buryRevSib: true, buryLearnSib: true, newOrder: 'random', newReviewOrder: 'mix', reviewSort: 'random',
+    maxAnswerSecs: 60, autoQSecs: 0, autoASecs: 0, autoAAction: 'none', easyDays: '0000000'
 };
 const DEFAULT_SETTINGS = {
-    theme: 'auto', cardSize: 'm', newOrder: 'random', showIntervals: true,
+    theme: 'auto', cardSize: 'm', showIntervals: true,
     autoSpeak: false, answerMode: 'flip', learnAhead: 20, cloudSync: true,
     quizCount: 20, writeCount: 20, chronoDuration: 60,
-    rolloverHour: 4, autoShow: 0, syncKey: '', settingsMod: 0, autoBackup: true,
+    rolloverHour: 4, syncKey: '', settingsMod: 0, autoBackup: true,
     ...OPT_DEFAULTS
 };
 function parseSteps(str, def) {
@@ -281,7 +283,17 @@ function buildCfg(o) {
         hardMult: clamp(num(g('hardMult', 1.2), 1.2), 1, 2), ivlMult: clamp(num(g('ivlMult', 1), 1), 0.3, 3),
         lapseMult: clamp(num(g('lapseMult', 0.5), 0.5), 0, 1), maxIvl: clamp(Math.round(num(g('maxIvl', 3650), 3650)), 1, 36500),
         leechThreshold: clamp(Math.round(num(g('leechThreshold', 8), 8)), 0, 99), leechAction: g('leechAction', 'suspend') === 'tag' ? 'tag' : 'suspend',
-        burySiblings: g('burySiblings', true) !== false && g('burySiblings', true) !== 'false',
+        minIvl: clamp(Math.round(num(g('minIvl', 1), 1)), 1, 365),
+        buryNewSib: g('buryNewSib', true) !== false && g('buryNewSib', true) !== 'false',
+        buryRevSib: g('buryRevSib', true) !== false && g('buryRevSib', true) !== 'false',
+        buryLearnSib: g('buryLearnSib', true) !== false && g('buryLearnSib', true) !== 'false',
+        newOrder: g('newOrder', 'random') === 'ordered' ? 'ordered' : 'random',
+        newReviewOrder: ['mix', 'after', 'before'].includes(g('newReviewOrder', 'mix')) ? g('newReviewOrder', 'mix') : 'mix',
+        reviewSort: ['due', 'random', 'ivlAsc', 'ivlDesc', 'easeAsc', 'added'].includes(g('reviewSort', 'random')) ? g('reviewSort', 'random') : 'random',
+        maxAnswerSecs: clamp(Math.round(num(g('maxAnswerSecs', 60), 60)), 5, 600),
+        autoQSecs: clamp(num(g('autoQSecs', 0), 0), 0, 300), autoASecs: clamp(num(g('autoASecs', 0), 0), 0, 300),
+        autoAAction: ['none', 'bury', 'again', 'hard', 'good', 'easy'].includes(g('autoAAction', 'none')) ? g('autoAAction', 'none') : 'none',
+        easyDays: /^[012]{7}$/.test(String(g('easyDays', '0000000'))) ? String(g('easyDays', '0000000')) : '0000000',
         newPerDay: clamp(Math.round(num(g('newPerDay', 20), 20)), 0, 9999), maxReviews: clamp(Math.round(num(g('maxReviews', 9999), 9999)), 0, 9999)
     };
 }
@@ -374,7 +386,9 @@ function normalizeState(raw) {
     const decks = toArray(raw.decks).filter(d => d && typeof d === 'object').map(d => ({
         id: String(d.id || uid('d')), name: String(d.name || d.title || 'Sans nom').slice(0, 80),
         emoji: String(d.emoji || '📁').slice(0, 8), description: String(d.description || '').slice(0, 300), created: num(d.created, 0),
-        parent: d.parent ? String(d.parent) : null, opts: d.opts && typeof d.opts === 'object' ? { ...d.opts } : null, mod: num(d.mod, 0)
+        parent: d.parent ? String(d.parent) : null, opts: d.opts && typeof d.opts === 'object' && Object.keys(d.opts).length ? { ...d.opts } : null, mod: num(d.mod, 0),
+        preset: d.preset ? String(d.preset) : null,
+        limits: d.limits && typeof d.limits === 'object' ? { ...d.limits } : null
     })).filter(d => (seenDecks.has(d.id) ? false : seenDecks.add(d.id)));
     decks.forEach(d => { if (d.parent && (d.parent === d.id || !seenDecks.has(d.parent))) d.parent = null; });
     decks.forEach(d => { let n = 0, p = d; while (p && p.parent && n++ < 20) p = decks.find(x => x.id === p.parent); if (n >= 20) d.parent = null; });
@@ -399,18 +413,31 @@ function normalizeState(raw) {
     if (!CARD_SIZES[settings.cardSize]) settings.cardSize = 'm';
     settings.newPerDay = clamp(num(settings.newPerDay, 20), 0, 9999);
     settings.rolloverHour = clamp(Math.round(num(settings.rolloverHour, 4)), 0, 12);
-    settings.autoShow = clamp(Math.round(num(settings.autoShow, 0)), 0, 120);
     settings.syncKey = String(settings.syncKey || '');
+    if (settings.burySiblings === false) { settings.buryNewSib = settings.buryRevSib = settings.buryLearnSib = false; }
+    delete settings.burySiblings;
+    if (settings.autoShow > 0 && !settings.autoQSecs) settings.autoQSecs = settings.autoShow;
+    delete settings.autoShow;
+    const presets = toArray(raw.presets).filter(x => x && x.id && x.name).map(x => ({ id: String(x.id), name: String(x.name).slice(0, 60), opts: x.opts && typeof x.opts === 'object' ? { ...x.opts } : {}, mod: num(x.mod, 0) }));
+    decks.forEach(d => {   // older versions kept per-deck overrides: turn them into a preset
+        if (!d.opts) return;
+        const id = `pm_${d.id}`;
+        if (!presets.some(x => x.id === id)) presets.push({ id, name: `Options de ${d.name}`.slice(0, 60), opts: { ...d.opts }, mod: 0 });
+        if (!d.preset) d.preset = id;
+        d.opts = null;
+    });
+    decks.forEach(d => { if (d.preset && d.preset !== '__default' && !presets.some(x => x.id === d.preset)) d.preset = null; });
     const deleted = {};
     if (raw.deleted && typeof raw.deleted === 'object') Object.entries(raw.deleted).forEach(([k, v]) => { if (num(v, 0) > 0) deleted[k] = num(v); });
     const revlog = toArray(raw.revlog).filter(r => Array.isArray(r) && r.length >= 4 && Number.isFinite(r[0])).slice(-REVLOG_MAX);
-    return { version: 5, decks, cards, stats: normalizeStats(raw.stats), settings, revlog, deleted, updatedAt: num(raw.updatedAt, 0) };
+    return { version: 6, decks, cards, presets, stats: normalizeStats(raw.stats), settings, revlog, deleted, updatedAt: num(raw.updatedAt, 0) };
 }
 function cardSig(c) {
     return [c.deckId, c.state, c.step, c.due, c.interval, c.ease, c.reps, c.lapses, c.suspended ? 1 : 0, c.flag, c.marked ? 1 : 0, c.buriedUntil, c.errors, c.wrong, c.right,
         c.front.length, c.back.length, c.hint.length, c.detail.length, c.tags.join(','), c.fs ? c.fs.s.toFixed(3) : '', c.lastReview, c.nid, c.kind, c.ord].join('|');
 }
-const deckSig = d => JSON.stringify([d.name, d.emoji, d.description, d.parent, d.opts]);
+const deckSig = d => JSON.stringify([d.name, d.emoji, d.description, d.parent, d.preset, d.limits]);
+const presetSig = p => JSON.stringify([p.name, p.opts]);
 function seedState() {
     const now = Date.now();
     return normalizeState({
@@ -485,6 +512,17 @@ const Storage = {
 /* ============================================================
    Spaced repetition (SM-2 as in Anki, with learning steps)
    ============================================================ */
+/* "Easy days": among the days a card could land on, prefer weekdays you marked as normal over reduced / minimum ones */
+function pickEasyDay(ivl, base, now, easyDays) {
+    if (!easyDays || easyDays === '0000000' || base < 3) return ivl;
+    const spread = Math.max(1, Math.round(base * 0.05));
+    let best = ivl, bestW = -1;
+    for (let d = Math.max(1, ivl - spread); d <= ivl + spread; d++) {
+        const wd = new Date(addDays(now, d)).getDay(), w = [2, 1, 0][Number(easyDays[wd])] ?? 2;
+        if (w > bestW || (w === bestW && Math.abs(d - base) < Math.abs(best - base))) { best = d; bestW = w; }
+    }
+    return best;
+}
 function fuzzIvl(ivl) {
     if (ivl < 3) return ivl;
     const f = Math.max(1, Math.round(ivl * 0.05));
@@ -497,7 +535,7 @@ function schedule(card, grade, now = Date.now(), useFuzz = false, cfg = buildCfg
     const inMin = m => now + Math.round(m * MIN);
     let fs = fsr ? fsrsFromCard(card) : null;
     const finish = ivl => {
-        ivl = clamp(Math.round(useFuzz ? fuzzIvl(ivl) : ivl), 1, cfg.maxIvl);
+        ivl = clamp(Math.round(useFuzz ? pickEasyDay(fuzzIvl(ivl), ivl, now, cfg.easyDays) : ivl), 1, cfg.maxIvl);
         r.state = 'review'; r.step = 0; r.interval = ivl; r.due = addDays(now, ivl);
     };
     const keepFs = () => { if (fs) r.fs = { s: fs.s, d: fs.d, t: now }; };
@@ -537,7 +575,7 @@ function schedule(card, grade, now = Date.now(), useFuzz = false, cfg = buildCfg
             if (grade === 1) {
                 r.lapses++;
                 fs = { s: fsrsForgetS(fs.s, fs.d, rr), d: fsrsNextD(fs.d, 1), t: now };
-                r.interval = clamp(Math.round(fsrsIvl(fs.s, cfg.retention)), 1, cfg.maxIvl);
+                r.interval = clamp(Math.round(fsrsIvl(fs.s, cfg.retention)), cfg.minIvl, cfg.maxIvl);
                 r.state = 'relearning'; r.step = 0; r.due = inMin(cfg.relearnSteps[0]);
                 keepFs();
             } else {
@@ -552,7 +590,7 @@ function schedule(card, grade, now = Date.now(), useFuzz = false, cfg = buildCfg
         } else if (grade === 1) {
             r.lapses++;
             r.ease = Math.max(1.3, r.ease - 0.2);
-            r.interval = Math.max(1, Math.round(ivl * cfg.lapseMult));
+            r.interval = Math.max(cfg.minIvl, Math.round(ivl * cfg.lapseMult));
             r.state = 'relearning'; r.step = 0; r.due = inMin(cfg.relearnSteps[0]);
         } else {
             const hard = Math.max(ivl + 1, Math.round(ivl * cfg.hardMult * cfg.ivlMult));
@@ -650,13 +688,13 @@ class SuperAnki {
     }
 
     serialize() {
-        const { version, decks, cards, stats, settings, revlog, deleted, updatedAt } = this.data;
-        return JSON.stringify({ version, decks, cards, stats, settings, revlog, deleted, updatedAt });
+        const { version, decks, cards, presets, stats, settings, revlog, deleted, updatedAt } = this.data;
+        return JSON.stringify({ version, decks, cards, presets, stats, settings, revlog, deleted, updatedAt });
     }
     /* Change tracking: per-card modification times let two devices merge instead of overwriting each other */
     initSigs() {
         this.sigs = new Map(this.data.cards.map(c => [c.id, cardSig(c)]));
-        this.dsigs = new Map(this.data.decks.map(d => [d.id, deckSig(d)]));
+        this.dsigs = new Map([...this.data.decks.map(d => [d.id, deckSig(d)]), ...this.data.presets.map(x => [x.id, presetSig(x)])]);
     }
     detectChanges(now) {
         const d = this.data, seen = new Set();
@@ -671,6 +709,11 @@ class SuperAnki {
             seenD.add(k.id);
             const sig = deckSig(k);
             if (this.dsigs.get(k.id) !== sig) { k.mod = now; this.dsigs.set(k.id, sig); delete d.deleted[k.id]; }
+        });
+        d.presets.forEach(x => {
+            seenD.add(x.id);
+            const sig = presetSig(x);
+            if (this.dsigs.get(x.id) !== sig) { x.mod = now; this.dsigs.set(x.id, sig); delete d.deleted[x.id]; }
         });
         [...this.dsigs.keys()].forEach(id => { if (!seenD.has(id)) { this.dsigs.delete(id); d.deleted[id] = now; } });
         const keys = Object.keys(d.deleted);
@@ -808,22 +851,38 @@ class SuperAnki {
         return this.data.cards.filter(c => set.has(c.deckId));
     }
     errorCards() { return this.data.cards.filter(c => c.errors > 0 && !c.suspended); }
-    /* Study options for a deck: global defaults overridden by the deck's ancestors, then the deck itself */
+    /* Study options: the "default" preset lives in the settings; other presets are assigned to decks
+       (a deck inherits the preset of its nearest ancestor that has one). */
+    presetIdFor(deckId) {
+        const chain = this.deckChain(deckId);
+        for (let i = chain.length - 1; i >= 0; i--) if (chain[i].preset) return chain[i].preset === '__default' ? '' : chain[i].preset;
+        return '';
+    }
+    defaultOpts() { const o = {}; Object.keys(OPT_DEFAULTS).forEach(k => { o[k] = this.data.settings[k]; }); return o; }
+    optsOfPreset(id) { const p = id && this.data.presets.find(x => x.id === id); return { ...this.defaultOpts(), ...(p ? p.opts : {}) }; }
     deckCfg(deckId) {
         let cfg = this.cfgCache.get(deckId);
         if (cfg) return cfg;
-        const o = {};
-        Object.keys(OPT_DEFAULTS).forEach(k => { o[k] = this.data.settings[k]; });
-        this.deckChain(deckId).forEach(d => { if (d.opts) Object.assign(o, d.opts); });
-        cfg = buildCfg(o);
+        cfg = buildCfg(this.optsOfPreset(this.presetIdFor(deckId)));
         this.cfgCache.set(deckId, cfg);
         return cfg;
     }
+    defaultCfg() { return buildCfg(this.defaultOpts()); }
     cfgFor(card) { return this.deckCfg(card.deckId); }
-    /* Deck that owns a per-deck daily limit (nearest deck on the path that overrides it), or null for the global limit */
+    /* Daily limit set for one deck itself: "just today" > "this deck" > its preset */
+    deckLimit(deck, key) {
+        const l = deck.limits || {}, t = dayKey();
+        if (l.today && l.today.date === t && l.today[key] !== undefined) return l.today[key];
+        if (l[key] !== undefined) return l[key];
+        return this.deckCfg(deck.id)[key];
+    }
+    /* Deck whose daily limit applies to this deck's cards (nearest deck with its own limit or preset), or null = global limit */
     limitOwner(deckId, key) {
-        const chain = this.deckChain(deckId);
-        for (let i = chain.length - 1; i >= 0; i--) if (chain[i].opts && chain[i].opts[key] !== undefined && chain[i].opts[key] !== '') return chain[i].id;
+        const chain = this.deckChain(deckId), t = dayKey();
+        for (let i = chain.length - 1; i >= 0; i--) {
+            const d = chain[i], l = d.limits || {};
+            if (d.preset || l[key] !== undefined || (l.today && l.today.date === t && l.today[key] !== undefined)) return d.id;
+        }
         return null;
     }
     logReview(card, grade, type, prevIvl, ms) {
@@ -852,7 +911,7 @@ class SuperAnki {
             if (out.length >= globalLeft) break;
             const owner = this.limitOwner(c.deckId, key);
             if (owner) {
-                const left = this.deckCfg(c.deckId)[key] - (seen.by[owner] || 0) - (used[owner] || 0);
+                const left = this.deckLimit(this.deck(owner), key) - (seen.by[owner] || 0) - (used[owner] || 0);
                 if (left <= 0) continue;
                 used[owner] = (used[owner] || 0) + 1;
             }
@@ -1372,10 +1431,6 @@ class SuperAnki {
                     ${seg('newPerDay', [[5, '5'], [10, '10'], [20, '20'], [30, '30'], [50, '50'], [9999, '∞']])}
                 </div>
                 <div class="set-row">
-                    <div class="txt"><b>Ordre des nouvelles cartes</b><span>Mélangées ou dans l'ordre de création.</span></div>
-                    ${seg('newOrder', [['random', 'Aléatoire'], ['ordered', 'Dans l\'ordre']])}
-                </div>
-                <div class="set-row">
                     <div class="txt"><b>Façon de répondre</b><span>Retourner la carte, ou taper la réponse (correction automatique).</span></div>
                     ${seg('answerMode', [['flip', 'Retourner'], ['type', 'Écrire']])}
                 </div>
@@ -1388,10 +1443,6 @@ class SuperAnki {
                     ${sw('autoSpeak', 'Lecture audio automatique')}
                 </div>
                 <div class="set-row">
-                    <div class="txt"><b>Afficher la réponse automatiquement</b><span>Retourne la carte après quelques secondes (utile en marchant).</span></div>
-                    ${seg('autoShow', [[0, 'Non'], [5, '5 s'], [10, '10 s'], [20, '20 s']])}
-                </div>
-                <div class="set-row">
                     <div class="txt"><b>Le jour change à</b><span>Les révisions de la nuit comptent pour la veille, comme dans Anki (4 h par défaut).</span></div>
                     ${seg('rolloverHour', [[0, 'Minuit'], [3, '3 h'], [4, '4 h'], [6, '6 h']])}
                 </div>
@@ -1399,7 +1450,7 @@ class SuperAnki {
 
             <div class="panel panel-pad set-section" id="study-options">
                 <h3>${ic('brain')} Algorithme et options d'étude</h3>
-                <p class="small muted">Réglages par défaut de tous les paquets. Chaque paquet peut avoir les siens (bouton ${ic('sliders')} dans Paquets &amp; Cartes).</p>
+                <p class="small muted">Préréglage « Par défaut », utilisé par tous les paquets. Pour avoir plusieurs préréglages (ex. un pour les langues), ouvre les options d'un paquet (bouton ${ic('sliders')} dans Paquets &amp; Cartes).</p>
                 ${this.optionsFormHtml(s, 'gs')}
                 <div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn btn-primary" data-action="save-options">${ic('check')}Enregistrer les options</button></div>
             </div>
@@ -1491,7 +1542,11 @@ class SuperAnki {
     startStudy(deckId, extraNew = 0) {
         const deckIds = deckId ? [deckId] : null;
         const plan = this.studyPlan(deckIds, extraNew);
-        const queue = interleave(shuffle(plan.reviews.map(c => c.id)), plan.news.map(c => c.id));
+        const cfg0 = deckId ? this.deckCfg(deckId) : this.defaultCfg();
+        const sorters = { due: (a, b) => a.due - b.due, ivlAsc: (a, b) => a.interval - b.interval, ivlDesc: (a, b) => b.interval - a.interval, easeAsc: (a, b) => a.ease - b.ease, added: (a, b) => a.created - b.created };
+        const revs = cfg0.reviewSort === 'random' ? shuffle([...plan.reviews]) : [...plan.reviews].sort(sorters[cfg0.reviewSort]);
+        const revIds = revs.map(c => c.id), newIds = plan.news.map(c => c.id);
+        const queue = cfg0.newReviewOrder === 'after' ? [...revIds, ...newIds] : cfg0.newReviewOrder === 'before' ? [...newIds, ...revIds] : interleave(revIds, newIds);
         if (!queue.length && !plan.learning.length) {
             if (plan.freshTotal > 0 && !extraNew) {
                 this.confirm({
@@ -1580,9 +1635,26 @@ class SuperAnki {
         s.current = id; s.revealed = false; s.typed = null; s.cardStart = Date.now();
         this.renderSession();
         if (this.data.settings.autoSpeak) this.speak('front');
+        this.armAutoAdvance();
+    }
+    /* Auto-advance (Anki): show the answer after N s, then optionally answer by itself after M s */
+    armAutoAdvance() {
         clearTimeout(this.autoTimer);
-        const auto = this.data.settings.autoShow;
-        if (auto > 0 && s.answer === 'flip') this.autoTimer = setTimeout(() => { if (this.session === s && s.current === id && !s.revealed && !this.modals.length) this.reveal(); }, auto * 1000);
+        const s = this.session;
+        if (!s || !s.current || (s.kind !== 'srs' && s.kind !== 'practice')) return;
+        const id = s.current, cfg = this.cfgFor(this.card(id));
+        const ok = () => this.session === s && s.current === id && !this.modals.length && !this.popover;
+        if (!s.revealed) {
+            if (cfg.autoQSecs > 0 && s.answer === 'flip') this.autoTimer = setTimeout(() => { if (ok() && !s.revealed) this.reveal(); }, cfg.autoQSecs * 1000);
+        } else if (cfg.autoASecs > 0 && cfg.autoAAction !== 'none') {
+            this.autoTimer = setTimeout(() => {
+                if (!ok() || !s.revealed) return;
+                const a = cfg.autoAAction;
+                if (a === 'bury') { this.opBury([id], false); return; }
+                const g = { again: 1, hard: 2, good: 3, easy: 4 }[a];
+                if (s.kind === 'srs') this.grade(g); else this.practiceAnswer(g >= 3);
+            }, cfg.autoASecs * 1000);
+        }
     }
     sessionCounts() {
         const s = this.session;
@@ -1672,6 +1744,7 @@ class SuperAnki {
         s.revealed = true;
         this.renderSession();
         if (this.data.settings.autoSpeak) this.speak('back');
+        this.armAutoAdvance();
     }
     submitTyped() {
         const s = this.session;
@@ -1684,7 +1757,10 @@ class SuperAnki {
         s.typed = res; s.revealed = true;
         this.renderSession();
     }
-    elapsedSec() { return clamp((Date.now() - this.session.cardStart) / 1000, 1, 60); }
+    elapsedSec() {
+        const s = this.session, c = s && s.current && this.card(s.current);
+        return clamp((Date.now() - s.cardStart) / 1000, 1, c ? this.cfgFor(c).maxAnswerSecs : 60);
+    }
     snapshot() {
         const s = this.session, c = this.card(s.current);
         s.history.push({
@@ -1720,10 +1796,13 @@ class SuperAnki {
             if (!card.tags.includes('leech')) card.tags.push('leech');
             if (cfg.leechAction === 'suspend') card.suspended = true;
         }
-        if (cfg.burySiblings && card.nid) {
-            const until = addDays(now, 1), isSib = id => { const x = this.card(id); return x && x.nid === card.nid && x.id !== card.id; };
-            this.data.cards.forEach(x => { if (x.nid === card.nid && x.id !== card.id && !x.suspended && !(x.buriedUntil > now)) x.buriedUntil = until; });
-            s.queue = s.queue.filter(id => !isSib(id)); s.learning = s.learning.filter(l => !isSib(l.id));
+        if (card.nid && (cfg.buryNewSib || cfg.buryRevSib || cfg.buryLearnSib)) {
+            const until = addDays(now, 1);
+            const bury = x => x.nid === card.nid && x.id !== card.id && !x.suspended && !(x.buriedUntil > now)
+                && (x.state === 'new' ? cfg.buryNewSib : x.state === 'review' ? cfg.buryRevSib : cfg.buryLearnSib);
+            const gone = new Set();
+            this.data.cards.forEach(x => { if (bury(x)) { x.buriedUntil = until; gone.add(x.id); } });
+            s.queue = s.queue.filter(id => !gone.has(id)); s.learning = s.learning.filter(l => !gone.has(l.id));
         }
         if ((card.state === 'learning' || card.state === 'relearning') && !card.suspended) s.learning.push({ id: card.id, due: card.due });
         s.done++;

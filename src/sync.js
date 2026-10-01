@@ -38,7 +38,7 @@ const SyncCrypto = {
     }
 };
 
-const DEVICE_ONLY_SETTINGS = ['theme', 'cardSize', 'syncKey', 'cloudSync', 'autoShow', 'autoSpeak', 'autoBackup', 'answerMode', 'showIntervals'];
+const DEVICE_ONLY_SETTINGS = ['theme', 'cardSize', 'syncKey', 'cloudSync', 'autoSpeak', 'autoBackup', 'answerMode', 'showIntervals'];
 function mergeMaxMap(a, b) { const out = { ...a }; Object.entries(b || {}).forEach(([k, v]) => { out[k] = Math.max(out[k] || 0, v || 0); }); return out; }
 function mergeSeen(a, b) {
     if (!a || a.date !== (b && b.date)) return (b && (!a || String(b.date) > String(a.date))) ? b : a;
@@ -83,7 +83,7 @@ function mergeStates(L, R) {
         });
         return out;
     };
-    const decks = mergeList(L.decks, R.decks, deckSig), cards = mergeList(L.cards, R.cards, cardSig);
+    const decks = mergeList(L.decks, R.decks, deckSig), cards = mergeList(L.cards, R.cards, cardSig), presets = mergeList(L.presets || [], R.presets || [], presetSig);
     const stats = mergeStats(L.stats, R.stats);
     if (JSON.stringify(stats) !== JSON.stringify(L.stats)) localChanged = true;
     if (JSON.stringify(stats) !== JSON.stringify(R.stats)) remoteChanged = true;
@@ -97,7 +97,7 @@ function mergeStates(L, R) {
     revlog.sort((a, b) => a[0] - b[0]);
     if (revlog.length > L.revlog.length) localChanged = true;
     if (revlog.length > R.revlog.length) remoteChanged = true;
-    const data = normalizeState({ version: 5, decks, cards, stats, settings, revlog, deleted: tomb, updatedAt: Math.max(L.updatedAt || 0, R.updatedAt || 0) });
+    const data = normalizeState({ version: 6, decks, cards, presets, stats, settings, revlog, deleted: tomb, updatedAt: Math.max(L.updatedAt || 0, R.updatedAt || 0) });
     return { data, localChanged, remoteChanged };
 }
 
