@@ -1,0 +1,237 @@
+@pack toeic-grammaire | TOEIC : grammaire et pièges (Part 5-6) | 🎯 | Textes à trous façon TOEIC : temps, passif, prépositions, formes de mots, connecteurs... À lire à voix haute.
+@tags toeic, grammaire
+
+## Temps verbaux | ⏳
+C: She {{c1::has worked}} here since 2019. ;; since + point de départ → present perfect (have + participe passé)
+C: He {{c1::has lived}} in Paris for ten years. ;; for + durée → present perfect
+C: We {{c1::have already}} sent the invoice. ;; already se place entre have et le participe
+C: I {{c1::haven't}} received the package yet. ;; yet : questions et négations, en fin de phrase
+C: The manager {{c1::left}} the office two hours ago. ;; ago → prétérit (passé simple), jamais present perfect
+C: They {{c1::signed}} the contract last Monday. ;; last + période, yesterday, in 2020 → prétérit
+C: When she {{c1::arrived}}, the meeting had already started. ;; had + participe : action antérieure à une autre action passée
+C: By the time we get there, the store {{c1::will have closed}}. ;; futur antérieur : will have + participe (by the time, by + date)
+C: The plane {{c1::will land}} at 6 p.m. ;; will + base : futur général
+C: If it rains tomorrow, the event {{c1::will be}} canceled. ;; proposition en if → présent ; principale → will
+C: As soon as the report {{c1::is}} ready, I will send it. ;; après as soon as, when, before, after, until → présent (pas will)
+C: I {{c1::am meeting}} the client at three tomorrow. ;; présent continu pour un rendez-vous fixé
+C: The company {{c1::has been growing}} rapidly since last year. ;; present perfect continuous : action qui continue (insiste sur la durée)
+C: Sales {{c1::have increased}} by 10 percent this year. ;; résultat présent d'un changement
+C: He {{c1::was working}} when the power went out. ;; passé continu : action en cours interrompue
+C: We {{c1::are expecting}} a delivery this afternoon. ;; to expect au continu pour un événement attendu
+C: While I {{c1::was waiting}}, I read the newspaper. ;; while + passé continu
+C: It is the first time I {{c1::have visited}} this city. ;; It is the first time + present perfect
+Pièges : since / for ;; since = depuis (date), for = pendant (durée) ;; since 2020 / for three years
+
+## Voix passive | 🔁
+C: The report {{c1::was written}} by our director. ;; passif : be + participe passé (+ by + auteur)
+C: The new policy {{c1::will be announced}} next week. ;; passif futur : will be + participe
+C: The documents {{c1::have been sent}} to all clients. ;; passif present perfect : have been + participe
+C: The machine {{c1::is being repaired}} right now. ;; passif présent continu : is being + participe
+C: All employees {{c1::are required}} to wear a badge. ;; be required to / be asked to / be expected to
+C: The meeting {{c1::was postponed}} due to bad weather. ;; due to + nom = à cause de
+C: The package {{c1::must be delivered}} before Friday. ;; modal + be + participe
+C: You will {{c1::be informed}} of the decision. ;; to inform someone of something
+C: He {{c1::was given}} a promotion. ;; give someone something → someone was given something
+Verbes qui n'ont pas de passif ;; happen, occur, arrive, appear, seem, remain, consist ;; Verbes intransitifs : The accident happened (pas « was happened »).
+
+## Conditionnel et souhait | ❔
+C: If I {{c1::were}} you, I would accept the offer. ;; irréel du présent : were pour tous les sujets
+C: If we {{c1::had}} more time, we would visit the factory. ;; type 2 : if + prétérit, would + base
+C: If she {{c1::had known}}, she would have called. ;; type 3 (passé) : if + had + participe, would have + participe
+C: {{c1::Should}} you need assistance, please call us. ;; inversion formelle = If you should need...
+C: {{c1::Had}} we known, we would have acted sooner. ;; inversion = If we had known
+C: Unless you {{c1::pay}} the fee, you cannot enter. ;; unless = if... not (pas de deuxième négation)
+C: I wish I {{c1::had}} more free time. ;; wish + prétérit : regret au présent
+C: I wish I {{c1::had studied}} harder. ;; wish + had + participe : regret au passé
+C: Provided that you {{c1::submit}} the form, you will be approved. ;; provided that = à condition que
+C: Supposing you {{c1::won}} the lottery, what would you do? ;; supposing / suppose + prétérit
+
+## Modaux | 🧰
+C: You {{c1::should}} back up your files. ;; should = conseil
+C: Visitors {{c1::must}} register at reception. ;; must = obligation
+C: You {{c1::may}} leave early today. ;; may = permission (formel)
+C: It {{c1::might}} rain tonight. ;; might = possibilité faible
+C: She {{c1::can't}} be at home; her car isn't there. ;; can't / couldn't = déduction : certitude négative
+C: He {{c1::must have}} forgotten the meeting. ;; must have + participe = déduction passée
+C: You {{c1::should have}} called me earlier. ;; should have + participe = reproche
+C: I'd rather {{c1::stay}} home tonight. ;; would rather + base
+C: You had better {{c1::leave}} now. ;; had better + base = il vaudrait mieux
+C: All staff {{c1::are supposed to}} arrive by 9. ;; be supposed to = être censé
+C: You {{c1::needn't}} come early. ;; needn't = pas besoin
+Après un modal : jamais « to » ;; modal + verbe à la base ;; She can speak (pas « can to speak », pas « can speaks »).
+
+## Prépositions | 📌
+C: The meeting is {{c1::on}} Monday {{c2::at}} 3 p.m. ;; on + jour, at + heure
+C: The conference takes place {{c1::in}} May. ;; in + mois, année, saison
+C: Please submit the form {{c1::by}} Friday. ;; by = au plus tard à (avant la date)
+C: The store is open {{c1::until}} 9 p.m. ;; until = jusqu'à (durée qui continue)
+C: I have worked here {{c1::for}} three years. ;; for + durée
+C: The price is {{c1::between}} $10 and $20. ;; between ... and
+C: She is responsible {{c1::for}} sales. ;; responsible for
+C: We are interested {{c1::in}} your proposal. ;; interested in
+C: He is good {{c1::at}} negotiating. ;; good at
+C: The company is famous {{c1::for}} its service. ;; famous for
+C: She is married {{c1::to}} a lawyer. ;; married to
+C: This product is similar {{c1::to}} the old one. ;; similar to
+C: Please refer {{c1::to}} the manual. ;; refer to
+C: Thank you {{c1::for}} your help. ;; thank someone for
+C: He apologized {{c1::for}} the delay. ;; apologize for
+C: The firm specializes {{c1::in}} marketing. ;; specialize in
+C: She depends {{c1::on}} her team. ;; depend on
+C: I look forward {{c1::to}} hearing from you. ;; look forward to + verbe-ing
+C: The store is located {{c1::on}} Main Street. ;; on + rue ; at + adresse précise ; in + ville
+C: {{c1::During}} the meeting, please turn off your phones. ;; during + nom (pendant)
+C: He called {{c1::while}} you were out. ;; while + sujet + verbe
+C: {{c1::Despite}} the rain, the event went well. ;; despite + nom (= in spite of), jamais « despite of »
+C: The package arrived {{c1::within}} two days. ;; within = dans un délai de
+C: The office is {{c1::across from}} the bank. ;; across from = en face de
+C: The project was completed {{c1::ahead of}} schedule. ;; ahead of = en avance sur
+C: Prices vary {{c1::according to}} the season. ;; according to = selon
+C: {{c1::Regarding}} your question, the answer is yes. ;; regarding = concernant
+C: He works {{c1::for}} a bank {{c2::as}} an analyst. ;; as = en tant que (fonction)
+
+## Formes de mots (nom, verbe, adjectif, adverbe) | 🧬
+C: She is an {{c1::efficient}} worker. ;; adjectif devant un nom (efficient)
+C: He works {{c1::efficiently}}. ;; adverbe après un verbe (-ly)
+C: The {{c1::efficiency}} of the system has improved. ;; nom après the
+C: We need to {{c1::improve}} our service. ;; verbe après to
+C: The {{c1::decision}} was made quickly. ;; -sion / -tion = noms
+C: He is very {{c1::successful}}. ;; -ful, -ous, -ive, -able, -al = adjectifs
+C: The report was {{c1::carefully}} prepared. ;; adverbe entre be et le participe
+C: Employees are {{c1::highly}} motivated. ;; highly (très), ≠ high (haut)
+C: She arrived {{c1::late}}. ;; late = tard (adverbe) ; lately = récemment
+C: He works {{c1::hard}}. ;; hard = adverbe (≠ hardly = à peine)
+C: It is {{c1::extremely}} important. ;; adverbe avant un adjectif
+C: We were {{c1::pleased}} with the results. ;; participe passé (-ed) : ce qu'on ressent
+C: The results were {{c1::pleasing}}. ;; -ing : ce qui provoque le sentiment
+C: The news is {{c1::surprising}}. ;; surprising / surprised
+C: I am {{c1::interested}} in the job. ;; interested = intéressé ; interesting = intéressant
+C: The presentation was {{c1::boring}}. ;; boring = ennuyeux ; bored = qui s'ennuie
+C: Please {{c1::submit}} your {{c2::application}} online. ;; verbe : to apply ; nom : application ; applicant = candidat
+C: The {{c1::employment}} rate is rising. ;; employer / employee / employment
+C: Our {{c1::competitors}} lowered prices. ;; nom pluriel : compete (v), competition, competitor, competitive (adj)
+C: The company is {{c1::competitive}}. ;; compete → competitive
+C: This is a very {{c1::reliable}} supplier. ;; rely → reliable → reliability
+C: The offer is {{c1::attractive}}. ;; attract → attractive → attraction
+C: He is {{c1::responsible}} for training. ;; responsible → responsibility
+C: She is {{c1::knowledgeable}} about finance. ;; knowledge (nom) / knowledgeable (adj)
+C: The team made {{c1::significant}} progress. ;; significant (adj), significantly (adv)
+C: Prices rose {{c1::significantly}}. ;; verbe + adverbe
+
+## Comparatifs, superlatifs, quantité | ⚖️
+C: This laptop is {{c1::more expensive}} than that one. ;; adjectif long : more ... than
+C: It is {{c1::cheaper}} than the other model. ;; adjectif court : -er than
+C: She is the {{c1::most experienced}} employee. ;; superlatif : the most + adjectif long
+C: This is the {{c1::best}} offer. ;; good → better → best
+C: This is {{c1::worse}} than I expected. ;; bad → worse → worst
+C: The more you practice, the {{c1::better}} you get. ;; the + comparatif, the + comparatif
+C: He is {{c1::as}} tall {{c2::as}} his father. ;; as + adjectif + as
+C: {{c1::Few}} people attended the event. ;; few = peu (presque aucun) ; a few = quelques
+C: We have {{c1::a few}} openings. ;; a few + pluriel dénombrable (quelques)
+C: There is {{c1::little}} time left. ;; little = peu (indénombrable) ; a little = un peu
+C: We have {{c1::much}} work to do. ;; much + indénombrable (surtout négatif/question)
+C: {{c1::Many}} customers complained. ;; many + dénombrable pluriel
+C: {{c1::Each}} employee has a badge. ;; each / every + singulier
+C: {{c1::All}} of the staff were present. ;; all of the + pluriel
+C: {{c1::Both}} proposals are acceptable. ;; both + pluriel (les deux)
+C: {{c1::Either}} option works. ;; either = l'un ou l'autre ; neither = ni l'un ni l'autre
+C: The two {{c1::other}} candidates were rejected. ;; other + pluriel ; another + singulier
+C: I need {{c1::another}} copy. ;; another = un(e) autre (singulier)
+C: Most {{c1::of}} the employees agreed. ;; most of the + nom ; most + nom (sans the)
+C: {{c1::Some}} advice is helpful. ;; advice, information, equipment, furniture, news = indénombrables
+C: This {{c1::information}} is confidential. ;; information : pas de -s ; a piece of information
+
+## Gérondif, infinitif | 🔀
+C: She enjoys {{c1::working}} here. ;; enjoy + verbe-ing
+C: We decided {{c1::to postpone}} the launch. ;; decide + to
+C: He avoided {{c1::answering}} the question. ;; avoid + verbe-ing
+C: They plan {{c1::to expand}} next year. ;; plan + to
+C: I suggest {{c1::meeting}} on Friday. ;; suggest + verbe-ing
+C: She refused {{c1::to sign}} the contract. ;; refuse + to
+C: He admitted {{c1::making}} a mistake. ;; admit + verbe-ing
+C: We look forward to {{c1::seeing}} you. ;; look forward to + -ing (to est une préposition)
+C: She is used to {{c1::working}} late. ;; be used to + -ing (être habitué)
+C: I'm considering {{c1::applying}} for the job. ;; consider + -ing
+C: He managed {{c1::to finish}} on time. ;; manage + to (réussir à)
+C: Remember {{c1::to lock}} the door. ;; remember + to = ne pas oublier de (à faire)
+C: I remember {{c1::locking}} the door. ;; remember + -ing = se souvenir d'avoir fait
+C: She stopped {{c1::to talk}} to him. ;; stop + to = s'arrêter pour faire
+C: He stopped {{c1::smoking}}. ;; stop + -ing = arrêter de
+C: {{c1::To improve}} sales, we cut prices. ;; to + base = pour (but)
+C: She is able {{c1::to speak}} three languages. ;; be able to + base
+C: It is important {{c1::to arrive}} on time. ;; it is + adjectif + to
+C: It's worth {{c1::visiting}}. ;; be worth + -ing
+C: He insisted {{c1::on paying}}. ;; insist on + -ing
+Verbes suivis de -ing ;; enjoy, avoid, suggest, consider, mind, finish, postpone, admit, deny, practice, risk, keep ;; Moyen mnémotechnique : EAS(Y) = enjoy, avoid, suggest...
+Verbes suivis de to ;; decide, plan, hope, expect, refuse, agree, manage, promise, afford, want, need, offer ;; I decided to leave.
+
+## Pronoms relatifs et propositions | 🔗
+C: The man {{c1::who}} called is my boss. ;; who = personne (sujet)
+C: The report {{c1::which}} I read was long. ;; which = chose
+C: The woman {{c1::whose}} car is red is a manager. ;; whose = dont, de qui (possession)
+C: The client {{c1::that}} you met is here. ;; that = personne ou chose (pas après une virgule)
+C: This is the office {{c1::where}} she works. ;; where = lieu
+C: The day {{c1::when}} we met was sunny. ;; when = moment
+C: Mr. Smith, {{c1::who}} is our CEO, will speak. ;; après virgule : who / which, jamais that
+C: The reason {{c1::why}} he left is unknown. ;; the reason why
+C: Everything {{c1::that}} she said was true. ;; après everything, all, nothing : that
+C: I don't know {{c1::what}} he wants. ;; what = ce que
+C: We discussed {{c1::how}} to reduce costs. ;; question indirecte : pas d'inversion
+C: Can you tell me where {{c1::the station is}}? ;; ordre sujet + verbe (pas « where is the station »)
+C: He asked me {{c1::if}} I was free. ;; if / whether = si (question indirecte)
+C: I wonder {{c1::whether}} it is true. ;; whether (or not)
+C: He said {{c1::that}} he would come. ;; discours indirect : concordance des temps
+
+## Connecteurs | 🧩
+C: He was tired; {{c1::however}}, he finished the work. ;; however = cependant (+ virgule)
+C: {{c1::Although}} it was late, we continued. ;; although + sujet + verbe (= bien que)
+C: {{c1::Despite}} being late, he stayed calm. ;; despite + nom / -ing
+C: Sales increased {{c1::because of}} the new campaign. ;; because of + nom ; because + sujet + verbe
+C: We left early {{c1::because}} it was raining. ;; because + proposition
+C: She works hard; {{c1::therefore}}, she is successful. ;; therefore = donc (formel)
+C: The store was closed; {{c1::as a result}}, we went home. ;; as a result = par conséquent
+C: {{c1::In addition}}, the price includes delivery. ;; in addition = de plus
+C: He {{c1::not only}} speaks English {{c2::but also}} Spanish. ;; not only ... but also
+C: {{c1::Whether}} you stay or go, let me know. ;; whether ... or
+C: I will call you {{c1::as soon as}} I arrive. ;; as soon as = dès que
+C: {{c1::Since}} he was ill, he stayed home. ;; since = puisque (cause) ou depuis (temps)
+C: He called {{c1::in order to}} confirm the date. ;; in order to + base = afin de
+C: Take an umbrella {{c1::in case}} it rains. ;; in case + présent (au cas où)
+C: {{c1::Instead of}} complaining, he acted. ;; instead of + nom / -ing
+C: Prices are high; {{c1::nevertheless}}, demand is strong. ;; nevertheless = néanmoins
+C: {{c1::Meanwhile}}, the team prepared the report. ;; meanwhile = pendant ce temps
+C: {{c1::Otherwise}}, you will miss the train. ;; otherwise = sinon
+C: He is {{c1::so}} tired {{c2::that}} he can't work. ;; so + adjectif + that
+C: It was {{c1::such}} a good offer {{c2::that}} we accepted. ;; such + a + adjectif + nom + that
+C: {{c1::Neither}} the manager {{c2::nor}} the staff knew. ;; neither ... nor
+C: You can pay {{c1::either}} by cash {{c2::or}} by card. ;; either ... or
+
+## Articles et déterminants | 🔤
+C: He is {{c1::an}} honest man. ;; an devant un son voyelle (honest : h muet)
+C: She has {{c1::a}} university degree. ;; a devant un son consonne (university = « you »)
+C: I need {{c1::the}} report you mentioned. ;; the = chose précise connue
+C: {{c1::The}} sun rises in the east. ;; the avec les choses uniques
+C: She goes to {{c1::work}} by bus. ;; pas d'article : go to work / school / bed
+C: I'll see you {{c1::at}} home. ;; at home, at work, at school (sans article)
+C: {{c1::Life}} is short. ;; pas d'article pour une généralité
+C: The Smiths are {{c1::my}} neighbors. ;; adjectif possessif : my, your, his, her, its, our, their
+C: He cut {{c1::himself}}. ;; pronom réfléchi : himself, herself, themselves...
+C: She did it {{c1::herself}}. ;; herself = elle-même (insistance)
+C: Please send {{c1::me}} the file. ;; pronom complément : me, you, him, her, it, us, them
+C: This is {{c1::their}} office. ;; their (possessif) ≠ they're (they are) ≠ there
+
+## Mots qui se ressemblent (pièges Part 5) | ⚠️
+affect / effect ;; affect = influencer (verbe) ; effect = effet (nom) ;; The weather affects sales. The effect was positive.
+advice / advise ;; advice = conseil (nom) ; advise = conseiller (verbe) ;; Let me advise you. Thanks for the advice.
+accept / except ;; accept = accepter ; except = sauf ;; Everyone except Tom accepted.
+principal / principle ;; principal = principal / directeur ; principle = principe ;; the school principal ; a basic principle
+economic / economical ;; economic = économique (de l'économie) ; economical = économe, pas cher ;; the economic crisis ; an economical car
+later / latter ;; later = plus tard ; latter = ce dernier ;; See you later. Of the two, I prefer the latter.
+lose / loose ;; lose = perdre ; loose = lâche, ample ;; Don't lose the keys. This shirt is loose.
+rise / raise ;; rise = augmenter (sans complément) ; raise = augmenter (qqch) ;; Prices rise. They raised prices.
+lay / lie ;; lay = poser ; lie = être allongé / mentir ;; Lay the files on the desk.
+say / tell ;; say = dire (qqch) ; tell = dire (à qqn) ;; She said that... She told me that...
+sensible / sensitive ;; sensible = raisonnable ; sensitive = sensible ;; a sensible decision ; sensitive information
+dependent / dependant ;; dependent = dépendant (adjectif) ; dependant = personne à charge ;; dependent on
+It's / its ;; it's = it is ; its = possessif ;; It's late. The firm announced its results.
+who's / whose ;; who's = who is ; whose = dont ;; Who's calling? Whose bag is it?

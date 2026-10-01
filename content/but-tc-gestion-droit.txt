@@ -1,0 +1,229 @@
+@pack but-tc-gestion-droit | BUT TC : comptabilité, gestion, droit, économie, management | ⚖️ | Bases de comptabilité et gestion, droit des contrats et de la consommation, économie, management et outils (statistiques, tableur).
+@tags BUT TC, gestion, droit
+
+## Comptabilité et gestion | 📒
+Comptabilité générale ;; enregistre les opérations de l'entreprise avec les tiers ;; Obligatoire, elle donne une image fidèle.
+Comptabilité analytique ;; calcule les coûts et les marges pour mieux gérer ;; Utilisée en interne, non obligatoire.
+Bilan ;; photographie du patrimoine à une date donnée ;; Actif (emplois) = Passif (ressources).
+Actif ;; ce que l'entreprise possède ;; Immobilisations, stocks, créances, trésorerie.
+Passif ;; ce que l'entreprise doit : capitaux propres + dettes ;;
+Actif immobilisé ;; biens durables (machines, locaux, brevets) ;;
+Actif circulant ;; stocks, créances clients, disponibilités ;;
+Capitaux propres ;; capital + réserves + résultat ;; Ressources apportées par les associés.
+Dettes ;; sommes dues aux banques, fournisseurs, État ;;
+Compte de résultat ;; produits − charges = résultat de l'exercice ;;
+Produits / charges ;; ressources gagnées / dépenses engagées sur l'exercice ;;
+Charges d'exploitation ;; liées à l'activité courante ;; Achats, salaires, loyers.
+Charges financières ;; intérêts d'emprunts ;;
+Charges exceptionnelles ;; événements hors activité courante ;;
+Résultat net ;; bénéfice ou perte final ;;
+Partie double ;; chaque opération est enregistrée au débit d'un compte et au crédit d'un autre ;; Total des débits = total des crédits.
+Débit / crédit ;; débit : emplois (à gauche) ; crédit : ressources (à droite) ;;
+Plan comptable général (PCG) ;; liste normalisée des comptes en France ;; Classes 1 à 7.
+Classes du PCG ;; 1 capitaux, 2 immobilisations, 3 stocks, 4 tiers, 5 financiers, 6 charges, 7 produits ;;
+Journal ;; enregistrement chronologique des opérations ;;
+Grand livre ;; classement des écritures par compte ;;
+Balance ;; liste des soldes des comptes, avec total débit = total crédit ;;
+Amortissement ;; constatation de la perte de valeur d'un bien dans le temps ;; Charge non décaissée.
+Amortissement linéaire ;; amortissement annuel constant : valeur ÷ durée d'utilisation ;;
+Amortissement dégressif ;; amortissement plus fort les premières années ;;
+Provision ;; charge probable à venir, constatée à l'avance ;; Ex. litige, créance douteuse.
+Stock ;; marchandises et matières en attente de vente ou d'utilisation ;;
+Inventaire ;; recensement physique et valorisation des biens à une date ;;
+CMUP ;; Coût Moyen Unitaire Pondéré : méthode de valorisation des sorties de stock ;;
+FIFO / PEPS ;; premier entré, premier sorti ;;
+Créances clients ;; sommes dues par les clients ;;
+Fournisseurs ;; sommes dues aux fournisseurs ;;
+Trésorerie ;; sommes disponibles en banque et en caisse ;;
+Fonds de roulement net global (FRNG) ;; ressources stables − emplois stables ;; Marge de sécurité à long terme.
+Besoin en fonds de roulement (BFR) ;; stocks + créances − dettes d'exploitation ;; Besoin de financement du cycle d'exploitation.
+Trésorerie nette ;; FRNG − BFR ;;
+Capacité d'autofinancement (CAF) ;; ressources générées par l'activité pour financer l'entreprise ;; Résultat + amortissements et provisions.
+Solde intermédiaire de gestion (SIG) ;; marge commerciale, valeur ajoutée, EBE, résultat d'exploitation... ;;
+Valeur ajoutée ;; richesse créée : production − consommations intermédiaires ;;
+Excédent brut d'exploitation (EBE) ;; ressource générée par l'exploitation avant amortissement et frais financiers ;;
+Plan de trésorerie ;; prévision mensuelle des encaissements et décaissements ;;
+Budget ;; prévision chiffrée des recettes et dépenses ;;
+Écart (analyse) ;; différence entre prévu et réalisé ;;
+Tableau de bord ;; indicateurs clés pour piloter ;;
+Ratio d'autonomie financière ;; capitaux propres ÷ total du passif ;;
+Ratio de liquidité ;; actif circulant ÷ dettes à court terme ;;
+Charges directes / indirectes ;; directes : affectées à un produit ; indirectes : réparties selon des clés ;;
+Coût complet ;; toutes les charges affectées à un produit ;;
+Méthode des centres d'analyse ;; répartition des charges indirectes par centres de coûts ;;
+Imputation rationnelle ;; ajuste les charges fixes selon l'activité normale ;;
+Business plan ;; document décrivant un projet et ses prévisions financières ;;
+Plan de financement ;; ressources et emplois d'un projet sur plusieurs années ;;
+Levée de fonds ;; recherche d'argent auprès d'investisseurs ;;
+Auto-entrepreneur / micro-entreprise ;; régime simplifié avec plafonds de chiffre d'affaires ;;
+Factoring (affacturage) ;; cession de créances clients à un organisme financier ;;
+Escompte commercial ;; paiement anticipé d'un effet de commerce ;;
+Lettre de change ;; ordre écrit de payer une somme à une date donnée ;;
+Crédit fournisseur / crédit client ;; délai de paiement accordé par un fournisseur / à un client ;;
+Délai de paiement légal ;; 60 jours après la date de facture (ou 30 jours fin de mois) ;; 45 jours fin de mois possible par accord.
+Pénalités de retard ;; intérêts dus en cas de paiement tardif ;; Taux minimal : 3 fois le taux d'intérêt légal.
+Indemnité forfaitaire de recouvrement ;; 40 € pour frais de recouvrement en cas de retard ;;
+
+## Droit des contrats et de la consommation | 📜
+Contrat ;; accord de volontés destiné à créer des obligations ;; Code civil (articles 1101 et suivants).
+Conditions de validité d'un contrat ;; consentement, capacité, contenu licite et certain ;; Article 1128 du Code civil.
+Consentement ;; volonté libre et éclairée de s'engager ;;
+Vices du consentement ;; erreur, dol, violence ;; Entraînent la nullité du contrat.
+Erreur ;; fausse idée de la réalité sur un élément essentiel ;;
+Dol ;; manœuvres trompeuses pour obtenir le consentement ;;
+Violence ;; contrainte qui pousse à contracter ;;
+Capacité ;; aptitude à conclure un contrat ;; Mineurs et majeurs protégés : capacité limitée.
+Nullité ;; sanction qui anéantit rétroactivement le contrat ;; Relative (protège une partie) ou absolue (intérêt général).
+Principe de la liberté contractuelle ;; les parties choisissent librement le contenu ;; Dans la limite de l'ordre public.
+Force obligatoire du contrat ;; les contrats légalement formés tiennent lieu de loi aux parties ;; Article 1103.
+Bonne foi ;; négociation, formation et exécution du contrat de bonne foi ;;
+Obligation de moyens / de résultat ;; moyens : faire de son mieux ; résultat : atteindre un résultat précis ;;
+Obligation d'information ;; informer l'autre partie des éléments déterminants ;;
+Contrat d'adhésion ;; conditions imposées sans négociation ;; Ex. CGV d'une grande entreprise.
+Clause abusive ;; clause qui crée un déséquilibre significatif ;; Réputée non écrite dans les contrats consommateurs.
+Clause pénale ;; indemnité fixée à l'avance en cas d'inexécution ;;
+Clause de réserve de propriété ;; le vendeur reste propriétaire jusqu'au paiement ;;
+Contrat de vente ;; transfert de propriété d'un bien contre un prix ;;
+Transfert de propriété ;; se fait en principe à la conclusion du contrat ;;
+Transfert des risques ;; le risque passe à l'acheteur avec la propriété (ou la livraison) ;;
+Garantie légale de conformité ;; 2 ans à compter de la délivrance (2 ans pour biens neufs) ;; Présomption de défaut dans les 24 mois ; 12 mois pour l'occasion.
+Garantie des vices cachés ;; défaut caché rendant le bien impropre à l'usage ;; Action dans les 2 ans de la découverte du vice.
+Garantie commerciale ;; garantie supplémentaire, facultative, du vendeur ou du fabricant ;;
+Droit de rétractation ;; 14 jours pour renoncer à un achat à distance ou hors établissement ;; Sans motif ni pénalité.
+Contrat à distance ;; conclu sans présence physique (web, téléphone) ;;
+Contrat hors établissement ;; conclu hors du lieu habituel du professionnel ;;
+Consommateur ;; personne physique qui agit à des fins non professionnelles ;;
+Professionnel ;; agit à des fins commerciales ou professionnelles ;;
+Non-professionnel ;; personne morale qui n'agit pas à titre professionnel ;; Ex. association.
+Pratiques commerciales trompeuses ;; allégations fausses ou ambiguës, omissions ;; Délit : 2 ans de prison, 300 000 €.
+Pratiques commerciales agressives ;; pression, harcèlement ;;
+Publicité comparative ;; autorisée sous conditions (loyale, objective, vérifiable) ;;
+Publicité mensongère ;; terme ancien pour la pratique trompeuse ;;
+Vente forcée ;; livrer un produit non commandé : interdit ;;
+Vente avec primes ;; autorisée sous conditions (cadeau accessoire) ;;
+Soldes ;; vente de produits en stock à prix réduits, 2 périodes de 4 semaines ;; Hiver et été.
+Information du consommateur ;; prix, caractéristiques, délais, identité du vendeur ;;
+Affichage des prix ;; obligation d'afficher les prix TTC ;;
+Étiquetage ;; mentions obligatoires sur les produits ;;
+DGCCRF ;; Direction générale de la concurrence, de la consommation et de la répression des fraudes ;;
+Médiation de la consommation ;; recours gratuit avant d'aller en justice ;;
+Action de groupe ;; action collective de consommateurs victimes du même préjudice ;;
+Libre concurrence ;; liberté de créer une entreprise et de concurrencer ;;
+Concurrence déloyale ;; comportement fautif pour détourner la clientèle ;; Dénigrement, parasitisme, confusion.
+Autorité de la concurrence ;; contrôle ententes, abus de position dominante, fusions ;;
+Entente ;; accord illicite entre concurrents (prix, marché) ;;
+Abus de position dominante ;; exploitation abusive d'une place dominante ;;
+Propriété intellectuelle ;; droits sur les créations de l'esprit ;;
+Propriété industrielle ;; brevets, marques, dessins et modèles ;;
+Brevet ;; protège une invention technique pendant 20 ans ;;
+Marque ;; protège un signe distinctif, valable 10 ans renouvelables ;; Dépôt à l'INPI.
+INPI ;; Institut national de la propriété industrielle ;;
+Droit d'auteur ;; protège une œuvre de l'esprit, sans formalité ;; Droit moral et droits patrimoniaux, 70 ans après le décès.
+Contrefaçon ;; reproduction illicite d'un droit protégé ;; Délit.
+Données personnelles ;; informations qui identifient une personne ;;
+CNIL ;; Commission nationale de l'informatique et des libertés ;; Autorité de contrôle du RGPD.
+Droits RGPD ;; accès, rectification, effacement, opposition, portabilité ;;
+Secret des affaires ;; informations confidentielles protégées par la loi ;;
+Contrat de travail ;; lien de subordination, rémunération, prestation de travail ;;
+CDI / CDD ;; contrat à durée indéterminée / déterminée ;; Le CDI est la forme normale.
+Période d'essai ;; permet de tester la relation (2 mois pour un employé en CDI) ;;
+Durée légale du travail ;; 35 heures par semaine ;;
+Heures supplémentaires ;; heures au-delà de 35 h, majorées (25 % puis 50 %) ;;
+SMIC ;; salaire minimum interprofessionnel de croissance ;; Revalorisé au moins chaque 1er janvier.
+Licenciement ;; rupture du contrat à l'initiative de l'employeur ;; Cause réelle et sérieuse exigée.
+Démission ;; rupture à l'initiative du salarié ;;
+Rupture conventionnelle ;; rupture d'un commun accord ;;
+Convention collective ;; accord de branche qui complète le Code du travail ;;
+Prud'hommes ;; tribunal qui juge les litiges entre salariés et employeurs ;;
+Forme juridique ;; statut légal de l'entreprise ;;
+Entreprise individuelle (EI) ;; une seule personne, patrimoine personnel protégé par défaut (sauf exceptions) ;;
+EURL / SARL ;; société à responsabilité limitée (1 associé / 2 à 100 associés) ;; Responsabilité limitée aux apports.
+SAS / SASU ;; société par actions simplifiée (plusieurs / un seul associé) ;; Grande liberté statutaire.
+SA ;; société anonyme : actions, capital minimum 37 000 € ;;
+SNC ;; société en nom collectif : associés responsables indéfiniment et solidairement ;;
+Société civile (SCI) ;; société non commerciale (immobilier) ;;
+Micro-entrepreneur ;; régime simplifié de l'entreprise individuelle ;;
+Statuts ;; document qui organise le fonctionnement d'une société ;;
+Capital social ;; apports des associés ;;
+Responsabilité limitée ;; les associés ne risquent que leurs apports ;;
+Registre du commerce et des sociétés (RCS) ;; immatriculation des sociétés commerciales ;;
+Kbis ;; extrait d'immatriculation au RCS ;;
+SIRET / SIREN ;; identifiants de l'entreprise / de l'établissement ;; SIREN : 9 chiffres ; SIRET : 14 chiffres.
+Commerçant ;; accomplit des actes de commerce à titre habituel et professionnel ;;
+Fonds de commerce ;; ensemble des biens qui servent à attirer la clientèle ;; Clientèle, nom, enseigne, bail.
+Bail commercial ;; location de locaux à usage commercial, 9 ans ;; Droit au renouvellement.
+Procédures collectives ;; sauvegarde, redressement judiciaire, liquidation ;;
+Cessation des paiements ;; impossibilité de payer ses dettes exigibles avec son actif disponible ;;
+
+## Économie | 🌍
+PIB ;; Produit Intérieur Brut : richesse produite sur un territoire en un an ;; Mesure la production, pas le bien-être.
+Croissance économique ;; hausse du PIB sur une période ;;
+Inflation ;; hausse générale et durable des prix ;;
+Taux de chômage ;; chômeurs ÷ population active ;; Mesuré par le BIT et l'INSEE.
+Population active ;; personnes en emploi ou à la recherche d'un emploi ;;
+Balance commerciale ;; exportations − importations de biens ;;
+Offre / demande ;; l'équilibre du marché détermine le prix ;;
+Prix d'équilibre ;; prix auquel offre et demande se rencontrent ;;
+Élasticité-prix ;; sensibilité de la demande à une variation de prix ;;
+Concurrence pure et parfaite ;; marché idéal sans pouvoir sur les prix ;;
+Monopole ;; un seul vendeur ;;
+Oligopole ;; quelques vendeurs ;;
+Biens substituts / complémentaires ;; substituts : interchangeables ; complémentaires : consommés ensemble ;;
+Externalité ;; effet d'une activité sur des tiers, sans compensation ;; Positive (vaccin) ou négative (pollution).
+Bien public ;; non rival et non exclusif ;;
+Valeur ajoutée (macro) ;; production − consommations intermédiaires ;;
+Politique monétaire ;; action sur la masse monétaire et les taux ;;
+Politique budgétaire ;; impôts et dépenses de l'État ;;
+Déficit public ;; dépenses de l'État supérieures à ses recettes ;;
+Dette publique ;; cumul des déficits ;;
+Prélèvements obligatoires ;; impôts et cotisations sociales ;;
+Mondialisation ;; intensification des échanges mondiaux ;;
+Libre-échange / protectionnisme ;; ouverture des frontières / protection de l'économie nationale ;;
+Délocalisation ;; transfert d'une activité à l'étranger ;;
+Union européenne ;; union économique et politique de 27 pays ;; Marché unique, euro (20 pays).
+OMC ;; Organisation mondiale du commerce ;;
+Développement durable ;; répond aux besoins présents sans compromettre ceux des générations futures ;; 3 piliers : économique, social, environnemental.
+Économie circulaire ;; produire en réduisant les déchets et en recyclant ;;
+Économie sociale et solidaire (ESS) ;; associations, coopératives, mutuelles ;; Finalité sociale avant le profit.
+
+## Management, organisation et outils | 🧠
+Management ;; planifier, organiser, diriger, contrôler ;;
+Styles de management ;; autoritaire, persuasif, participatif, délégatif ;;
+Théorie X / Y (McGregor) ;; X : le salarié évite le travail ; Y : le salarié aime le travail ;;
+Taylorisme ;; organisation scientifique du travail : division des tâches ;;
+Fordisme ;; production de masse à la chaîne + hauts salaires ;;
+Organigramme ;; représentation de la structure hiérarchique ;;
+Structure fonctionnelle / divisionnelle / matricielle ;; par métiers / par produits ou marchés / double hiérarchie ;;
+Stratégie de domination par les coûts ;; devenir le moins cher du marché ;; Porter.
+Stratégie de différenciation ;; offrir un produit unique pour lequel le client paie plus ;;
+Stratégie de niche ;; se concentrer sur un segment étroit ;;
+Gestion de projet ;; organiser des ressources pour atteindre un objectif dans un délai ;;
+Diagramme de Gantt ;; planning de tâches sur un axe de temps ;;
+Chemin critique ;; suite de tâches qui détermine la durée minimale du projet ;;
+Méthode agile ;; gestion de projet par itérations courtes ;; Scrum, Kanban.
+Délégation ;; confier une tâche avec les moyens nécessaires ;;
+Motivation ;; ce qui pousse à agir (intrinsèque / extrinsèque) ;;
+Intelligence collective ;; la performance du groupe dépasse celle des individus ;;
+Leadership ;; capacité à entraîner et influencer un groupe ;;
+Conduite de réunion ;; ordre du jour, animation, compte rendu ;;
+Gestion du temps ;; matrice d'Eisenhower : urgent / important ;;
+Écoute et feedback ;; donner un retour constructif et factuel ;;
+Entretien annuel d'évaluation ;; bilan formel entre un salarié et son responsable ;;
+Statistique descriptive ;; résumer des données par des indicateurs ;;
+Moyenne ;; somme des valeurs ÷ nombre de valeurs ;;
+Médiane ;; valeur qui sépare la population en deux parts égales ;;
+Mode ;; valeur la plus fréquente ;;
+Écart-type ;; mesure de la dispersion autour de la moyenne ;;
+Variance ;; carré de l'écart-type ;;
+Quartiles ;; valeurs qui partagent les données en quatre groupes égaux ;;
+Corrélation ;; lien statistique entre deux variables ;; Corrélation n'est pas causalité.
+Régression linéaire ;; ajuste une droite aux points d'un nuage ;;
+Probabilité ;; mesure de la chance d'un événement, entre 0 et 1 ;;
+Intervalle de confiance ;; fourchette dans laquelle une valeur est estimée avec une certaine probabilité ;;
+Tableur : SOMME.SI ;; additionne les cellules qui respectent un critère ;; =SOMME.SI(plage; critère; plage_somme)
+Tableur : RECHERCHEV ;; cherche une valeur dans la 1re colonne d'un tableau et renvoie une autre colonne ;; Remplacée par RECHERCHEX.
+Tableur : SI ;; renvoie une valeur selon une condition ;; =SI(test; valeur_si_vrai; valeur_si_faux)
+Tableur : tableau croisé dynamique ;; résume et analyse de gros volumes de données ;;
+Référence absolue ;; $A$1 : ne change pas à la recopie ;; Touche F4.
+Mise en forme conditionnelle ;; formatage automatique selon la valeur ;;
+Graphique ;; représentation visuelle : barres (comparer), courbe (évolution), secteurs (parts) ;;

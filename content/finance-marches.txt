@@ -1,0 +1,190 @@
+@pack finance-marches | Finance et investissement : marchés, valorisation, risque | 📈 | Actions, obligations, ETF, taux, dérivés, ratios d'analyse financière, gestion du risque et du portefeuille.
+@tags finance, investissement
+
+## Actions et marchés | 🏛️
+Action ;; titre de propriété d'une fraction du capital d'une société ;; Donne droit à un dividende et un droit de vote.
+Capitalisation boursière ;; nombre d'actions × cours de l'action ;; Mesure la valeur de marché d'une société.
+Dividende ;; part du bénéfice distribuée aux actionnaires ;;
+Rendement du dividende ;; dividende par action ÷ cours ;;
+Bénéfice par action (BPA / EPS) ;; résultat net ÷ nombre d'actions ;;
+PER (Price Earnings Ratio) ;; cours ÷ bénéfice par action ;; Nombre d'années de bénéfices pour « payer » l'action.
+Marché primaire ;; émission de nouveaux titres (l'argent va à l'entreprise) ;; Ex. introduction en bourse (IPO).
+Marché secondaire ;; échange de titres existants entre investisseurs ;; L'entreprise ne reçoit rien.
+IPO (introduction en bourse) ;; première cotation d'une société en bourse ;;
+Augmentation de capital ;; émission de nouvelles actions pour lever des fonds ;;
+Split d'actions ;; division d'une action en plusieurs, prix divisé ;; Ne change pas la valeur de la société.
+OPA ;; Offre Publique d'Achat sur toutes les actions d'une société ;;
+OPE ;; Offre Publique d'Échange (paiement en titres) ;;
+Flottant ;; part du capital réellement disponible à la négociation en bourse ;;
+Indice boursier ;; panier de valeurs qui mesure l'évolution d'un marché ;;
+CAC 40 ;; indice des 40 plus grandes capitalisations de la Bourse de Paris ;;
+S&P 500 ;; indice des 500 grandes entreprises américaines ;;
+Nasdaq ;; indice / marché américain tourné vers la technologie ;;
+Dow Jones ;; indice de 30 grandes entreprises industrielles américaines ;;
+Euro Stoxx 50 ;; indice des 50 grandes valeurs de la zone euro ;;
+MSCI World ;; indice mondial des grandes et moyennes capitalisations des pays développés ;; Environ 1 500 entreprises, 23 pays.
+Bull market / bear market ;; marché haussier / marché baissier ;; Bear : baisse de 20 % ou plus.
+Krach ;; chute brutale et massive des cours ;; Ex. 1929, 1987, 2008.
+Bulle spéculative ;; hausse des prix déconnectée de la valeur réelle ;;
+Valeur de croissance / valeur de rendement ;; croissance = bénéfices attendus en forte hausse ; rendement = dividende élevé ;; Growth / value.
+Blue chip ;; grande entreprise solide et réputée ;;
+Small cap ;; société de petite capitalisation boursière ;; Plus risquée, plus volatile.
+Secteur cyclique / défensif ;; cyclique : dépend de la conjoncture ; défensif : stable (santé, alimentation) ;;
+Pays émergents ;; économies en développement rapide ;; Plus de croissance, plus de risque.
+Euronext ;; opérateur de bourses européennes (Paris, Amsterdam, Bruxelles...) ;;
+Teneur de marché (market maker) ;; fournit des prix d'achat et de vente en continu ;; Améliore la liquidité.
+Liquidité d'un titre ;; facilité à l'acheter ou à le vendre rapidement sans effet sur le prix ;;
+Volume ;; nombre de titres échangés sur une période ;;
+Analyse fondamentale ;; évaluer un titre via les comptes de l'entreprise et son environnement ;;
+Analyse technique ;; prévoir les prix à partir des graphiques et des volumes ;;
+Short selling (vente à découvert) ;; vendre un titre emprunté pour le racheter moins cher ;; Gain si le cours baisse ; perte potentiellement illimitée.
+Effet de levier ;; utiliser la dette pour amplifier gains et pertes ;;
+Appel de marge ;; demande de déposer des fonds si les pertes dépassent la garantie ;;
+
+## Obligations et taux | 🧾
+Obligation ;; titre de dette : on prête à un État ou une entreprise ;; Paie un coupon et rembourse le nominal à l'échéance.
+Valeur nominale ;; montant remboursé à l'échéance ;;
+Coupon ;; intérêt versé périodiquement par l'obligation ;;
+Échéance (maturité) ;; date de remboursement ;;
+Rendement à l'échéance (YTM) ;; taux de rendement total si on garde jusqu'à l'échéance ;;
+Relation prix / taux ;; quand les taux montent, le prix des obligations existantes baisse ;; Relation inverse.
+OAT ;; Obligation Assimilable du Trésor : dette de l'État français ;; Bund : dette allemande ; Treasury : États-Unis.
+Notation (rating) ;; note de solvabilité de l'émetteur (S&P, Moody's, Fitch) ;; AAA = meilleure note.
+Investment grade ;; notes de BBB- et plus : risque faible ;;
+High yield (haut rendement) ;; notes inférieures à BBB- : risque élevé, rendement élevé ;; Appelées « junk bonds ».
+Spread de crédit ;; écart de taux entre une obligation risquée et une sans risque ;; Plus il est élevé, plus le risque perçu est grand.
+Duration ;; sensibilité du prix d'une obligation aux variations de taux ;; Plus la duration est longue, plus la sensibilité est grande.
+Obligation convertible ;; peut être échangée contre des actions ;;
+Obligation indexée sur l'inflation ;; capital ou coupon ajustés à l'inflation ;; OATi, OAT€i.
+Taux directeur ;; taux auquel la banque centrale prête aux banques ;; La BCE le modifie pour contrôler l'inflation.
+Facilité de dépôt (BCE) ;; taux auquel les banques placent leurs excédents à la BCE ;;
+€STR ;; taux à court terme de référence de la zone euro (remplace l'EONIA) ;;
+Euribor ;; taux interbancaire offert en euros ;; Référence de nombreux prêts à taux variable.
+Courbe des taux ;; relation entre le taux et la durée d'un emprunt ;;
+Courbe inversée ;; taux courts supérieurs aux taux longs ;; Signal souvent associé à une récession.
+Inflation ;; hausse générale et durable des prix ;; Mesurée par l'IPC (indice des prix à la consommation).
+Déflation ;; baisse générale des prix ;; Dangereuse : les agents reportent leurs achats.
+Stagflation ;; faible croissance + forte inflation ;;
+Politique monétaire ;; actions de la banque centrale sur la monnaie et le crédit ;;
+Assouplissement quantitatif (QE) ;; la banque centrale rachète des titres pour injecter des liquidités ;;
+Politique budgétaire ;; dépenses publiques et impôts utilisés pour agir sur l'économie ;;
+Dette publique ;; dette cumulée de l'État ;; En % du PIB.
+Critère de Maastricht ;; déficit public ≤ 3 % du PIB, dette ≤ 60 % ;;
+Taux d'intérêt réel ;; taux nominal moins inflation ;;
+Prime de risque ;; rendement supplémentaire exigé pour supporter un risque ;;
+Actif sans risque ;; placement considéré comme sûr (ex. dette d'un État très solide) ;;
+Taux de change ;; prix d'une monnaie exprimé en une autre ;; EUR/USD = 1,10 : 1 euro vaut 1,10 dollar.
+Dévaluation / dépréciation ;; baisse de la valeur d'une monnaie ;; Appréciation : hausse.
+
+## Fonds et produits financiers | 🧺
+OPCVM ;; Organisme de Placement Collectif en Valeurs Mobilières ;; Regroupe l'argent de nombreux épargnants dans un portefeuille géré.
+SICAV ;; société d'investissement à capital variable ;; Forme d'OPCVM (société).
+FCP ;; fonds commun de placement ;; Forme d'OPCVM (copropriété de titres).
+ETF (tracker) ;; fonds indiciel coté en bourse qui réplique un indice ;; Frais faibles, diversification immédiate.
+Frais courants (TER) ;; coûts annuels d'un fonds en % ;; ETF : 0,1 à 0,5 % ; fonds actifs : 1 à 2,5 %.
+Gestion passive ;; réplique un indice, sans chercher à le battre ;;
+Gestion active ;; le gérant sélectionne des titres pour battre l'indice ;;
+Réplication physique ;; l'ETF détient réellement les titres de l'indice ;;
+Réplication synthétique ;; l'ETF obtient la performance via un contrat (swap) ;;
+Fonds de fonds ;; investit dans d'autres fonds ;;
+FIA / hedge fund ;; fonds alternatif, stratégies sophistiquées, souvent réservé aux investisseurs avertis ;;
+Private equity ;; capital-investissement : prise de participation dans des sociétés non cotées ;;
+Capital-risque (venture capital) ;; financement de jeunes entreprises innovantes ;;
+Produit structuré ;; combine une obligation et des dérivés avec une formule de performance ;; Complexe, risqué : lire le DIC.
+Certificat / turbo / warrant ;; produits dérivés à effet de levier ;; Risque de perte totale.
+Immobilier coté (SIIC / REIT) ;; foncière cotée en bourse ;;
+Matières premières ;; pétrole, or, blé... ;; Rendements volatils.
+Or ;; valeur refuge, ne verse ni dividende ni intérêt ;;
+Cryptoactifs ;; actifs numériques sur blockchain (bitcoin, ether...) ;; Très volatils, régulation (MiCA).
+Blockchain ;; registre numérique partagé et infalsifiable ;;
+Monnaie fiduciaire ;; monnaie dont la valeur repose sur la confiance (euro, dollar) ;;
+
+## Produits dérivés | ⚙️
+Produit dérivé ;; instrument dont la valeur dépend d'un actif sous-jacent ;; Sert à se couvrir ou à spéculer.
+Sous-jacent ;; actif qui sert de référence (action, indice, devise...) ;;
+Option d'achat (call) ;; droit d'acheter un actif à un prix fixé (strike) avant une date ;; Gagnant si le cours monte.
+Option de vente (put) ;; droit de vendre un actif à un prix fixé ;; Gagnant si le cours baisse.
+Prix d'exercice (strike) ;; prix fixé dans l'option ;;
+Prime d'option ;; prix payé pour acheter l'option ;; Perte maximale de l'acheteur.
+Option européenne / américaine ;; exercice à l'échéance seulement / à tout moment ;;
+Contrat à terme (future) ;; engagement d'acheter ou de vendre à un prix fixé à une date future ;; Standardisé, coté.
+Contrat à terme de gré à gré (forward) ;; même chose mais négocié directement entre deux parties ;;
+Swap ;; échange de flux financiers (ex. taux fixe contre taux variable) ;;
+Couverture (hedging) ;; limiter un risque existant avec un dérivé ;;
+Spéculation ;; prendre un risque pour réaliser un gain ;;
+Arbitrage ;; profiter d'un écart de prix entre deux marchés ;;
+CDS (Credit Default Swap) ;; assurance contre le défaut d'un émetteur ;;
+CFD ;; Contract For Difference : contrat sur l'écart de prix, avec effet de levier ;; Risque élevé : la plupart des particuliers perdent.
+Levier de 10 ;; 1 € investi expose à 10 € de marché ;; Une baisse de 10 % efface tout le capital.
+
+## Risque, rendement et portefeuille | ⚖️
+Rendement ;; gain par rapport au capital investi ;;
+Risque ;; incertitude sur le rendement, possibilité de perte ;;
+Relation rendement / risque ;; pour espérer plus de rendement, on accepte plus de risque ;;
+Volatilité ;; ampleur des variations des cours (écart-type des rendements) ;;
+Bêta ;; sensibilité d'un titre au marché ;; β = 1 : comme le marché ; β > 1 : plus volatil.
+Ratio de Sharpe ;; (rendement - taux sans risque) ÷ volatilité ;; Mesure le rendement obtenu par unité de risque.
+VaR (Value at Risk) ;; perte maximale probable sur une période avec un seuil de confiance ;;
+Drawdown ;; baisse entre un sommet et un creux d'un portefeuille ;;
+Diversification ;; répartir ses placements pour réduire le risque ;; « Ne pas mettre tous ses œufs dans le même panier ».
+Corrélation ;; mesure de la tendance de deux actifs à évoluer ensemble ;; De -1 à +1 ; faible corrélation = meilleure diversification.
+Allocation d'actifs ;; répartition entre actions, obligations, immobilier, liquidités... ;; Détermine l'essentiel de la performance.
+Rééquilibrage ;; remettre le portefeuille à ses proportions cibles ;;
+Horizon de placement ;; durée pendant laquelle on peut laisser l'argent investi ;; Actions : 5 ans minimum conseillés.
+Profil prudent / équilibré / dynamique ;; tolérance au risque croissante ;;
+Investissement programmé (DCA) ;; investir une somme fixe à intervalles réguliers ;; Lisse le prix d'entrée (Dollar Cost Averaging).
+Market timing ;; tenter d'acheter bas et vendre haut au bon moment ;; Très difficile, souvent perdant.
+Risque de marché ;; risque lié aux variations globales des cours ;;
+Risque de change ;; risque lié aux variations d'une devise ;;
+Risque de taux ;; baisse de valeur des obligations quand les taux montent ;;
+Risque de contrepartie ;; risque que l'autre partie ne paie pas ;;
+Risque de liquidité (actif) ;; difficulté à vendre rapidement ;;
+Risque opérationnel ;; erreurs, fraudes, pannes internes ;;
+Risque de concentration ;; trop d'argent dans un seul actif ;;
+Risque de perte en capital ;; on peut récupérer moins que ce qu'on a investi ;;
+Performance passée ;; ne préjuge pas des performances futures ;; Mention obligatoire dans les documents.
+Biais de confirmation ;; ne retenir que ce qui confirme son opinion ;;
+Aversion à la perte ;; une perte pèse environ 2 fois plus qu'un gain équivalent ;; Théorie des perspectives (Kahneman, Tversky).
+Effet de troupeau ;; suivre la foule plutôt que sa propre analyse ;;
+Surconfiance ;; surestimer sa capacité à prévoir les marchés ;;
+Efficience des marchés ;; les prix reflètent toute l'information disponible ;; Eugene Fama.
+Théorie moderne du portefeuille ;; optimiser le couple rendement-risque ;; Harry Markowitz (frontière efficiente).
+MEDAF (CAPM) ;; rendement attendu = taux sans risque + β × prime de risque du marché ;;
+Alpha ;; surperformance par rapport à l'indice de référence ;;
+Benchmark ;; indice de référence pour comparer une performance ;;
+Tracking error ;; écart de performance entre un fonds et son indice ;;
+
+## Analyse financière et valorisation | 🧮
+Chiffre d'affaires (CA) ;; ventes de biens et services sur la période ;;
+EBITDA / EBE ;; excédent brut d'exploitation avant amortissements, intérêts et impôts ;;
+Résultat d'exploitation (EBIT) ;; résultat avant intérêts et impôts ;;
+Résultat net ;; bénéfice final après intérêts et impôts ;;
+Marge nette ;; résultat net ÷ chiffre d'affaires ;;
+ROE ;; Return on Equity = résultat net ÷ capitaux propres ;; Rentabilité des fonds apportés par les actionnaires.
+ROA ;; Return on Assets = résultat net ÷ total de l'actif ;;
+ROCE ;; rentabilité des capitaux employés = EBIT après impôt ÷ capitaux employés ;;
+Free cash flow ;; flux de trésorerie disponible après investissements ;;
+Dette nette ;; dettes financières moins trésorerie ;;
+Gearing (levier financier) ;; dette nette ÷ capitaux propres ;;
+Dette nette / EBITDA ;; nombre d'années de résultat pour rembourser la dette ;; Au-delà de 3 à 4, risque élevé.
+Ratio de liquidité générale ;; actif circulant ÷ dettes à court terme ;; Supérieur à 1 : bonne santé à court terme.
+Valeur d'entreprise (EV) ;; capitalisation + dette nette ;;
+Multiple EV / EBITDA ;; valeur d'entreprise ÷ EBITDA ;; Compare des sociétés endettées différemment.
+Price to Book (PBR) ;; cours ÷ valeur comptable par action ;;
+DCF (actualisation des flux) ;; valeur = somme des flux futurs actualisés ;;
+Actualisation ;; ramener des flux futurs à leur valeur d'aujourd'hui ;; Valeur actuelle = flux ÷ (1 + t)^n.
+VAN (valeur actuelle nette) ;; somme des flux actualisés moins l'investissement initial ;; Projet rentable si VAN > 0.
+TRI (taux de rentabilité interne) ;; taux qui annule la VAN ;; Projet accepté si TRI > coût du capital.
+WACC (CMPC) ;; coût moyen pondéré du capital (dette et fonds propres) ;;
+Délai de récupération ;; durée pour récupérer l'investissement initial ;;
+Valeur temps de l'argent ;; 1 € aujourd'hui vaut plus que 1 € demain ;;
+Fusion-acquisition (M&A) ;; opérations de rapprochement ou de rachat d'entreprises ;;
+LBO ;; achat d'une société financé en grande partie par de la dette ;;
+Goodwill (écart d'acquisition) ;; différence entre le prix payé et la valeur comptable des actifs ;;
+Bilan ;; photographie du patrimoine : actif (ce qu'on possède) et passif (ce qu'on doit) ;;
+Compte de résultat ;; produits et charges sur une période ;;
+Tableau de flux de trésorerie ;; origine et utilisation de l'argent liquide ;;
+Normes IFRS ;; normes comptables internationales pour les sociétés cotées ;;
+Capitaux propres ;; apports des actionnaires + réserves + résultats ;;
+Covenant ;; engagement financier imposé par un prêteur ;; Ex. ne pas dépasser un ratio de dette.
+Mots-clés d'une introduction en bourse ;; prospectus, fourchette de prix, book building, cotation ;;

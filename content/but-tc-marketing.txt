@@ -1,0 +1,190 @@
+@pack but-tc-marketing | BUT TC : marketing, communication et digital | 📣 | Les fondamentaux du marketing, de la stratégie, de la communication et du marketing digital (à compléter avec tes propres cours).
+@tags BUT TC, marketing
+
+## Fondamentaux du marketing | 🎯
+Marketing ;; ensemble des actions qui permettent de comprendre les besoins du marché et d'y répondre de façon rentable ;; Objectif : créer de la valeur pour le client ET pour l'entreprise.
+Besoin / désir / demande ;; besoin = manque ressenti ; désir = forme choisie pour le satisfaire ; demande = désir + pouvoir d'achat ;; Ex. soif (besoin), un soda (désir), 2 € dépensés (demande).
+Pyramide de Maslow ;; physiologie, sécurité, appartenance, estime, accomplissement ;; Hiérarchie des besoins humains.
+Marketing de l'offre / de la demande ;; offre : on produit puis on vend ; demande : on étudie le besoin puis on produit ;;
+Marketing stratégique / opérationnel ;; stratégique : analyser, choisir une cible et un positionnement ; opérationnel : mettre en œuvre le mix ;;
+Marketing mix (4P) ;; Product, Price, Place, Promotion ;; Produit, prix, distribution, communication.
+Marketing mix de services (7P) ;; 4P + People, Process, Physical evidence ;; Personnel, processus, preuve physique.
+4C (vision client) ;; Customer value, Cost, Convenience, Communication ;; Valeur client, coût, commodité, communication.
+SWOT / FFOM ;; Forces, Faiblesses (interne) ; Opportunités, Menaces (externe) ;; Diagnostic stratégique.
+PESTEL ;; Politique, Économique, Socioculturel, Technologique, Écologique, Légal ;; Analyse de l'environnement externe.
+Cinq forces de Porter ;; menace des entrants, des substituts, pouvoir des clients, des fournisseurs, rivalité entre concurrents ;; Analyse de l'attractivité d'un secteur.
+Matrice BCG ;; vedettes (stars), vaches à lait, dilemmes, poids morts ;; Croissance du marché × part de marché relative.
+Matrice ADL / McKinsey ;; analyse portefeuille selon la position concurrentielle et la maturité du secteur ;;
+Matrice d'Ansoff ;; pénétration, développement de marché, de produit, diversification ;; Croissance : produits actuels/nouveaux × marchés actuels/nouveaux.
+Cycle de vie d'un produit ;; lancement, croissance, maturité, déclin ;; Les ventes et les profits suivent des courbes différentes.
+Segmentation ;; découper le marché en groupes homogènes de consommateurs ;; Critères : géographique, démographique, comportemental, psychographique.
+Ciblage ;; choisir les segments sur lesquels l'entreprise va se concentrer ;; Stratégie différenciée, indifférenciée ou concentrée.
+Positionnement ;; place qu'occupe l'offre dans l'esprit du consommateur par rapport à la concurrence ;; Carte perceptuelle (2 axes).
+Démarche STP ;; Segmentation, Targeting (ciblage), Positioning ;;
+Persona ;; portrait fictif détaillé d'un client type ;;
+Avantage concurrentiel ;; ce qui distingue durablement l'entreprise de ses concurrents ;; Coût, différenciation, focalisation (Porter).
+Proposition de valeur ;; promesse de valeur faite au client ;;
+USP / PUV ;; Unique Selling Proposition : argument de vente unique ;;
+Parts de marché ;; ventes de l'entreprise ÷ ventes totales du marché ;;
+Taille du marché ;; volume ou valeur des ventes totales d'un produit ;;
+Marché potentiel / actuel / cible ;; potentiel = tous les clients possibles ; actuel = ceux qui achètent ; cible = ceux visés ;;
+Courbe d'expérience ;; le coût unitaire baisse avec le volume produit cumulé ;;
+Effet de réseau ;; plus il y a d'utilisateurs, plus le produit a de valeur ;;
+Marque ;; nom, signe ou symbole qui identifie les produits d'une entreprise ;; Capital marque, notoriété, image.
+Notoriété spontanée / assistée ;; spontanée : citée sans aide ; assistée : reconnue sur une liste ;;
+Image de marque ;; perception de la marque par le public ;;
+Valeur de marque (brand equity) ;; valeur ajoutée par la marque au produit ;;
+Marque ombrelle / marque produit ;; ombrelle : une marque pour toute la gamme ; produit : une marque par produit ;;
+Extension de gamme / de ligne ;; ajout de produits à une gamme existante ;;
+Largeur / profondeur de gamme ;; largeur : nombre de lignes ; profondeur : nombre de variantes par ligne ;;
+Packaging ;; emballage qui protège, informe et séduit ;;
+Marque de distributeur (MDD) ;; marque créée par un distributeur ;; Ex. « Marque Repère », « Carrefour ».
+Marque blanche ;; produit fabriqué par une société et vendu sous la marque d'une autre ;;
+Co-branding ;; alliance de deux marques sur un même produit ;;
+
+## Étude de marché et comportement du consommateur | 🔍
+Étude de marché ;; collecte et analyse d'informations pour décider ;;
+Étude qualitative ;; comprendre les motivations (entretiens, focus groups) ;; Petits échantillons, non représentatifs.
+Étude quantitative ;; mesurer, chiffrer (questionnaires, panels) ;; Échantillons représentatifs.
+Données primaires / secondaires ;; primaires : collectées pour l'étude ; secondaires : déjà existantes ;;
+Entretien semi-directif ;; guide d'entretien avec des questions ouvertes et liberté de relance ;;
+Focus group ;; discussion animée avec un petit groupe de consommateurs ;;
+Questionnaire ;; liste de questions posées à un échantillon ;; Questions ouvertes, fermées, à échelle.
+Échantillon représentatif ;; reflète la population sur des critères clés ;;
+Méthode des quotas ;; échantillon construit en reproduisant la structure de la population ;;
+Sondage aléatoire ;; chaque individu a la même chance d'être interrogé ;;
+Panel ;; groupe suivi dans le temps ;;
+Étude de concurrence ;; analyse de l'offre, des prix, des forces des concurrents ;;
+Benchmark ;; comparaison avec les meilleures pratiques ou les concurrents ;;
+Veille ;; surveillance continue de l'environnement (concurrentielle, technologique, commerciale) ;;
+Processus d'achat ;; reconnaissance du besoin, recherche, évaluation, achat, évaluation après achat ;; Parcours client.
+Parcours client (customer journey) ;; ensemble des points de contact du client avec la marque ;;
+Point de contact (touchpoint) ;; moment d'interaction entre client et marque ;;
+Moment de vérité ;; instant où le client juge la marque ;;
+Facteurs d'influence d'achat ;; facteurs personnels, sociaux, culturels, psychologiques ;;
+Dissonance cognitive ;; doute après un achat important ;; Réduite par un service après-vente rassurant.
+Motivations et freins ;; ce qui pousse à acheter / ce qui retient ;;
+SONCAS ;; Sécurité, Orgueil, Nouveauté, Confort, Argent, Sympathie ;; Mobiles d'achat.
+Achat d'impulsion ;; achat non prévu ;;
+Fidélité ;; attachement durable d'un client à une marque ;;
+Satisfaction client ;; écart entre l'attente et l'expérience vécue ;;
+NPS (Net Promoter Score) ;; % de promoteurs moins % de détracteurs ;; Question : recommanderiez-vous... de 0 à 10.
+Taux de réachat ;; part des clients qui rachètent ;;
+Valeur vie client (CLV / LTV) ;; revenu net attendu d'un client sur toute la relation ;;
+Coût d'acquisition client (CAC) ;; coût marketing et commercial pour gagner un client ;;
+Churn (attrition) ;; part de clients perdus sur une période ;;
+Early adopters ;; consommateurs qui adoptent très tôt un nouveau produit ;;
+Courbe d'adoption de Rogers ;; innovateurs, adopteurs précoces, majorité précoce, majorité tardive, retardataires ;;
+
+## Politique de prix et distribution | 💶
+Prix psychologique ;; seuil au-delà duquel le client juge le prix trop élevé ;; Ex. 9,99 € plutôt que 10 €.
+Prix d'écrémage ;; prix élevé au lancement pour cibler les premiers acheteurs ;;
+Prix de pénétration ;; prix bas au lancement pour conquérir rapidement des parts de marché ;;
+Fixation des prix par les coûts ;; coût de revient + marge ;;
+Fixation par la concurrence ;; prix aligné ou décalé par rapport aux concurrents ;;
+Fixation par la demande ;; prix selon ce que le client accepte de payer ;;
+Élasticité-prix de la demande ;; variation de la demande en % ÷ variation du prix en % ;; Élastique si > 1 en valeur absolue.
+Prix d'appel ;; prix très bas sur un produit pour attirer ;;
+Prix de référence ;; prix auquel le client compare ;;
+Marge commerciale ;; prix de vente HT − coût d'achat HT ;;
+Canal de distribution ;; chemin parcouru par un produit du producteur au consommateur ;;
+Circuit direct / court / long ;; direct : sans intermédiaire ; court : un intermédiaire ; long : plusieurs ;;
+Distribution intensive / sélective / exclusive ;; nombre de points de vente : maximal, limité, un seul par zone ;;
+Omnicanal ;; expérience client fluide entre tous les canaux (magasin, web, mobile) ;;
+Cross-canal / multicanal ;; plusieurs canaux sans forcément de cohérence / avec cohérence ;;
+Click and collect ;; commande en ligne, retrait en magasin ;;
+Drive ;; commande en ligne et retrait en voiture ;;
+Franchise ;; contrat où le franchisé exploite l'enseigne et le savoir-faire du franchiseur ;; Paie un droit d'entrée et des redevances.
+Merchandising ;; techniques de présentation des produits en magasin ;;
+PLV ;; publicité sur le lieu de vente ;;
+Linéaire ;; longueur de présentation des produits en rayon ;;
+Logistique ;; gestion des flux de produits, de l'approvisionnement à la livraison ;;
+Dernier kilomètre ;; livraison finale au client ;; Étape la plus coûteuse de la livraison.
+Drop shipping ;; le vendeur ne stocke pas : le fournisseur expédie au client ;;
+Marketplace ;; plateforme où des vendeurs tiers proposent leurs produits ;; Ex. Amazon, Cdiscount.
+
+## Communication et publicité | 📺
+Communication commerciale ;; ensemble des actions d'information et de persuasion à destination des clients ;;
+Mix communication ;; publicité, promotion, relations publiques, marketing direct, force de vente ;;
+Média / hors média ;; média : presse, TV, radio, affichage, web, cinéma ; hors média : le reste ;;
+Publicité média ;; message diffusé par un média payant ;;
+Hors média ;; marketing direct, promotion des ventes, sponsoring, événementiel, salons ;;
+Promotion des ventes ;; actions à court terme qui stimulent l'achat (remises, jeux, échantillons) ;;
+Relations publiques (RP) ;; entretenir de bonnes relations avec les publics de l'entreprise ;;
+Relations presse ;; contacts avec les journalistes (communiqués, dossiers de presse) ;;
+Sponsoring / parrainage ;; soutien financier d'un événement ou d'une personne en échange de visibilité ;;
+Mécénat ;; soutien désintéressé à une cause, avec avantages fiscaux ;;
+Placement de produit ;; faire apparaître un produit dans un film ou un contenu ;;
+Marketing direct ;; contact direct avec la cible (mail, courrier, SMS) ;;
+Marketing d'influence ;; recours à des influenceurs pour promouvoir un produit ;;
+Marketing viral / buzz ;; message qui se propage de lui-même ;;
+Marketing de contenu (content marketing) ;; créer du contenu utile pour attirer des clients ;;
+Brief ;; document qui définit la demande de l'annonceur à son agence ;;
+Contre-brief ;; reformulation du brief par l'agence ;;
+Plan média ;; choix des supports, dates et budgets de diffusion ;;
+Concept de communication ;; idée centrale créative du message ;;
+Copy stratégie ;; plan de communication : promesse, preuve, ton ;;
+Slogan / baseline ;; phrase courte associée à la marque ;;
+Axe de communication ;; angle choisi pour communiquer ;;
+Cible de communication ;; public visé par le message ;; Cœur de cible, cible secondaire.
+Modèle AIDA ;; Attention, Intérêt, Désir, Action ;; Étapes de l'effet d'une publicité.
+Modèle des 5W (Lasswell) ;; qui dit quoi, par quel canal, à qui, avec quel effet ;;
+GRP (Gross Rating Point) ;; pression publicitaire : couverture × répétition ;;
+Couverture / répétition ;; nombre de personnes touchées / nombre de contacts par personne ;;
+Coût pour mille (CPM) ;; coût pour toucher 1 000 personnes ;;
+Charte graphique ;; règles visuelles de la marque (logo, couleurs, polices) ;;
+Identité visuelle ;; ensemble des éléments graphiques qui identifient une marque ;;
+Storytelling ;; communiquer en racontant une histoire ;;
+Communication interne / externe ;; interne : vers les salariés ; externe : vers le marché ;;
+Communication de crise ;; gestion de la communication pendant un événement grave ;;
+Greenwashing ;; communication écologique trompeuse ;; Sanctionné par la loi.
+RSE ;; Responsabilité Sociétale des Entreprises ;; Intégrer l'impact social et environnemental dans la stratégie.
+
+## Marketing digital | 💻
+Marketing digital ;; ensemble des actions marketing menées sur les supports numériques ;;
+Inbound marketing ;; attirer le client par du contenu utile ;; Il vient à vous.
+Outbound marketing ;; aller chercher le client (publicité, démarchage) ;;
+SEO ;; Search Engine Optimization : référencement naturel ;; Améliorer sa position dans les résultats sans payer.
+SEA ;; Search Engine Advertising : liens sponsorisés ;; Annonces payantes (ex. Google Ads).
+SEM ;; Search Engine Marketing = SEO + SEA ;;
+SMO / social media ;; présence et animation sur les réseaux sociaux ;;
+Mot-clé / requête ;; terme tapé par l'internaute dans un moteur ;;
+Backlink ;; lien d'un autre site vers le sien ;; Facteur de classement SEO.
+Netlinking ;; stratégie pour obtenir des backlinks ;;
+Balise title ;; titre d'une page affiché dans les résultats ;; Important pour le SEO.
+Balise meta description ;; texte qui résume la page dans les résultats ;;
+Taux de rebond ;; part des visiteurs qui quittent après une seule page ;;
+CTR (taux de clic) ;; clics ÷ impressions ;;
+CPC ;; coût par clic ;;
+CPM ;; coût pour mille impressions ;;
+CPA / CPL ;; coût par acquisition / par lead ;;
+ROAS ;; Return On Ad Spend = chiffre d'affaires publicitaire ÷ dépense publicitaire ;;
+ROI marketing ;; (gain − coût) ÷ coût ;;
+Taux de conversion ;; part des visiteurs qui réalisent l'action souhaitée (achat, inscription) ;;
+Panier moyen ;; montant moyen dépensé par commande ;;
+Taux d'abandon de panier ;; part des paniers créés mais non achetés ;;
+Tunnel de conversion (funnel) ;; étapes de la découverte à l'achat ;; Visiteurs, leads, prospects, clients.
+Lead ;; contact commercial potentiel qui a montré de l'intérêt ;;
+Lead nurturing ;; entretenir la relation avec un lead jusqu'à l'achat ;;
+CRM ;; Customer Relationship Management : gestion de la relation client ;;
+Marketing automation ;; automatisation de scénarios marketing (e-mails) ;;
+Newsletter ;; e-mail régulier envoyé aux abonnés ;;
+Taux d'ouverture ;; part des e-mails ouverts ;;
+Landing page ;; page d'atterrissage conçue pour convertir ;;
+Call to action (CTA) ;; bouton ou phrase qui pousse à l'action ;;
+A/B testing ;; comparer deux versions pour savoir laquelle convertit le mieux ;;
+UX / UI ;; expérience utilisateur / interface utilisateur ;;
+Responsive design ;; site qui s'adapte à tous les écrans ;;
+Retargeting ;; réafficher des publicités à ceux qui ont déjà visité le site ;;
+Affiliation ;; rémunérer un partenaire pour chaque vente ou lead apporté ;;
+Social Ads ;; publicités payantes sur réseaux sociaux ;;
+Community manager ;; anime la communauté et les réseaux sociaux d'une marque ;;
+Engagement (réseaux) ;; likes, partages, commentaires ;;
+Cookie ;; petit fichier déposé sur l'appareil pour suivre l'internaute ;; Consentement obligatoire (RGPD).
+RGPD ;; règlement européen sur les données personnelles ;; Consentement, droit d'accès, d'effacement, DPO.
+Big data ;; très grands volumes de données exploitées ;;
+E-commerce ;; vente de produits ou services en ligne ;; B2C, B2B, C2C.
+B2B / B2C / C2C ;; business to business / consumer / consumer to consumer ;;
+Mobile first ;; concevoir d'abord pour le mobile ;;
+Dropshipping et marketplace ;; modèles de vente sans stock ou via une plateforme ;;
+Dark social ;; partages privés (messageries) non mesurables ;;

@@ -1,0 +1,159 @@
+@pack assurance | Assurance : principes, contrats et réglementation | 🛡️ | Vocabulaire et mécanismes de l'assurance (IARD, vie, santé, prévoyance), droit des assurances, métiers et chiffres clés.
+@tags assurance
+
+## Principes et vocabulaire | 📘
+Assurance ;; opération par laquelle l'assureur s'engage à indemniser l'assuré en cas de risque, en échange d'une prime ;; Mutualisation des risques entre de nombreux assurés.
+Risque ;; événement incertain et indépendant de la volonté de l'assuré ;; Un risque doit être aléatoire (un événement certain n'est pas assurable).
+Sinistre ;; réalisation du risque assuré ;; Ex. incendie, accident, décès.
+Prime / cotisation ;; prix de l'assurance payé par l'assuré ;; « Cotisation » dans une mutuelle ; « prime » dans une société d'assurance.
+Franchise ;; part du sinistre qui reste à la charge de l'assuré ;; Évite les petits sinistres, réduit la prime.
+Plafond de garantie ;; maximum remboursé par l'assureur ;;
+Exclusion de garantie ;; cas où l'assureur ne paie pas ;; Ex. faute intentionnelle (toujours exclue).
+Garantie ;; ce qui est couvert par le contrat ;;
+Souscripteur / assuré / bénéficiaire ;; celui qui signe / celui qui est couvert / celui qui reçoit l'indemnité ;; Peuvent être trois personnes différentes.
+Assureur ;; entreprise qui supporte les risques et paie les indemnités ;;
+Mutualisation ;; répartition du coût des sinistres entre tous les assurés ;; La loi des grands nombres rend les sinistres prévisibles.
+Loi des grands nombres ;; plus un groupe est grand, plus la fréquence des sinistres est stable ;; Base statistique du calcul des primes.
+Sélection des risques ;; choix des risques acceptés selon leur qualité ;; Questionnaire de santé, antécédents.
+Tarification ;; calcul de la prime selon le risque ;;
+Prime pure ;; coût moyen des sinistres (fréquence × coût moyen) ;; Prime commerciale = prime pure + chargements (frais) + marge.
+Chargements ;; frais ajoutés à la prime pure (gestion, commissions, marge) ;;
+Ratio sinistres / primes (S/P) ;; sinistres payés ÷ primes encaissées ;; Plus il est bas, plus la branche est rentable.
+Ratio combiné ;; (sinistres + frais) ÷ primes ;; Inférieur à 100 % = rentabilité technique.
+Provisions techniques ;; sommes mises de côté pour payer les sinistres futurs ;; Obligation réglementaire.
+Réassurance ;; assurance des assureurs : l'assureur transfère une partie de ses risques ;; Ex. Swiss Re, Munich Re.
+Coassurance ;; plusieurs assureurs se partagent un même risque ;;
+Antisélection ;; les plus mauvais risques s'assurent le plus ;; Problème pour l'assureur.
+Aléa moral ;; l'assuré prend plus de risques parce qu'il est couvert ;;
+Principe indemnitaire ;; l'assurance de dommages répare le préjudice sans l'enrichir ;; Ne s'applique pas à l'assurance de personnes.
+Assurance de dommages ;; couvre les biens et la responsabilité (indemnitaire) ;; Auto, habitation, RC...
+Assurance de personnes ;; couvre la vie, la santé, l'intégrité de la personne (forfaitaire) ;; Vie, décès, santé, prévoyance.
+IARD ;; Incendie, Accidents et Risques Divers ;; Branche des assurances de biens et de responsabilité.
+Assurance vie / capitalisation ;; branche épargne et prévoyance de long terme ;;
+Assurance obligatoire ;; imposée par la loi ;; RC auto, habitation du locataire, décennale, RC professionnelle de certains métiers.
+Assurance facultative ;; choisie librement ;; Ex. assurance voyage, garantie du conducteur.
+Assurance emprunteur ;; garantit le remboursement du prêt en cas de décès, invalidité, incapacité ;; Exigée par les banques pour un crédit immobilier.
+
+## Contrat d'assurance | 📑
+Proposition d'assurance ;; offre faite par l'assureur, engage s'il y a acceptation ;;
+Conditions générales ;; règles communes à tous les contrats du produit ;;
+Conditions particulières ;; règles propres à un assuré (nom, risque, prime) ;;
+Police d'assurance ;; le contrat écrit ;;
+Devoir d'information de l'assureur ;; l'assureur doit remettre une fiche d'information et la notice ;;
+Déclaration du risque ;; l'assuré répond aux questions de l'assureur à la souscription ;; Il doit répondre sincèrement.
+Fausse déclaration intentionnelle ;; l'assuré ment volontairement : nullité du contrat ;; Article L113-8 du Code des assurances.
+Fausse déclaration non intentionnelle ;; erreur de bonne foi : réduction proportionnelle de l'indemnité ;; Article L113-9. Formule : indemnité × (prime payée ÷ prime due).
+Aggravation du risque ;; le risque devient plus dangereux en cours de contrat ;; L'assuré doit le déclarer dans les 15 jours.
+Diminution du risque ;; l'assuré peut demander une baisse de prime ;;
+Déchéance de garantie ;; perte du droit à indemnité (retard de déclaration, fraude) ;; Doit être prévue au contrat.
+Délai de déclaration d'un sinistre ;; 5 jours ouvrés (en général) ;; Vol : 2 jours ouvrés ; catastrophe naturelle : 30 jours après la publication de l'arrêté.
+Vol : délai de déclaration ;; 2 jours ouvrés ;; Plainte à déposer à la police ou gendarmerie.
+Constat amiable ;; formulaire commun des conducteurs après un accident ;; Sert à déterminer les responsabilités.
+Expertise ;; évaluation des dommages par un expert ;;
+Indemnité ;; somme versée par l'assureur après un sinistre ;;
+Valeur à neuf ;; indemnité sans tenir compte de l'usure du bien ;;
+Vétusté ;; décote liée à l'âge et à l'usure du bien ;; Réduit l'indemnité sauf option valeur à neuf.
+Valeur de remplacement ;; coût d'achat d'un bien équivalent ;;
+Règle proportionnelle de capitaux ;; si le capital assuré est trop faible, l'indemnité est réduite ;; Indemnité = dommage × (capital assuré ÷ valeur réelle).
+Sous-assurance ;; capital assuré inférieur à la valeur réelle du bien ;; Déclenche la règle proportionnelle.
+Sur-assurance ;; capital assuré supérieur à la valeur réelle ;; On ne touche pas plus que la valeur réelle.
+Cumul d'assurances ;; plusieurs contrats pour le même risque ;; Nullité possible si frauduleux ; sinon indemnité partagée.
+Subrogation ;; l'assureur qui a payé prend la place de l'assuré pour poursuivre le responsable ;; Recours contre le tiers responsable.
+Tiers responsable ;; personne qui a causé le dommage ;;
+Résiliation à l'échéance ;; l'assuré peut résilier avant la date anniversaire avec préavis ;; Préavis usuel : 2 mois (avis d'échéance : loi Chatel).
+Loi Hamon ;; résiliation à tout moment après 1 an pour auto, habitation, affinitaires ;; Sans frais ni justification.
+Loi Lemoine ;; résiliation à tout moment de l'assurance emprunteur ;; Depuis 2022 ; suppression du questionnaire de santé sous conditions.
+Délai de renonciation ;; 14 jours en cas de vente à distance ou démarchage ;; 30 jours pour l'assurance-vie.
+Délai de carence ;; période après la souscription où la garantie ne joue pas encore ;;
+Prescription biennale ;; les actions dérivant d'un contrat d'assurance se prescrivent par 2 ans ;; Article L114-1 du Code des assurances.
+Médiation de l'assurance ;; recours gratuit en cas de litige avec l'assureur ;; Après réclamation écrite.
+
+## Auto et habitation | 🚗
+Responsabilité civile (RC) ;; obligation de réparer le dommage causé à autrui ;; Article 1240 du Code civil.
+RC automobile ;; assurance obligatoire pour tout véhicule terrestre à moteur ;; Couvre les dommages causés aux tiers.
+Formule au tiers ;; couvre seulement la RC, les dommages causés aux autres ;; Minimum légal.
+Formule tiers étendu ;; RC + vol, incendie, bris de glace, catastrophes ;;
+Formule tous risques ;; couvre aussi les dommages à son propre véhicule, même en cas de responsabilité ;;
+Bonus-malus (CRM) ;; coefficient de réduction-majoration de la prime auto ;; De 0,50 (bonus maximum) à 3,50 (malus maximum).
+Coefficient de départ ;; 1,00 pour un nouvel assuré ;;
+Bonus ;; -5 % de coefficient chaque année sans sinistre responsable ;; Plancher de 0,50 atteint après 13 ans.
+Malus ;; +25 % de coefficient pour un sinistre entièrement responsable ;;
+Loi Badinter (1985) ;; indemnise les victimes d'accidents de la route, indépendamment de leur faute ;; Piétons, cyclistes, passagers sont très protégés.
+Convention IRSA / IDA ;; l'assureur indemnise son propre client, puis se fait rembourser par l'autre assureur ;; Règle les petits sinistres matériels automobiles.
+Garantie du conducteur ;; indemnise le conducteur responsable blessé ;; Non incluse dans la RC de base.
+Garantie assistance ;; dépannage, remorquage, rapatriement ;;
+Protection juridique ;; prise en charge de frais de justice et de conseil ;;
+Bris de glace ;; garantie des vitres (pare-brise) ;;
+Multirisque habitation (MRH) ;; couvre le logement, le contenu et la responsabilité ;; Obligatoire pour le locataire.
+Garanties de base de la MRH ;; incendie, explosion, dégâts des eaux, tempête, vol, catastrophes naturelles ;;
+Garantie dégât des eaux ;; couvre les dommages causés par des fuites ou infiltrations ;;
+Convention IRSI (dégâts des eaux) ;; règle le recours entre assureurs d'immeubles ;;
+RC vie privée ;; couvre les dommages causés à des tiers dans la vie courante ;; Souvent incluse dans la MRH.
+Catastrophe naturelle (CatNat) ;; garantie obligatoire dans les contrats de biens, après arrêté interministériel ;; Franchise légale fixée par arrêté.
+Assurance du locataire ;; obligatoire (loi) pour le logement loué ;; Couvre risques locatifs : incendie, dégâts des eaux, explosion.
+Assurance propriétaire non occupant (PNO) ;; assure un bien qu'on loue ou qu'on n'occupe pas ;;
+Garantie des loyers impayés (GLI) ;; indemnise le propriétaire des loyers non payés ;;
+Assurance construction ;; garanties pour les travaux de bâtiment ;;
+Garantie décennale ;; responsabilité du constructeur 10 ans après la réception des travaux ;; Obligatoire pour les professionnels du bâtiment.
+Dommage-ouvrage ;; préfinance la réparation de dommages de nature décennale ;; Obligatoire pour le maître d'ouvrage qui fait construire.
+Garantie de parfait achèvement ;; 1 an : le constructeur répare tous les désordres signalés ;;
+Garantie biennale ;; 2 ans : garantit le bon fonctionnement des éléments d'équipement ;;
+
+## Santé, prévoyance, vie | ❤️
+Sécurité sociale ;; régime obligatoire de base : maladie, famille, retraite, accidents du travail ;;
+Assurance maladie obligatoire (AMO) ;; rembourse une partie des soins ;; Taux de remboursement : 70 % consultation, 80 % hôpital...
+Mutuelle (complémentaire santé) ;; rembourse la part non prise en charge par la Sécurité sociale ;; Mutuelle d'entreprise obligatoire depuis 2016.
+Ticket modérateur ;; part des dépenses de santé qui reste à la charge de l'assuré après l'AMO ;;
+Tiers payant ;; l'assuré n'avance pas les frais, le professionnel est payé directement ;;
+Contrat responsable ;; contrat respectant un cahier des charges (avantages fiscaux) ;; Pas de prise en charge de la participation forfaitaire ni des franchises.
+100 % Santé (RAC 0) ;; paniers de soins dentaires, optiques et auditifs sans reste à charge ;;
+ALD ;; Affection de Longue Durée : maladie prise en charge à 100 % ;;
+Dépassement d'honoraires ;; tarif supérieur au tarif de la Sécurité sociale ;; Pris en charge selon le niveau de la mutuelle.
+Prévoyance ;; couvre les risques décès, invalidité, incapacité de travail ;; Complète la protection sociale.
+Garantie décès ;; verse un capital ou une rente aux proches ;;
+Invalidité ;; perte durable de capacité de travail ;;
+Incapacité temporaire de travail ;; arrêt de travail avec indemnités journalières ;;
+Indemnités journalières (IJ) ;; revenu de remplacement pendant un arrêt maladie ;;
+Dépendance ;; perte d'autonomie, nécessite une aide pour les actes de la vie courante ;; Rente ou capital.
+Assurance obsèques ;; finance les obsèques à l'avance ;;
+PTIA ;; Perte Totale et Irréversible d'Autonomie ;; Garantie de l'assurance emprunteur.
+IPT / IPP ;; Invalidité Permanente Totale / Partielle ;;
+ITT ;; Incapacité Temporaire Totale de travail ;;
+Questionnaire de santé ;; questions posées à la souscription ;; La loi Lemoine l'a supprimé pour certains prêts.
+Convention AERAS ;; aide les personnes à risque aggravé de santé à emprunter et s'assurer ;;
+Droit à l'oubli ;; ne pas déclarer un cancer guéri après 5 à 10 ans selon les cas ;;
+Table de mortalité ;; statistiques de survie qui servent à tarifer l'assurance vie ;;
+Provision mathématique ;; épargne constituée pour les engagements d'un contrat vie ;;
+Participation aux bénéfices ;; part des résultats financiers redistribuée aux assurés ;;
+Taux minimum garanti ;; rendement minimum annoncé sur le fonds en euros ;;
+Rente viagère ;; somme versée chaque période jusqu'au décès ;; Utilisée pour la retraite.
+Capital différé ;; somme versée à une date fixée si l'assuré est vivant ;;
+Assurance temporaire décès ;; verse un capital si l'assuré meurt pendant une période définie ;; Pas d'épargne : prime faible.
+
+## Acteurs, métiers et réglementation | 🧑‍💼
+Code des assurances ;; texte qui régit le contrat d'assurance en France ;;
+Compagnie d'assurance ;; société anonyme à but lucratif ;; Ex. AXA, Allianz, Generali.
+Mutuelle d'assurance ;; société à but non lucratif, les assurés sont les sociétaires ;; Ex. MAIF, MACIF, Groupama.
+Institution de prévoyance ;; organisme paritaire pour la protection sociale d'entreprise ;;
+Courtier d'assurance ;; commerçant indépendant qui conseille et place les contrats ;; Rémunéré par commissions.
+Agent général ;; mandataire exclusif d'un assureur ;;
+Mandataire / conseiller salarié ;; vend les contrats d'un assureur ;;
+Actuaire ;; spécialiste des statistiques et de la tarification ;; Calcule primes et provisions.
+Gestionnaire de sinistres ;; traite les déclarations et indemnisations ;;
+Souscripteur (métier) ;; analyse et accepte les risques ;;
+Expert d'assurance ;; évalue les dommages ;;
+Solvabilité II ;; réglementation européenne des assureurs (3 piliers) ;; Pilier 1 : fonds propres, 2 : gouvernance, 3 : transparence.
+SCR ;; Solvency Capital Requirement : capital de solvabilité requis ;; Un ratio de solvabilité supérieur à 100 % est requis.
+DDA ;; directive européenne sur la distribution d'assurance ;; Devoir de conseil, transparence sur les rémunérations.
+Devoir de conseil (assurance) ;; analyser les besoins du client avant de proposer un contrat ;;
+ACPR (assurance) ;; contrôle les assureurs ;;
+Plan de continuité d'activité ;; organisation pour maintenir l'activité en cas de crise ;;
+Lutte contre la fraude à l'assurance ;; détection des faux sinistres ;; Faux et usage de faux : sanction pénale.
+Marché de l'assurance en France ;; l'un des plus importants d'Europe ;; L'assurance-vie représente la plus grande part des cotisations.
+Assurance paramétrique ;; indemnité déclenchée automatiquement selon un indice (ex. vent, pluie) ;;
+Cyber-assurance ;; couvre les attaques informatiques et pertes de données ;;
+Assurance RC professionnelle ;; couvre les dommages causés aux clients dans l'exercice du métier ;;
+Multirisque professionnelle ;; couvre locaux, matériel, stocks et RC d'une entreprise ;;
+Perte d'exploitation ;; indemnise la baisse de revenus après un sinistre ;;
+Assurance-crédit ;; couvre le risque d'impayé client ;;
+Assurance transport (facultés) ;; couvre les marchandises transportées ;;

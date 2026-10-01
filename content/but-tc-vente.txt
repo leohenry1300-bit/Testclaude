@@ -1,0 +1,154 @@
+@pack but-tc-vente | BUT TC : vente, négociation et calculs commerciaux | 🤝 | Techniques de vente, prospection, relation client, et les formules de calcul commerciales (marge, TVA, seuil de rentabilité).
+@tags BUT TC, vente
+
+## Techniques de vente | 🗣️
+Les étapes de l'entretien de vente ;; prise de contact, découverte, reformulation, argumentation, traitement des objections, conclusion, prise de congé ;; Méthode classique « CRÉPAC » ou « PAPC ».
+PAPC ;; Prise de contact, Analyse (découverte), Proposition (argumentation), Conclusion ;;
+Prise de contact ;; créer un climat de confiance dans les premières secondes ;; Salutation, sourire, présentation, ouverture.
+Règle des « 4 × 20 » ;; 20 secondes pour faire une première impression : 4 premières minutes décisives ;;
+Découverte des besoins ;; poser des questions pour comprendre le client ;; Questions ouvertes, fermées, de relance.
+Question ouverte ;; appelle une réponse développée (qui, quoi, comment, pourquoi) ;;
+Question fermée ;; réponse oui / non ;; Sert à valider.
+SPIN selling ;; Situation, Problème, Implication, Need-payoff (bénéfice) ;; Méthode de questionnement.
+Reformulation ;; reprendre avec ses mots ce que le client a dit ;; Montre l'écoute et valide la compréhension.
+CAP ;; Caractéristique, Avantage, Preuve ;; Structure d'argumentation.
+CAB ;; Caractéristique, Avantage, Bénéfice ;; Le bénéfice répond au besoin exprimé du client.
+Caractéristique / avantage / bénéfice ;; ce que c'est / ce que ça apporte / ce que ça change pour LE client ;;
+SONCAS ;; Sécurité, Orgueil, Nouveauté, Confort, Argent, Sympathie ;; Mobiles d'achat pour adapter l'argumentaire.
+SABONE ;; Sécurité, Argent, Bien-être, Orgueil, Nouveauté, Écologie ;; Variante de SONCAS.
+Argumentaire de vente ;; ensemble structuré des arguments adaptés à un client ;;
+Traitement des objections ;; répondre aux freins exprimés par le client ;; Une objection = un signe d'intérêt.
+Types d'objections ;; sincère, prétexte, de prix, de temps, de confiance, d'indifférence ;;
+Méthode CRAC ;; Comprendre, Reformuler, Argumenter, Contrôler ;; Pour répondre à une objection.
+Méthode « oui mais » / « oui et » ;; reconnaître l'objection avant de répondre ;;
+Objection sur le prix ;; ne pas baisser le prix tout de suite : replacer dans la valeur et le coût global ;;
+Conclusion de la vente ;; amener le client à décider ;;
+Signaux d'achat ;; paroles ou gestes qui montrent que le client est prêt à acheter ;; Ex. questions sur la livraison.
+Vente additionnelle (upselling) ;; proposer une version supérieure ;;
+Vente complémentaire (cross-selling) ;; proposer un produit associé ;;
+Prise de congé ;; terminer par une phrase positive et laisser une bonne image ;;
+Vente conseil ;; vendre en conseillant selon les besoins ;;
+Vente à distance ;; vente par téléphone, web ou courrier ;;
+Vente directe ;; vente sans intermédiaire, au domicile ou sur des lieux de vente ;;
+Vente en libre-service ;; le client se sert seul ;;
+Vente à domicile ;; vente au domicile du client ;; Délai de rétractation de 14 jours.
+Vente par téléphone ;; vente à distance par appels ;; Règle : bloctel, accord pour les appels.
+Pitch ;; présentation courte et percutante (30 s à 2 min) ;;
+Elevator pitch ;; présentation rapide en quelques phrases ;;
+Silence ;; savoir se taire après une question ou une proposition de prix ;; Celui qui parle le premier perd souvent.
+Écoute active ;; reformuler, relancer, montrer son intérêt ;;
+Communication non verbale ;; gestes, regard, posture, voix ;; Selon Mehrabian, souvent plus importante que les mots.
+Le client roi ;; le client est au centre de la démarche commerciale ;;
+Qualités du vendeur ;; écoute, empathie, persévérance, honnêteté, connaissance du produit ;;
+Savoir-être ;; qualités comportementales (ponctualité, tenue, courtoisie) ;;
+Savoir-faire ;; compétences techniques et méthodes ;;
+
+## Prospection et suivi commercial | 🔭
+Prospection ;; recherche de nouveaux clients ;;
+Prospect ;; client potentiel qui n'a pas encore acheté ;;
+Suspect ;; contact qui pourrait peut-être devenir prospect ;;
+Lead ;; contact qui a manifesté de l'intérêt ;;
+Entonnoir de vente ;; suspects, prospects, clients : le nombre diminue à chaque étape ;;
+Phoning ;; prospection par téléphone ;;
+Mailing / e-mailing ;; envoi de courriers ou e-mails en nombre ;;
+Porte-à-porte ;; prospection en allant à la rencontre des clients ;;
+Salon professionnel ;; événement où les entreprises rencontrent clients et partenaires ;;
+Réseautage (networking) ;; développer son réseau de contacts professionnels ;;
+Fichier clients ;; base de données des clients ;;
+Fichier prospects ;; base de données de contacts potentiels ;;
+Plan de prospection ;; objectifs, cibles, moyens et calendrier de la prospection ;;
+Qualification d'un lead ;; évaluer son potentiel (besoin, budget, décideur, délai) ;;
+BANT ;; Budget, Authority, Need, Timing ;; Critères de qualification.
+Décideur / prescripteur / influenceur ;; décideur : décide ; prescripteur : conseille ; influenceur : oriente ;;
+Fidélisation ;; actions pour garder ses clients ;; Coûte moins cher que d'en conquérir.
+Programme de fidélité ;; avantages pour les clients réguliers ;;
+Gestion de la relation client (GRC) ;; ensemble des outils et méthodes pour suivre les clients ;;
+Tableau de bord commercial ;; indicateurs de suivi : chiffre d'affaires, taux de transformation, marge ;;
+Taux de transformation ;; nombre de ventes ÷ nombre de prospects contactés ;;
+Panier moyen ;; chiffre d'affaires ÷ nombre de tickets ;;
+Taux de marge sur ventes ;; marge ÷ chiffre d'affaires ;;
+Objectif SMART ;; Spécifique, Mesurable, Atteignable, Réaliste, Temporel ;;
+Plan d'action commercial (PAC) ;; actions, ressources, responsables et échéances ;;
+Force de vente ;; ensemble des commerciaux de l'entreprise ;;
+Commercial sédentaire / itinérant ;; sédentaire : en bureau ou au téléphone ; itinérant : se déplace ;;
+Responsable de secteur ;; gère les ventes d'une zone géographique ;;
+Key account manager (KAM) ;; gère les grands comptes ;;
+Business developer ;; développe l'activité auprès de nouveaux clients ;;
+Rémunération commerciale ;; fixe + variable (commissions, primes sur objectifs) ;;
+Reporting ;; compte rendu régulier d'activité ;;
+Cycle de vente ;; durée entre le premier contact et la signature ;;
+Appel d'offres ;; procédure où plusieurs fournisseurs répondent à une demande ;;
+Cahier des charges ;; document qui décrit précisément le besoin ;;
+Devis ;; proposition chiffrée signée par le client ;; Engage le vendeur s'il est accepté.
+Bon de commande ;; document par lequel le client commande ;;
+Bon de livraison ;; document accompagnant la marchandise ;;
+Facture ;; document qui constate une vente et demande le paiement ;;
+Facture proforma ;; document provisoire non comptable ;;
+Avoir ;; document qui annule ou diminue une facture ;;
+Conditions générales de vente (CGV) ;; règles qui encadrent les ventes de l'entreprise ;; Obligatoires en B2B.
+Négociation ;; discussion entre deux parties pour trouver un accord ;;
+Zone d'accord possible (ZOPA) ;; plage de prix acceptable pour les deux parties ;;
+BATNA / MESORE ;; meilleure solution de repli si la négociation échoue ;;
+Concession ;; ce que l'on cède en échange d'une autre concession ;; Ne jamais céder sans contrepartie.
+Win-win ;; accord gagnant-gagnant ;;
+Négociation raisonnée ;; se concentrer sur les intérêts et non sur les positions ;; Fisher et Ury.
+Marge de manœuvre ;; écart entre le prix de départ et le prix plancher ;;
+Prix plancher ;; prix minimum acceptable ;;
+Ancrage ;; premier chiffre annoncé qui influence la suite de la négociation ;;
+Rapport de force ;; poids respectif des parties dans la négociation ;;
+
+## Calculs commerciaux | 🧮
+C: Prix de vente HT = prix d'achat HT + {{c1::marge commerciale}} ;; Marge commerciale = PV HT − PA HT
+C: Marge commerciale = {{c1::prix de vente HT}} − {{c2::prix d'achat HT}} ;; Exprimée en euros.
+C: Taux de marge = marge commerciale ÷ {{c1::prix d'achat HT}} × 100 ;; Base : le prix d'achat.
+C: Taux de marque = marge commerciale ÷ {{c1::prix de vente HT}} × 100 ;; Base : le prix de vente. Toujours inférieur à 100 %.
+C: Coefficient multiplicateur = {{c1::prix de vente TTC}} ÷ {{c2::prix d'achat HT}} ;; Passe directement du PA HT au PV TTC.
+C: Prix de vente TTC = prix de vente HT × (1 + {{c1::taux de TVA}}) ;; Taux normal : 20 % → × 1,20.
+C: Prix de vente HT = prix TTC ÷ {{c1::1,20}} ;; Pour un taux de TVA de 20 %.
+C: TVA à payer = TVA {{c1::collectée}} − TVA {{c2::déductible}} ;; Collectée sur les ventes, déductible sur les achats.
+Taux de TVA en France ;; 20 % (normal), 10 % (restauration, transports), 5,5 % (alimentation, livres), 2,1 % (médicaments remboursés) ;;
+Prix d'achat net ;; prix d'achat brut moins les réductions commerciales ;;
+Réduction commerciale ;; rabais, remise, ristourne ;; Elle diminue le prix de facturation.
+Rabais ;; réduction exceptionnelle pour un défaut ou un retard ;;
+Remise ;; réduction habituelle selon la quantité ou la qualité du client ;;
+Ristourne ;; réduction accordée en fonction du volume sur une période ;;
+Escompte de règlement ;; réduction pour paiement comptant ou anticipé ;; Charge financière, non commerciale.
+Frais accessoires d'achat ;; transport, assurance, douane ajoutés au coût d'achat ;;
+Coût d'achat ;; prix d'achat net + frais accessoires ;;
+Coût de revient ;; coût d'achat + charges de distribution et d'administration ;;
+Marge brute ;; chiffre d'affaires − coût d'achat des marchandises vendues ;;
+Marge nette ;; marge brute − toutes les charges ;;
+Charges fixes ;; charges indépendantes du volume d'activité ;; Ex. loyer, salaires fixes.
+Charges variables ;; charges proportionnelles à l'activité ;; Ex. matières premières, commissions.
+Marge sur coût variable (MCV) ;; chiffre d'affaires − charges variables ;;
+C: Taux de marge sur coût variable = MCV ÷ {{c1::chiffre d'affaires}} ;; Noté aussi « taux de MCV ».
+C: Seuil de rentabilité (SR) = charges fixes ÷ {{c1::taux de marge sur coût variable}} ;; Chiffre d'affaires pour lequel le résultat est nul.
+Point mort ;; date à laquelle le seuil de rentabilité est atteint ;; Point mort = SR ÷ CA × 360 jours.
+Marge de sécurité ;; chiffre d'affaires réel − seuil de rentabilité ;;
+Indice de sécurité ;; marge de sécurité ÷ chiffre d'affaires ;;
+Levier opérationnel ;; sensibilité du résultat aux variations du chiffre d'affaires ;; = MCV ÷ résultat d'exploitation.
+Taux de croissance ;; (valeur finale − valeur initiale) ÷ valeur initiale ;; Ex. de 80 à 100 : +25 %.
+Taux d'évolution ;; (nouvelle valeur − ancienne valeur) ÷ ancienne valeur × 100 ;;
+Coefficient multiplicateur d'une évolution ;; 1 + taux ;; +20 % → × 1,20 ; −20 % → × 0,80.
+Évolutions successives ;; on multiplie les coefficients, on n'additionne pas les taux ;; +10 % puis −10 % = −1 %.
+Taux d'évolution réciproque ;; taux permettant de revenir à la valeur d'origine ;; 1 ÷ coefficient − 1.
+Pourcentage de pourcentage ;; on multiplie les proportions ;;
+Proportionnalité ;; relation où deux grandeurs varient dans le même rapport ;; Règle de trois.
+Moyenne pondérée ;; somme (valeur × coefficient) ÷ somme des coefficients ;;
+Taux de remise ;; remise ÷ prix initial ;;
+Prix après remises successives ;; prix × (1 − r1) × (1 − r2) ;; 10 % puis 5 % = −14,5 %.
+Intérêt simple ;; I = capital × taux × durée ;;
+Valeur acquise (intérêts composés) ;; capital × (1 + taux)^n ;;
+Valeur actuelle ;; valeur future ÷ (1 + taux)^n ;;
+Escompte ;; paiement d'un effet avant son échéance avec une réduction ;;
+Rentabilité ;; résultat ÷ capitaux investis ;;
+Productivité ;; production ÷ moyens utilisés ;;
+Panier moyen ;; chiffre d'affaires ÷ nombre de transactions ;;
+Coefficient de saisonnalité ;; mesure l'effet d'une période de l'année sur les ventes ;;
+Ratio d'écart ;; réalisé ÷ prévu ;; Mesure le respect d'un objectif.
+
+C: Un produit acheté {{c1::50}} € HT est vendu {{c2::80}} € HT. Le taux de marge est de {{c3::60 %}}. ;; (80 − 50) ÷ 50 = 60 %
+C: Un produit acheté 50 € HT est vendu 80 € HT. Le taux de marque est de {{c1::37,5 %}}. ;; (80 − 50) ÷ 80 = 37,5 %
+C: Un article à 120 € TTC (TVA 20 %) coûte {{c1::100}} € HT. ;; 120 ÷ 1,20 = 100
+C: Une hausse de 25 % suivie d'une baisse de 20 % donne une évolution de {{c1::0 %}}. ;; 1,25 × 0,80 = 1
+C: Charges fixes : 60 000 €, taux de MCV : 40 %. Le seuil de rentabilité est de {{c1::150 000 €}}. ;; 60 000 ÷ 0,40

@@ -1,0 +1,99 @@
+@pack toeic-expressions | TOEIC : expressions de bureau et format du test | 🗣️ | Phrases toutes faites pour mails, téléphone, réunions, et tout savoir sur le déroulement du TOEIC.
+@tags toeic, expressions
+
+## Le TOEIC en pratique | 📝
+Le TOEIC Listening & Reading ;; 200 questions en 2 heures, notes de 10 à 990 ;; 100 questions d'écoute (45 min) puis 100 de lecture (75 min).
+Les 7 parties du TOEIC ;; 1 photos, 2 question-réponse, 3 conversations, 4 exposés ;; Écoute = parties 1 à 4 (100 questions).
+Les parties de lecture ;; 5 phrases à compléter, 6 textes à compléter, 7 compréhension ;; Lecture = parties 5 à 7 (100 questions).
+Part 5 ;; 30 phrases à compléter (grammaire, vocabulaire) ;; Le plus rentable : une question = 20 à 30 secondes max.
+Part 6 ;; 16 questions : textes (mails, notes) à compléter ;; Souvent une question sur la phrase à insérer.
+Part 7 ;; 54 questions : lire des textes (simples, doubles, triples) ;; Lis d'abord les questions, puis cherche la réponse dans le texte.
+Pas de pénalité ;; une mauvaise réponse ne retire pas de points ;; Réponds toujours à toutes les questions, même au hasard.
+Note : repères ;; ~400 : A2-B1 ; ~600 : B1 ; ~800 : B2 ; ~945 : C1 ;; Beaucoup de BUT demandent 785 (B2) pour valider le niveau.
+Pièges de la Part 2 ;; sons qui ressemblent, réponse qui ne répond pas à la question ;; Ex : « When is the deadline? » → « By Friday. » (pas « Yes, it is »).
+Astuce Part 3 et 4 ;; lis les questions AVANT l'audio ;; Tu as quelques secondes : repère les mots-clés.
+Les accents du TOEIC ;; américain, britannique, australien, canadien ;; Habitue ton oreille : regarde des vidéos avec ces accents.
+Gestion du temps en lecture ;; ~ 30 s par question en Part 5, garder 50 min pour Part 7 ;; Ne bloque jamais plus d'une minute sur une question.
+Se préparer ;; 20 à 30 min par jour, tous les jours ;; La régularité vaut mieux que de longues séances.
+
+## Mails professionnels | ✉️
+Dear Mr. / Ms. Smith, ;; Madame, Monsieur (formule d'appel) ;; Si le nom est inconnu : Dear Sir or Madam,
+I am writing to... ;; Je vous écris pour... ;; I am writing to inquire about the position.
+I am writing in response to... ;; Je vous écris en réponse à... ;;
+Thank you for your prompt reply. ;; Merci de votre réponse rapide. ;;
+I would like to confirm... ;; Je souhaite confirmer... ;;
+Please find attached... ;; Veuillez trouver ci-joint... ;; Please find attached the invoice.
+I look forward to hearing from you. ;; J'attends votre réponse avec intérêt. ;;
+Should you have any questions, please do not hesitate to contact me. ;; Si vous avez des questions, n'hésitez pas à me contacter. ;;
+We regret to inform you that... ;; Nous avons le regret de vous informer que... ;;
+We are pleased to inform you that... ;; Nous avons le plaisir de vous informer que... ;;
+I apologize for the inconvenience. ;; Je m'excuse pour la gêne occasionnée. ;;
+Best regards, / Sincerely, ;; Cordialement, / Sincères salutations ;; Sincerely = formel (Dear Mr. X) ; Best regards = plus courant.
+Yours faithfully / Yours sincerely ;; formules de politesse britanniques ;; faithfully si Dear Sir ; sincerely si Dear Mr. X.
+Further to our conversation... ;; Suite à notre conversation... ;;
+In reference to... / Regarding... ;; Concernant... ;;
+I am attaching... ;; Je joins... ;;
+As discussed, ... ;; Comme convenu, ... ;;
+Kindly let me know... ;; Pourriez-vous m'indiquer... ;;
+at your earliest convenience ;; dès que possible, quand cela vous arrange ;; Please reply at your earliest convenience.
+ASAP ;; as soon as possible (dès que possible) ;;
+FYI ;; for your information (pour info) ;;
+cc ;; copie (carbon copy) ;;
+RSVP ;; répondez s'il vous plaît ;; Please RSVP by May 5.
+
+## Téléphone | ☎️
+Hello, this is Anna from ABC. ;; Bonjour, ici Anna de ABC. ;; This is... (jamais « I am » au téléphone)
+Could I speak to Mr. Brown, please? ;; Pourrais-je parler à M. Brown ? ;;
+Who's calling, please? ;; Qui est à l'appareil ? ;;
+Hold the line, please. ;; Ne quittez pas. ;;
+I'll put you through. ;; Je vous le passe. ;;
+He is not available right now. ;; Il n'est pas disponible. ;;
+Can I take a message? ;; Puis-je prendre un message ? ;;
+Could you spell that, please? ;; Pourriez-vous épeler, s'il vous plaît ? ;;
+Could you repeat that, please? ;; Pourriez-vous répéter ? ;;
+I'm calling about... ;; J'appelle au sujet de... ;;
+I'm afraid he is in a meeting. ;; Je crains qu'il soit en réunion. ;;
+Could you call back later? ;; Pouvez-vous rappeler plus tard ? ;;
+The line is busy. ;; La ligne est occupée. ;;
+You have the wrong number. ;; Vous avez fait un mauvais numéro. ;;
+I'll get back to you. ;; Je vous recontacte. ;;
+
+## Réunions et négociation | 🤝
+Let's get started. ;; Commençons. ;;
+Let's move on to the next item. ;; Passons au point suivant. ;;
+Could you give us an update? ;; Pouvez-vous nous donner un point d'avancement ? ;;
+I'd like to raise a point. ;; Je voudrais soulever un point. ;;
+I see your point, but... ;; Je comprends votre point de vue, mais... ;;
+I couldn't agree more. ;; Je suis tout à fait d'accord. ;;
+I'm afraid I disagree. ;; Je crains de ne pas être d'accord. ;;
+That's a good point. ;; C'est un bon argument. ;;
+Let's take a vote. ;; Passons au vote. ;;
+Could we reschedule? ;; Pourrions-nous reporter ? ;;
+Let's table this issue. ;; Mettons ce point de côté. ;;
+We need to reach a compromise. ;; Il faut trouver un compromis. ;;
+That's out of the question. ;; C'est hors de question. ;;
+It's a deal. ;; Marché conclu. ;;
+Let me get back to you on that. ;; Je reviens vers vous là-dessus. ;;
+Could you elaborate on that? ;; Pouvez-vous développer ? ;;
+To sum up... ;; Pour résumer... ;;
+Any questions? ;; Des questions ? ;;
+Thank you all for coming. ;; Merci à tous d'être venus. ;;
+Could you please keep it short? ;; Pouvez-vous faire court ? ;;
+
+## Annonces et situations (écoute) | 🔊
+Attention, passengers. ;; Attention, chers passagers. ;; Annonce typique d'aéroport ou gare.
+The flight has been delayed. ;; Le vol a été retardé. ;;
+The train will depart from platform 3. ;; Le train partira du quai 3. ;;
+Please fasten your seatbelts. ;; Veuillez attacher votre ceinture. ;;
+We apologize for the inconvenience. ;; Nous nous excusons pour la gêne. ;;
+The store will be closed for renovation. ;; Le magasin sera fermé pour travaux. ;;
+For more information, visit our website. ;; Pour plus d'informations, visitez notre site. ;;
+Please stay on the line. ;; Veuillez rester en ligne. ;;
+Your call is important to us. ;; Votre appel est important pour nous. ;;
+Press one for customer service. ;; Tapez 1 pour le service client. ;;
+Leave your name and number after the tone. ;; Laissez votre nom et numéro après le bip. ;;
+The office will be closed on public holidays. ;; Le bureau sera fermé les jours fériés. ;;
+Parking is available for customers. ;; Parking disponible pour les clients. ;;
+Tickets are non-refundable. ;; Billets non remboursables. ;;
+Seating is limited. ;; Places limitées. ;;
+Doors open at 7 p.m. ;; Ouverture des portes à 19 h. ;;

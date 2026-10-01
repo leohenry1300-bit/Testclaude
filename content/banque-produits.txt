@@ -1,0 +1,167 @@
+@pack banque-produits | Banque : produits, épargne et fonctionnement | 🏦 | Comptes, moyens de paiement, livrets, PEA, assurance-vie, PER... Les plafonds et taux cités sont indicatifs : vérifie les valeurs à jour avant de t'en servir en situation réelle.
+@tags banque
+
+## Compte et moyens de paiement | 💳
+Compte de dépôt (compte courant) ;; compte qui sert aux opérations de la vie courante (salaire, paiements) ;; Il n'est en principe pas rémunéré.
+RIB ;; Relevé d'Identité Bancaire : identifie un compte (banque, agence, n° de compte, clé) ;; Il contient l'IBAN et le BIC.
+IBAN ;; International Bank Account Number : numéro de compte international (27 caractères en France) ;; Commence par FR suivi de 2 chiffres de contrôle.
+BIC / SWIFT ;; code qui identifie la banque dans les virements internationaux ;; Bank Identifier Code (8 ou 11 caractères).
+Virement SEPA ;; virement en euros dans la zone SEPA ;; Délai : 1 jour ouvrable ; le virement instantané : moins de 10 secondes, 24 h/24.
+SEPA ;; Single Euro Payments Area : espace unique de paiement en euros ;; Environ 40 pays (UE + quelques autres).
+Prélèvement SEPA ;; débit du compte à l'initiative du créancier, avec un mandat signé par le débiteur ;; Le débiteur peut s'opposer et demander le remboursement sous 8 semaines (autorisé) ou 13 mois (non autorisé).
+Chèque ;; ordre écrit de payer une somme à un bénéficiaire ;; Validité : 1 an et 8 jours après l'émission.
+Carte à débit immédiat ;; chaque achat est débité tout de suite du compte ;;
+Carte à débit différé ;; les achats sont regroupés et débités en une fois (souvent fin de mois) ;;
+Carte de crédit (à crédit) ;; carte liée à un crédit renouvelable ;; Coûteuse : taux élevés.
+Plafond de paiement / de retrait ;; montant maximum de dépenses d'une carte sur une période ;;
+Authentification forte (DSP2) ;; deux éléments parmi : ce que je sais, ce que je possède, ce que je suis ;; Ex. code reçu par SMS + mot de passe, ou biométrie.
+3-D Secure ;; protocole qui valide un achat en ligne avec une confirmation (appli, SMS) ;;
+Opposition (carte) ;; blocage immédiat d'une carte perdue ou volée ;; Numéro d'opposition : 0 892 705 705 en France (carte CB).
+Découvert autorisé ;; solde négatif convenu avec la banque, dans une limite ;; Il coûte des agios (intérêts).
+Découvert non autorisé ;; solde négatif sans accord : frais et taux élevés ;; Risque de rejet de prélèvements.
+Agios ;; intérêts et frais sur un découvert ;;
+Rejet de prélèvement / chèque sans provision ;; opération refusée faute d'argent ;; Frais plafonnés ; inscription possible au FCC pour un chèque.
+FCC ;; Fichier Central des Chèques (Banque de France) ;; Interdiction d'émettre des chèques en cas d'incident.
+FICP ;; Fichier national des Incidents de remboursement des Crédits aux Particuliers ;; Rend l'accès au crédit très difficile.
+Droit au compte ;; toute personne a droit à un compte, via la Banque de France si la banque refuse ;; Procédure : la banque remet une attestation de refus.
+Service bancaire de base ;; services gratuits minimum offerts dans le cadre du droit au compte ;;
+Mobilité bancaire ;; service gratuit de changement de banque : la nouvelle banque fait les démarches ;; Prélèvements et virements récurrents sont transférés automatiquement.
+Frais bancaires ;; tarifs des services (carte, tenue de compte, incidents) ;; Plafonnement pour les clients en situation de fragilité financière.
+Banque en ligne / néobanque ;; banque sans agence (ou presque), 100 % mobile ;; Frais plus faibles, mais moins de conseil humain.
+Open banking ;; partage de données bancaires avec des tiers autorisés par le client ;; Permis par la directive DSP2.
+Agrégateur de comptes ;; service qui regroupe les comptes de plusieurs banques ;;
+Pack / convention de compte ;; ensemble de services bancaires vendus au forfait ;;
+Coffre-fort numérique ;; espace sécurisé de stockage de documents ;;
+
+## Livrets et épargne de précaution | 🐖
+Livret A ;; livret d'épargne réglementé, ouvert à tous ;; Plafond 22 950 € ; intérêts exonérés d'impôt ; taux fixé par l'État.
+Plafond du Livret A ;; 22 950 € (personnes physiques) ;; 76 500 € pour les associations.
+Taux du Livret A ;; fixé par l'État selon une formule (inflation et taux interbancaires) ;; Révisé chaque 1er février et 1er août.
+LDDS ;; Livret de Développement Durable et Solidaire ;; Plafond 12 000 € ; mêmes taux et exonération que le Livret A.
+LEP ;; Livret d'Épargne Populaire ;; Plafond 10 000 € ; réservé aux revenus modestes ; taux souvent supérieur au Livret A.
+Livret Jeune ;; livret pour les 12-25 ans ;; Plafond 1 600 € ; taux fixé par la banque (au moins égal à celui du Livret A).
+Compte sur livret / livret bancaire ;; livret non réglementé, proposé par une banque ;; Taux libre, souvent promotionnel puis réduit ; intérêts imposés.
+Intérêts du Livret A ;; calculés par quinzaine et crédités au 31 décembre ;; Un dépôt le 1er du mois ne rapporte qu'à partir du 1er ou 16 suivant.
+Épargne de précaution ;; réserve d'argent disponible pour les imprévus ;; Règle courante : 3 à 6 mois de dépenses.
+Épargne réglementée ;; produits dont les règles (taux, plafond) sont fixées par l'État ;; Livret A, LDDS, LEP, PEL, CEL, Livret Jeune.
+PEL ;; Plan d'Épargne Logement ;; Plafond 61 200 € ; durée 4 à 10 ans ; taux fixé à l'ouverture ; droits à prêt.
+CEL ;; Compte Épargne Logement ;; Plafond 15 300 € ; droits à prêt ; taux réglementé.
+Liquidité d'un placement ;; facilité à récupérer son argent rapidement sans perte ;; Livret A : excellente ; immobilier : faible.
+Taux nominal vs taux réel ;; nominal = affiché ; réel = nominal moins inflation ;; Un livret à 2 % avec 3 % d'inflation a un taux réel de -1 %.
+Intérêts simples ;; intérêts calculés uniquement sur le capital de départ ;;
+Intérêts composés ;; les intérêts s'ajoutent au capital et rapportent à leur tour ;; Capital × (1 + taux)^années.
+Règle de 72 ;; années pour doubler son capital ≈ 72 ÷ taux (en %) ;; À 6 % : environ 12 ans.
+Fonds de garantie des dépôts (FGDR) ;; protège les dépôts jusqu'à 100 000 € par déposant et par établissement ;; Pour les titres : 70 000 €.
+Capital garanti ;; le montant investi ne peut pas baisser ;; Cas du Livret A, des fonds en euros d'une assurance-vie.
+Dépôt à terme (DAT) ;; somme bloquée pour une durée fixée, à un taux connu ;; Retrait anticipé possible avec pénalité.
+Compte à terme ;; autre nom du dépôt à terme ;;
+
+## Bourse : PEA, compte-titres | 📊
+PEA ;; Plan d'Épargne en Actions ;; Plafond de versements 150 000 € ; avantage fiscal après 5 ans.
+Plafond du PEA-PME ;; 225 000 € (cumulé avec le PEA : 225 000 € max) ;; Pour des actions de PME et ETI européennes.
+Avantage fiscal du PEA ;; après 5 ans, gains exonérés d'impôt sur le revenu ;; Restent soumis aux prélèvements sociaux.
+Retrait du PEA avant 5 ans ;; entraîne en principe la clôture du plan ;; Exceptions : licenciement, invalidité, création d'entreprise...
+Actifs éligibles au PEA ;; actions de sociétés de l'UE/EEE, certains fonds et ETF ;; Pas d'actions américaines en direct.
+PEA jeune ;; PEA pour les 18-25 ans rattachés au foyer fiscal des parents ;; Plafond 20 000 €.
+CTO ;; Compte-Titres Ordinaire ;; Pas de plafond, tous les titres du monde, pas d'avantage fiscal spécifique.
+Fiscalité du CTO ;; prélèvement forfaitaire unique (PFU) ou barème de l'impôt sur option ;; PFU : 12,8 % d'impôt + prélèvements sociaux (17,2 % jusqu'en 2025 : à vérifier pour 2026).
+PFU / flat tax ;; prélèvement forfaitaire unique sur les revenus du capital ;; 30 % jusqu'en 2025 (12,8 % + 17,2 %).
+Prélèvements sociaux ;; CSG + CRDS + autres contributions sur les revenus du capital ;; 17,2 % jusqu'en 2025.
+Courtier en ligne ;; intermédiaire pour acheter et vendre des titres en bourse ;; Frais souvent plus bas que ceux d'une banque traditionnelle.
+Frais de courtage ;; commissions prises à chaque achat ou vente de titres ;;
+Droits de garde ;; frais annuels de conservation des titres ;;
+Ordre au marché ;; achat ou vente immédiat au meilleur prix disponible ;; Risque : prix d'exécution moins bon.
+Ordre à cours limité ;; achat ou vente seulement à un prix fixé (ou meilleur) ;; Protège sur le prix, mais pas d'exécution garantie.
+Ordre à seuil de déclenchement ;; devient un ordre au marché si un cours est atteint ;; Utile pour un stop-loss.
+Stop-loss ;; ordre de vente automatique pour limiter la perte ;;
+SRD ;; Service de Règlement Différé : achat à crédit ou vente à découvert sur actions ;; Effet de levier.
+Dividende ;; part du bénéfice versée aux actionnaires ;; Imposé comme un revenu du capital.
+Plus-value ;; gain réalisé en vendant plus cher qu'on a acheté ;; Moins-value : perte.
+Valeur liquidative (VL) ;; prix d'une part d'un fonds ;; Calculée chaque jour de bourse.
+Carnet d'ordres ;; liste des ordres d'achat et de vente en attente sur un titre ;;
+Fourchette (spread) bid-ask ;; écart entre le meilleur prix d'achat et de vente ;; Plus il est faible, plus le titre est liquide.
+Euronext Paris ;; marché boursier français ;; Séance : 9 h - 17 h 30.
+
+## Assurance-vie, PER, immobilier | 🏛️
+Assurance-vie ;; contrat d'épargne souple, avec des avantages fiscaux et de transmission ;; Support : fonds en euros et/ou unités de compte.
+Fonds en euros ;; support à capital garanti, rendement annoncé chaque année ;; Géré par l'assureur ; effet de cliquet (gains acquis).
+Unités de compte (UC) ;; supports en actions, obligations, immobilier... sans garantie du capital ;; Risque de perte, potentiel de gain plus élevé.
+Clause bénéficiaire ;; indique qui reçoit le capital au décès ;; À rédiger avec soin, modifiable à tout moment.
+Rachat (assurance-vie) ;; retrait de tout ou partie de l'épargne ;; Les gains sont imposés, pas le capital.
+Fiscalité de l'assurance-vie ;; après 8 ans : abattement annuel sur les gains (4 600 € seul, 9 200 € en couple) ;; Avant 8 ans : PFU.
+Transmission par assurance-vie ;; abattement de 152 500 € par bénéficiaire (primes versées avant 70 ans) ;; Article 990 I du CGI.
+Primes versées après 70 ans ;; abattement global de 30 500 € sur les primes ;; Article 757 B ; les gains échappent aux droits de succession.
+Frais d'un contrat d'assurance-vie ;; frais sur versements, de gestion annuels, d'arbitrage ;; Comparer avant de souscrire.
+Arbitrage ;; transfert d'argent d'un support à un autre dans le contrat ;;
+Gestion pilotée ;; gestion confiée à un professionnel, selon ton profil ;;
+Délai de renonciation (assurance-vie) ;; 30 jours après souscription ;;
+Garantie des assurés (FGAP) ;; indemnise les assurés en cas de faillite de l'assureur ;; Jusqu'à 70 000 €.
+PER ;; Plan d'Épargne Retraite ;; Versements déductibles du revenu imposable (dans une limite) ; sortie en rente ou capital.
+Déblocage anticipé du PER ;; achat de la résidence principale, décès du conjoint, invalidité, surendettement... ;; Hors versements déduits selon les cas.
+Avantage fiscal du PER ;; économie d'impôt à l'entrée, surtout si la tranche marginale est élevée ;; La sortie est ensuite imposée.
+SCPI ;; Société Civile de Placement Immobilier ;; On achète des parts, la société gère un parc immobilier et redistribue des loyers.
+Taux de distribution (SCPI) ;; revenus distribués ÷ prix de la part ;; Souvent autour de 4 à 5 %, non garanti.
+OPCI ;; Organisme de Placement Collectif Immobilier ;; Immobilier et actifs financiers ; plus liquide qu'une SCPI.
+SCI ;; Société Civile Immobilière ;; Détenir un bien à plusieurs ; utile pour la transmission.
+LMNP ;; Loueur Meublé Non Professionnel ;; Location meublée avec amortissement du bien.
+Revenus fonciers ;; revenus issus de locations nues ;; Régime micro-foncier (abattement 30 %) ou réel.
+Déficit foncier ;; charges supérieures aux loyers, déductible du revenu global (plafonné) ;;
+Effet de levier (immobilier) ;; emprunter pour acheter un bien qui rapporte plus que le coût du crédit ;;
+Rendement locatif brut ;; loyer annuel ÷ prix d'achat × 100 ;; Net : on retire charges et taxes.
+Crowdfunding / financement participatif ;; prêter ou investir dans un projet via une plateforme ;; Risque de perte en capital élevé.
+
+## Banque : métiers et acteurs | 🏢
+Banque de détail ;; banque des particuliers et des petites entreprises ;; Réseau d'agences, crédits, comptes.
+Banque privée ;; gestion de patrimoine pour clients fortunés ;; Souvent à partir de 150 000 à 500 000 € d'actifs.
+Banque de financement et d'investissement (BFI) ;; financements d'entreprises, marchés, fusions-acquisitions ;; BNP Paribas CIB, Société Générale CIB...
+Banque universelle ;; fait détail, privé et investissement ;;
+Banque coopérative / mutualiste ;; appartient à ses clients-sociétaires ;; Crédit Agricole, BPCE (Caisse d'Épargne, Banque Populaire), Crédit Mutuel.
+Établissement de crédit ;; entreprise qui reçoit des fonds et accorde des crédits ;; Agréé par l'ACPR.
+Bancassurance ;; vente de produits d'assurance par une banque ;; Un des modèles dominants en France.
+Banque centrale européenne (BCE) ;; fixe la politique monétaire de la zone euro ;; Siège à Francfort ; objectif : inflation d'environ 2 %.
+Banque de France ;; banque centrale nationale, membre de l'Eurosystème ;; Gère aussi les fichiers FCC, FICP et le surendettement.
+ACPR ;; Autorité de Contrôle Prudentiel et de Résolution ;; Supervise banques et assurances (adossée à la Banque de France).
+AMF ;; Autorité des Marchés Financiers ;; Régule les marchés et protège les épargnants.
+ORIAS ;; registre des intermédiaires en assurance, banque et finance ;; Obligatoire pour les conseillers et courtiers.
+Tracfin ;; cellule de renseignement financier contre le blanchiment ;; Reçoit les déclarations de soupçon.
+Conseiller en gestion de patrimoine (CGP) ;; conseiller indépendant sur l'épargne et la fiscalité ;; Statut CIF, souvent aussi courtier en assurance.
+Chargé de clientèle ;; conseiller bancaire des particuliers ;;
+Gestionnaire de patrimoine ;; conseiller des clients aisés ;;
+Conseiller en investissements financiers (CIF) ;; statut réglementé du conseil en investissement ;; Enregistré auprès d'une association agréée.
+Courtier ;; intermédiaire indépendant qui compare plusieurs offres ;; Courtier en crédit ou en assurance.
+Agent général d'assurance ;; mandataire exclusif d'une compagnie ;;
+Produit net bancaire (PNB) ;; équivalent du chiffre d'affaires d'une banque ;; Marge d'intérêts + commissions + résultat de marché.
+Coefficient d'exploitation ;; frais de fonctionnement ÷ PNB ;; Plus il est bas, plus la banque est efficace.
+Coût du risque ;; provisions pour pertes sur crédits ;;
+Fonds propres ;; capitaux de la banque (capital, réserves) qui absorbent les pertes ;;
+Ratio CET1 ;; Common Equity Tier 1 : fonds propres durs ÷ actifs pondérés des risques ;; Minimum réglementaire 4,5 % + coussins.
+Bâle III ;; règles internationales sur les fonds propres et la liquidité des banques ;; Né après la crise de 2008.
+Ratio de liquidité (LCR) ;; actifs liquides couvrant les sorties de trésorerie sur 30 jours ;; Minimum 100 %.
+Risque de crédit ;; risque que l'emprunteur ne rembourse pas ;;
+Risque de liquidité ;; risque de ne pas pouvoir faire face à ses échéances de court terme ;;
+Risque systémique ;; risque de défaillance en chaîne du système financier ;;
+Too big to fail ;; banque trop grosse pour être laissée en faillite ;; Justifie les plans de sauvetage publics.
+Union bancaire ;; supervision unique, résolution unique et garantie de dépôts (projet) dans la zone euro ;;
+Fintech ;; entreprise utilisant la technologie pour proposer des services financiers ;; Ex. néobanques, paiements.
+Banque de détail : principales ressources ;; dépôts clients, épargne, refinancement sur les marchés ;;
+Marge d'intérêt ;; intérêts perçus sur les crédits moins intérêts payés sur les dépôts ;;
+Commissions bancaires ;; revenus tirés des frais de services (cartes, assurances, gestion) ;;
+
+## Conformité, protection du client | 🛡️
+KYC (Know Your Customer) ;; connaître son client : identité, activité, origine des fonds ;; Obligation avant d'entrer en relation.
+LCB-FT ;; lutte contre le blanchiment et le financement du terrorisme ;; Vigilance, déclarations de soupçon à Tracfin.
+Blanchiment ;; faire passer pour légal de l'argent d'origine criminelle ;; 3 phases : placement, empilage, intégration.
+Origine des fonds ;; justification de la provenance de l'argent déposé ;;
+PPE ;; Personne Politiquement Exposée ;; Vigilance renforcée.
+MiFID II ;; directive européenne sur les marchés d'instruments financiers ;; Protection des investisseurs, classification des clients, transparence des coûts.
+Profil investisseur ;; connaissance, expérience, situation financière et objectifs du client ;; Détermine ce qu'on peut lui proposer.
+Devoir de conseil ;; obligation de conseiller un produit adapté au client ;;
+Test d'adéquation ;; vérifie qu'un produit convient au profil du client ;;
+DIC (PRIIPs) ;; Document d'Informations Clés pour produits d'investissement packagés ;; Contient l'indicateur de risque de 1 à 7.
+DIPA ;; Document d'Information sur le Produit d'Assurance ;; Standard européen de présentation des garanties.
+Médiateur bancaire ;; recours gratuit en cas de litige avec la banque ;; Après réclamation écrite sans réponse satisfaisante.
+Secret bancaire ;; obligation de ne pas divulguer les informations du client ;; Levé dans certains cas (justice, fisc).
+RGPD ;; règlement européen sur la protection des données personnelles ;;
+Délit d'initié ;; utiliser une information privilégiée pour investir ;; Sanctionné pénalement.
+Manipulation de cours ;; fausser artificiellement le prix d'un titre ;;
+Surendettement ;; impossibilité de payer ses dettes ;; Dossier déposé à la Banque de France (commission).

@@ -1,0 +1,135 @@
+@pack anglais-bases | Anglais : les bases (A1-A2) | 🌱 | Pour repartir de zéro : verbes, phrases, mots du quotidien. À faire en premier si tu te sens faible.
+@tags bases
+
+## Être, avoir, faire | 🔤
+I am / you are / he is ;; je suis / tu es / il est (verbe « to be ») ;; Pas de « je suis 20 ans » : I am 20 (years old).
+C: She {{c1::is}} a student and they {{c2::are}} teachers. ;; to be : I am, you are, he/she/it is, we/you/they are
+C: I {{c1::have}} a car, but he {{c2::has}} a bike. ;; to have : he / she / it → has
+C: What {{c1::do}} you do? — I {{c2::work}} in a bank. ;; do sert à poser les questions au présent
+C: He {{c1::doesn't}} like coffee. ;; négation à la 3e personne : doesn't + verbe sans -s
+C: {{c1::Does}} she live in Paris? ;; question à la 3e personne : Does + sujet + verbe (sans -s)
+C: I am not tired. = I {{c1::'m not}} tired. ;; contraction de I am not
+C: They {{c1::aren't}} at home. ;; are not → aren't
+How old are you? ;; Quel âge as-tu ? ;; Réponse : I'm 19 (years old).
+What's your name? ;; Comment tu t'appelles ? ;; My name is... / I'm...
+Where are you from? ;; D'où viens-tu ? ;; I'm from France.
+How are you? ;; Comment vas-tu ? ;; Fine, thanks. And you?
+Nice to meet you. ;; Enchanté(e). ;; Réponse : Nice to meet you too.
+
+## Présent simple et continu | ⏱️
+C: I {{c1::work}} every day. (habitude) ;; Présent simple = habitudes, vérités générales
+C: She {{c1::works}} in London. ;; 3e personne du singulier : + s
+C: He {{c1::watches}} TV in the evening. ;; verbes en -ch, -sh, -s, -x, -o : + es
+C: She {{c1::studies}} English. ;; consonne + y → -ies
+C: Look! It {{c1::is raining}}. ;; Présent continu = ce qui se passe maintenant : be + verbe-ing
+C: I {{c1::am}} working right now. ;; be + verbe-ing
+C: We usually {{c1::eat}} at 8, but today we {{c2::are eating}} at 9. ;; usually → présent simple ; today → continu possible
+Adverbes de fréquence (dans l'ordre) ;; always, usually, often, sometimes, rarely, never ;; Ils se placent avant le verbe : I often go... mais après to be : I am often late.
+C: She is {{c1::always}} late. ;; après le verbe « to be »
+C: I {{c1::never}} drink coffee. ;; avant les autres verbes
+C: How {{c1::often}} do you go to the gym? ;; How often = à quelle fréquence
+
+## Poser des questions | ❓
+who ;; qui ;; Who is that man?
+what ;; quoi / que / quel ;; What time is it?
+where ;; où ;; Where do you live?
+when ;; quand ;; When is the meeting?
+why ;; pourquoi ;; Why are you late? — Because...
+how ;; comment ;; How does it work?
+which ;; lequel / quel (choix limité) ;; Which one do you prefer?
+how much / how many ;; combien (indénombrable / dénombrable) ;; How much money? How many people?
+whose ;; à qui ;; Whose bag is this?
+C: {{c1::How much}} water do you drink? ;; water est indénombrable → how much
+C: {{c1::How many}} students are there? ;; students est dénombrable → how many
+C: {{c1::What}} time is it? ;; quelle heure est-il ?
+C: {{c1::Where}} do you work? ;; réponse = un lieu
+
+## There is, there are, il y a | 📍
+C: {{c1::There is}} a bank near here. ;; there is + singulier / indénombrable
+C: {{c1::There are}} two meetings today. ;; there are + pluriel
+C: Is {{c1::there}} a pharmacy around here? ;; question : Is there... ?
+C: There {{c1::isn't}} any milk. ;; négation singulier / indénombrable
+C: There {{c1::aren't}} any chairs. ;; négation pluriel
+a / an ;; un, une ;; a + son consonne (a book) ; an + son voyelle (an apple, an hour)
+some / any ;; du, des / (négation et question) ;; I have some money. I don't have any money. Do you have any?
+
+## Can, must, should | 🔧
+C: I {{c1::can}} speak English a little. ;; can = pouvoir / savoir (capacité) ; pas de -s : he can
+C: She {{c1::can't}} swim. ;; can't = cannot = ne peut pas
+C: {{c1::Can}} you help me, please? ;; demande polie / question avec can
+C: You {{c1::must}} wear a seatbelt. ;; must = devoir (obligation forte)
+C: You {{c1::should}} see a doctor. ;; should = devrait (conseil)
+C: You {{c1::mustn't}} smoke here. ;; mustn't = interdit (≠ don't have to = pas obligé)
+C: You {{c1::don't have to}} come, it's optional. ;; pas obligé
+
+## Passé simple | ⏪
+C: Yesterday I {{c1::went}} to the cinema. ;; go → went (verbe irrégulier)
+C: She {{c1::worked}} all day. ;; verbes réguliers : + ed
+C: I {{c1::didn't}} see him. ;; négation au passé : didn't + verbe à la base
+C: {{c1::Did}} you call him? ;; question au passé : Did + sujet + base
+C: We {{c1::were}} very tired. ;; was / were = passé de to be
+C: He {{c1::was}} at home last night. ;; was : I / he / she / it
+C: When {{c1::did}} you arrive? ;; question avec when / where / why + did
+ago ;; il y a (durée) ;; I met him two years ago.
+yesterday / last week / in 2020 ;; indicateurs du passé simple ;; Pas de présent perfect avec ces mots.
+
+## Futur | 🔮
+C: I {{c1::will}} call you tomorrow. ;; will + base : décision, promesse, prédiction
+C: It {{c1::is going to}} rain. ;; be going to : intention ou preuve visible
+C: We {{c1::are going to}} buy a house. ;; projet décidé
+C: I {{c1::won't}} forget. ;; will not → won't
+C: I'm {{c1::meeting}} the client at 3 pm. ;; présent continu = rendez-vous prévu
+
+## Pluriels, articles, possessifs | 🧩
+child → children ;; enfant → enfants ;; Pluriels irréguliers : man/men, woman/women, person/people, foot/feet, tooth/teeth
+C: I have two {{c1::boxes}}. ;; -x, -s, -ch, -sh → -es
+C: The {{c1::sun}} rises in the east. ;; the devant ce qui est unique
+my / your / his / her / its / our / their ;; mon, ton, son (à lui), son (à elle), son (neutre), notre, votre... ;; his = à lui / her = à elle (selon le possesseur, pas l'objet)
+C: This is {{c1::my}} bag and that is {{c2::hers}}. ;; mine, yours, his, hers, ours, theirs = pronoms possessifs
+C: Marie's book = the book {{c1::of}} Marie. ;; 's = appartenance (possesseur + 's + objet)
+this / that / these / those ;; ce-ci / ce-là / ces-ci / ces-là ;; this, these = proche ; that, those = loin
+
+## Nombres, heure, dates | 🔢
+13 / 30 ;; thirteen / thirty ;; -teen (accent sur teen) et -ty (accent sur le début)
+100 / 1,000 / 1,000,000 ;; a hundred / a thousand / a million ;; Séparateur de milliers = virgule : 1,000
+2.5 ;; two point five ;; Décimale = point, pas virgule
+It's half past three. ;; Il est trois heures et demie (3:30). ;; quarter past = et quart ; quarter to = moins le quart
+It's a quarter to nine. ;; Il est neuf heures moins le quart (8:45).
+at / on / in (temps) ;; at + heure ; on + jour/date ; in + mois/année/saison ;; at 5 pm, on Monday, in July, in 2025
+the first, the second, the third ;; 1er, 2e, 3e (1st, 2nd, 3rd) ;; 4th... 21st, 22nd, 23rd
+days of the week ;; Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday ;; Majuscule obligatoire en anglais
+months ;; January, February, March, April, May, June, July, August, September, October, November, December ;; Majuscule aussi
+
+## Mots du quotidien | 🏠
+the weekend ;; le week-end ;;
+a flat / an apartment ;; un appartement ;; flat (UK), apartment (US)
+to wake up ;; se réveiller ;; I wake up at 7.
+to get up ;; se lever ;;
+to have breakfast ;; prendre le petit déjeuner ;; have lunch / have dinner
+to take a shower ;; prendre une douche ;;
+to go to work ;; aller au travail ;;
+to come back / to get home ;; rentrer ;; I get home at 6.
+a meal ;; un repas ;;
+to cook ;; cuisiner ;;
+to buy / to sell ;; acheter / vendre ;; bought / sold au passé
+cheap / expensive ;; bon marché / cher ;;
+big / small ;; grand / petit ;;
+easy / difficult ;; facile / difficile ;;
+early / late ;; tôt / tard (en avance / en retard) ;;
+to like / to love / to hate ;; aimer / adorer / détester ;; I like + nom ou verbe-ing : I like reading.
+to want / to need ;; vouloir / avoir besoin de ;; I want to go. I need to work.
+a friend ;; un(e) ami(e) ;;
+a neighbour ;; un voisin ;;
+to learn / to teach ;; apprendre / enseigner ;; learn ≠ teach
+to speak / to say / to tell ;; parler / dire / raconter ;; speak a language ; say something ; tell someone
+to listen / to hear ;; écouter / entendre ;; listen = volontaire, hear = involontaire
+to look / to see / to watch ;; regarder / voir / regarder (qqch qui bouge) ;; watch TV
+to bring / to take ;; apporter / emporter ;; bring = vers ici, take = vers là-bas
+to borrow / to lend ;; emprunter / prêter ;; Can I borrow your pen? Can you lend me...?
+to remember / to forget ;; se souvenir / oublier ;;
+to open / to close ;; ouvrir / fermer ;;
+to start / to finish ;; commencer / finir ;;
+to wait ;; attendre ;; wait for + nom : I'm waiting for the bus.
+to ask / to answer ;; demander / répondre ;;
+to help ;; aider ;; Can you help me?
+to give / to get ;; donner / obtenir, recevoir ;; get = très utilisé : get a job, get tired

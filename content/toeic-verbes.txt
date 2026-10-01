@@ -1,0 +1,213 @@
+@pack toeic-verbes | TOEIC : verbes irréguliers, phrasal verbs, collocations | 🔁 | Les verbes irréguliers à connaître par cœur, les phrasal verbs les plus courants et les associations de mots (collocations).
+@tags toeic, verbes
+
+## Verbes irréguliers (base, passé, participe) | 🧱
+be ;; was / were — been ;; être
+become ;; became — become ;; devenir
+begin ;; began — begun ;; commencer
+break ;; broke — broken ;; casser
+bring ;; brought — brought ;; apporter
+build ;; built — built ;; construire
+buy ;; bought — bought ;; acheter
+catch ;; caught — caught ;; attraper
+choose ;; chose — chosen ;; choisir
+come ;; came — come ;; venir
+cost ;; cost — cost ;; coûter
+cut ;; cut — cut ;; couper
+deal (with) ;; dealt — dealt ;; traiter, s'occuper de
+do ;; did — done ;; faire
+draw ;; drew — drawn ;; dessiner, tirer
+drink ;; drank — drunk ;; boire
+drive ;; drove — driven ;; conduire
+eat ;; ate — eaten ;; manger
+fall ;; fell — fallen ;; tomber
+feel ;; felt — felt ;; ressentir
+fight ;; fought — fought ;; se battre
+find ;; found — found ;; trouver
+fly ;; flew — flown ;; voler (avion)
+forget ;; forgot — forgotten ;; oublier
+get ;; got — got (US : gotten) ;; obtenir, devenir
+give ;; gave — given ;; donner
+go ;; went — gone ;; aller
+grow ;; grew — grown ;; grandir, cultiver
+have ;; had — had ;; avoir
+hear ;; heard — heard ;; entendre
+hide ;; hid — hidden ;; cacher
+hit ;; hit — hit ;; frapper
+hold ;; held — held ;; tenir
+hurt ;; hurt — hurt ;; faire mal
+keep ;; kept — kept ;; garder
+know ;; knew — known ;; savoir, connaître
+lead ;; led — led ;; mener, diriger
+leave ;; left — left ;; partir, quitter
+lend ;; lent — lent ;; prêter
+let ;; let — let ;; laisser, permettre
+lose ;; lost — lost ;; perdre
+make ;; made — made ;; fabriquer, faire
+mean ;; meant — meant ;; signifier
+meet ;; met — met ;; rencontrer
+overtake ;; overtook — overtaken ;; dépasser
+pay ;; paid — paid ;; payer
+put ;; put — put ;; mettre
+read ;; read — read (prononcé « red ») ;; lire
+ride ;; rode — ridden ;; monter (vélo, cheval)
+ring ;; rang — rung ;; sonner
+rise ;; rose — risen ;; s'élever, augmenter
+run ;; ran — run ;; courir, diriger
+say ;; said — said ;; dire
+see ;; saw — seen ;; voir
+sell ;; sold — sold ;; vendre
+send ;; sent — sent ;; envoyer
+set ;; set — set ;; fixer, installer
+shake ;; shook — shaken ;; secouer
+shoot ;; shot — shot ;; tirer
+show ;; showed — shown ;; montrer
+shut ;; shut — shut ;; fermer
+sing ;; sang — sung ;; chanter
+sit ;; sat — sat ;; s'asseoir
+sleep ;; slept — slept ;; dormir
+speak ;; spoke — spoken ;; parler
+spend ;; spent — spent ;; dépenser, passer (temps)
+stand ;; stood — stood ;; se tenir debout
+steal ;; stole — stolen ;; voler (dérober)
+swim ;; swam — swum ;; nager
+take ;; took — taken ;; prendre
+teach ;; taught — taught ;; enseigner
+tear ;; tore — torn ;; déchirer
+tell ;; told — told ;; dire (à qqn)
+think ;; thought — thought ;; penser
+throw ;; threw — thrown ;; jeter
+understand ;; understood — understood ;; comprendre
+undergo ;; underwent — undergone ;; subir
+wake ;; woke — woken ;; se réveiller
+wear ;; wore — worn ;; porter (vêtement)
+win ;; won — won ;; gagner
+withdraw ;; withdrew — withdrawn ;; retirer
+write ;; wrote — written ;; écrire
+C: Yesterday he {{c1::bought}} a new laptop. ;; buy → bought
+C: She has {{c1::written}} three reports this week. ;; write → wrote → written
+C: They have {{c1::chosen}} a new supplier. ;; choose → chose → chosen
+C: I have {{c1::known}} him for years. ;; know → knew → known
+C: The company {{c1::sold}} its old building. ;; sell → sold
+C: The price has {{c1::risen}} again. ;; rise → rose → risen
+
+## Phrasal verbs courants | 🧩
+to carry out ;; réaliser, effectuer ;; The company carried out a survey.
+to set up ;; mettre en place, créer ;; They set up a new branch.
+to turn down ;; refuser (une offre) / baisser (son) ;; She turned down the job offer.
+to turn up ;; arriver / monter (le son) ;; He turned up late.
+to call off ;; annuler ;; The match was called off.
+to put off ;; remettre à plus tard ;; Don't put off the decision.
+to look into ;; examiner, enquêter sur ;; We'll look into the problem.
+to look for ;; chercher ;; I'm looking for my keys.
+to look after ;; s'occuper de ;; She looks after the accounts.
+to find out ;; découvrir, se renseigner ;; I'll find out the price.
+to figure out ;; comprendre, trouver la solution ;; We figured out the error.
+to point out ;; faire remarquer ;; He pointed out a mistake.
+to come up with ;; trouver (une idée) ;; She came up with a great plan.
+to take over ;; reprendre, racheter ;; A larger firm took over the company.
+to take off ;; décoller / enlever ;; The plane took off at noon.
+to take on ;; embaucher, prendre en charge ;; We took on five new workers.
+to work out ;; résoudre, calculer / se passer bien ;; It worked out well.
+to fill in / to fill out ;; remplir (un formulaire) ;; Please fill out this form.
+to hand in ;; remettre (un devoir, un dossier) ;; Hand in your report by 5.
+to hand out ;; distribuer ;; He handed out brochures.
+to pick up ;; récupérer, ramasser ;; I'll pick you up at the airport.
+to drop off ;; déposer ;; Drop off the package at the desk.
+to check in / to check out ;; s'enregistrer / quitter ;; Check out before noon.
+to log in ;; se connecter ;;
+to sign up for ;; s'inscrire à ;; Sign up for the newsletter.
+to run out of ;; manquer de, ne plus avoir de ;; We ran out of paper.
+to cut back on ;; réduire ;; The firm cut back on spending.
+to catch up with ;; rattraper ;; I need to catch up with my emails.
+to keep up with ;; suivre le rythme ;; It's hard to keep up with technology.
+to get along with ;; s'entendre avec ;; She gets along with her colleagues.
+to get back to ;; rappeler / revenir vers ;; I'll get back to you tomorrow.
+to get over ;; surmonter ;; He got over the loss.
+to deal with ;; traiter, gérer ;; We must deal with the complaint.
+to rely on ;; compter sur ;; You can rely on me.
+to bring up ;; aborder (un sujet), élever ;; He brought up the budget.
+to bring about ;; provoquer ;; The change brought about growth.
+to go over ;; réviser, examiner ;; Let's go over the figures.
+to go ahead ;; aller de l'avant ;; The project will go ahead.
+to back up ;; sauvegarder, soutenir ;; Back up your data.
+to break down ;; tomber en panne ;; The copier broke down.
+to wrap up ;; conclure ;; Let's wrap up the meeting.
+to sum up ;; résumer ;; To sum up, we need more time.
+to step down ;; démissionner d'un poste ;; The CEO stepped down.
+to phase out ;; supprimer progressivement ;; The model will be phased out.
+to roll out ;; déployer ;; They rolled out the new system.
+to end up ;; finir par ;; We ended up staying late.
+to point to ;; indiquer ;; The data points to growth.
+to account for ;; représenter, expliquer ;; Exports account for 40% of sales.
+to result in ;; entraîner, avoir pour résultat ;; The error resulted in a delay.
+to stem from ;; provenir de ;; The delay stems from a shortage.
+to give up ;; abandonner ;; Never give up.
+to look up ;; chercher (dans un livre, en ligne) ;; Look up the word in a dictionary.
+to show up ;; se présenter ;; He didn't show up.
+to hold on ;; patienter ;; Hold on a second.
+to put through ;; passer qqn au téléphone ;; I'll put you through.
+to pass on ;; transmettre ;; Please pass on my regards.
+to follow up on ;; assurer le suivi ;; I'll follow up on that.
+to sort out ;; régler, résoudre ;; We'll sort out the problem.
+to live up to ;; être à la hauteur de ;; The product lived up to expectations.
+C: We need to {{c1::set up}} a meeting. ;; set up = organiser, mettre en place
+C: They decided to {{c1::call off}} the event. ;; call off = annuler
+C: Please {{c1::fill out}} the form. ;; fill out / fill in = remplir
+C: He {{c1::turned down}} the offer. ;; turn down = refuser
+C: The plane {{c1::took off}} on time. ;; take off = décoller
+C: We have {{c1::run out of}} toner. ;; run out of = ne plus avoir de
+C: I'll {{c1::get back to}} you. ;; get back to = revenir vers qqn
+
+## Collocations (mots qui vont ensemble) | 🔗
+to make a decision ;; prendre une décision ;; make (pas « take » une décision en anglais)
+to make an appointment ;; prendre rendez-vous ;;
+to make a profit ;; faire un bénéfice ;;
+to make progress ;; faire des progrès ;;
+to make an effort ;; faire un effort ;;
+to make a mistake ;; faire une erreur ;;
+to do business ;; faire des affaires ;;
+to do research ;; faire des recherches ;;
+to do the shopping ;; faire les courses ;;
+to do a favor ;; rendre service ;;
+to take a break ;; faire une pause ;;
+to take place ;; avoir lieu ;; The event takes place in June.
+to take part in ;; participer à ;;
+to take advantage of ;; profiter de ;;
+to take into account ;; prendre en compte ;;
+to pay attention to ;; faire attention à ;;
+to pay a visit ;; rendre visite ;;
+to give a presentation ;; faire une présentation ;;
+to give advice ;; donner un conseil ;;
+to have a meeting ;; avoir une réunion ;;
+to hold a meeting ;; tenir une réunion ;;
+to reach an agreement ;; parvenir à un accord ;;
+to meet a deadline ;; respecter une date limite ;;
+to meet requirements ;; satisfaire les conditions ;;
+to set a goal ;; fixer un objectif ;;
+to run a business ;; diriger une entreprise ;;
+to keep a record ;; tenir un registre ;;
+to catch a cold ;; attraper un rhume ;;
+to file a complaint ;; déposer une plainte ;;
+to launch a product ;; lancer un produit ;;
+to raise prices ;; augmenter les prix ;;
+to lower prices ;; baisser les prix ;;
+to sign a contract ;; signer un contrat ;;
+to follow instructions ;; suivre les instructions ;;
+heavy traffic ;; circulation dense ;; (pas « strong traffic »)
+a tight schedule ;; un emploi du temps serré ;;
+a wide range of ;; un large choix de ;;
+a great deal of ;; beaucoup de ;;
+in advance ;; à l'avance ;; Book in advance.
+on time / in time ;; à l'heure / à temps ;; on time = ponctuel ; in time = avant qu'il ne soit trop tard
+by mistake ;; par erreur ;;
+on purpose ;; exprès ;;
+in charge of ;; responsable de ;;
+on behalf of ;; au nom de ;;
+in terms of ;; en termes de ;;
+as a matter of fact ;; en fait ;;
+on the whole ;; dans l'ensemble ;;
+at the moment ;; en ce moment ;;
+in the meantime ;; en attendant ;;
+as far as I know ;; pour autant que je sache ;;
+sooner or later ;; tôt ou tard ;;

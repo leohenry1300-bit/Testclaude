@@ -1,0 +1,124 @@
+@pack credit-fiscalite | Crédit, fiscalité et patrimoine | 🧾 | Crédit immobilier et consommation, impôt sur le revenu, plus-values, succession, régimes matrimoniaux. Les seuils et taux peuvent changer chaque année : vérifie les valeurs à jour.
+@tags crédit, fiscalité
+
+## Crédit immobilier | 🏠
+Crédit amortissable ;; remboursement du capital et des intérêts par mensualités ;; Le plus courant.
+Prêt in fine ;; on ne rembourse que les intérêts, le capital est rendu à la fin ;; Souvent couplé à un placement (assurance-vie).
+Prêt relais ;; avance l'argent de la vente d'un bien pour acheter un autre ;; Durée courte (1 à 2 ans).
+Prêt à taux zéro (PTZ) ;; prêt aidé pour primo-accédants, sans intérêts ;; Conditions de ressources, de zone et de type de logement.
+Prêt d'accession sociale (PAS) ;; prêt conventionné sous plafond de ressources ;; Ouvre droit à l'APL accession.
+Prêt Action Logement ;; prêt de l'employeur (1 % logement) à taux avantageux ;;
+Éco-PTZ ;; prêt sans intérêts pour rénover énergétiquement un logement ;;
+Taux fixe ;; le taux ne change pas pendant toute la durée du prêt ;; Mensualité constante, prévisible.
+Taux variable ;; le taux évolue selon un indice (ex. Euribor) ;;
+Taux variable capé ;; variable, mais avec un plafond de hausse ;;
+Taux révisable ;; révision périodique du taux selon des conditions ;;
+Taux d'intérêt nominal ;; taux du contrat, sans les frais annexes ;;
+TAEG ;; Taux Annuel Effectif Global : coût total du crédit en % annuel ;; Comprend intérêts, frais de dossier, assurance obligatoire, garantie.
+Taux d'usure ;; taux maximum légal qu'un prêteur peut appliquer ;; Fixé par la Banque de France, révisé régulièrement.
+Loi Scrivener ;; lois de 1978-1979 protégeant l'emprunteur (information, délais) ;; Délai de réflexion de 10 jours pour l'immobilier.
+Mensualité ;; montant payé chaque mois ;; M = C × t ÷ (1 − (1 + t)^−n), t = taux mensuel, n = nombre de mois.
+Amortissement constant ;; la part de capital remboursée est identique chaque mois ;; Mensualités décroissantes.
+Annuités constantes ;; mensualité identique ; intérêts élevés au début, capital au début faible ;; Principe d'un prêt classique.
+Capital restant dû (CRD) ;; montant du capital qu'il reste à rembourser ;;
+Tableau d'amortissement ;; détail mois par mois des intérêts, du capital et du CRD ;;
+Différé partiel ;; pendant le différé, on ne paie que les intérêts ;;
+Différé total ;; aucun paiement pendant le différé, intérêts capitalisés ;;
+Apport personnel ;; part du prix payée avec son argent ;; Souvent 10 % pour couvrir frais de notaire et de garantie.
+Frais de notaire ;; en réalité surtout des taxes : environ 7-8 % dans l'ancien, 2-3 % dans le neuf ;;
+Frais de dossier ;; frais de la banque pour monter le prêt ;;
+Taux d'endettement ;; charges de crédits ÷ revenus ;; Recommandation du HCSF : 35 % maximum, assurance comprise.
+HCSF ;; Haut Conseil de Stabilité Financière ;; Fixe les règles d'octroi des crédits (35 % d'endettement, 25 ans de durée max).
+Durée maximale d'un crédit immobilier ;; 25 ans (27 ans pour le neuf avec différé) ;; Règle du HCSF.
+Reste à vivre ;; ce qu'il reste après paiement des charges fixes ;; Critère d'analyse de la banque.
+Capacité d'emprunt ;; montant qu'une banque accepte de prêter selon les revenus et charges ;;
+Hypothèque ;; garantie sur un bien immobilier, inscrite chez le notaire ;; Coûteuse, la banque peut saisir le bien.
+Privilège de prêteur de deniers (PPD) ;; garantie pour un achat immobilier ancien, moins chère que l'hypothèque ;;
+Caution ;; engagement d'un tiers à payer si l'emprunteur ne paie pas ;; Ex. Crédit Logement (organisme de caution).
+Nantissement ;; garantie portant sur un placement (assurance-vie, compte-titres) ;;
+Offre de prêt ;; document de la banque détaillant le prêt, valable au moins 30 jours ;; Délai de réflexion de 10 jours avant d'accepter.
+Remboursement anticipé ;; payer le prêt plus tôt que prévu ;; Indemnités possibles (IRA) : plafonnées à 3 % du CRD ou 6 mois d'intérêts.
+Renégociation de prêt ;; obtenir un taux plus bas auprès de sa banque ou d'une autre ;; Intéressant si l'écart de taux est d'au moins 0,7 point.
+Rachat de crédit ;; remplacement d'un ou plusieurs prêts par un seul ;;
+Assurance de prêt immobilier ;; garanties décès, invalidité, incapacité ;; Délégation d'assurance possible (loi Lemoine).
+Délégation d'assurance ;; choisir une assurance emprunteur ailleurs que dans la banque ;;
+Cautionnement vs hypothèque ;; caution = garant (moins cher, remboursé partiellement) ; hypothèque = bien affecté ;;
+
+## Crédit à la consommation | 🛒
+Crédit à la consommation ;; prêt pour des dépenses personnelles (hors immobilier) ;; Entre 200 € et 75 000 € (loi Lagarde).
+Prêt personnel ;; crédit libre d'utilisation, remboursé par mensualités fixes ;;
+Crédit affecté ;; lié à un achat précis (voiture, électroménager) ;; Si l'achat est annulé, le crédit l'est aussi.
+Crédit renouvelable ;; réserve d'argent qui se reconstitue au fur et à mesure du remboursement ;; Taux élevés, risque de surendettement.
+Location avec option d'achat (LOA) ;; on loue un bien avec possibilité de l'acheter en fin de contrat ;;
+Location longue durée (LLD) ;; location sans option d'achat ;;
+Crédit gratuit / paiement en plusieurs fois ;; fractionnement du paiement sans intérêts, parfois avec frais ;;
+Délai de rétractation (crédit conso) ;; 14 jours calendaires ;;
+Offre préalable de crédit ;; document obligatoire, remis avant l'accord ;;
+Fiche d'information précontractuelle (FIPEN) ;; document normalisé européen pour comparer les crédits ;;
+Microcrédit ;; petit prêt pour personnes exclues du crédit classique ;;
+Scoring ;; système de notation de la solvabilité d'un client ;;
+Crédit revolving : danger ;; remboursement lent, intérêts cumulés élevés ;;
+Regroupement de crédits ;; fusionner plusieurs dettes pour une mensualité unique ;; Peut coûter plus cher au total.
+Fichier positif ;; fichier des crédits en cours des particuliers (projet) ;;
+Procédure de surendettement ;; plan de désendettement négocié à la Banque de France ;;
+Rétablissement personnel ;; effacement des dettes d'un particulier (cas extrême) ;;
+
+## Impôt sur le revenu | 🧮
+Impôt sur le revenu (IR) ;; impôt annuel sur les revenus des personnes physiques ;; Barème progressif par tranches.
+Barème progressif ;; chaque tranche de revenu est taxée à son propre taux ;; Taux de 0 %, 11 %, 30 %, 41 % et 45 %.
+Taux marginal d'imposition (TMI) ;; taux de la tranche la plus haute atteinte par le revenu ;; Ne s'applique qu'à la fraction de revenu dans cette tranche.
+Taux moyen d'imposition ;; impôt ÷ revenu imposable ;;
+Quotient familial ;; division du revenu par le nombre de parts du foyer ;;
+Nombre de parts ;; 1 pour un célibataire, 2 pour un couple, +0,5 par enfant (1 à partir du 3e) ;;
+Plafonnement du quotient familial ;; limite de l'avantage fiscal par demi-part ;;
+Revenu fiscal de référence (RFR) ;; revenu pris en compte pour certains droits (LEP, bourses...) ;;
+Prélèvement à la source ;; l'impôt est retenu à chaque paiement du revenu ;; En vigueur depuis le 1er janvier 2019.
+Taux personnalisé / individualisé ;; taux de prélèvement calculé pour le foyer ou pour chaque conjoint ;;
+Déduction fiscale ;; somme retirée du revenu imposable ;; Ex. versement PER, pension alimentaire.
+Réduction d'impôt ;; somme retirée de l'impôt à payer ;; Ex. dons aux associations (66 %).
+Crédit d'impôt ;; réduction pouvant être remboursée si supérieure à l'impôt ;; Ex. emploi à domicile.
+Niche fiscale ;; avantage fiscal dérogatoire ;; Plafond global de 10 000 € par an.
+Frais réels ;; option pour déduire ses frais professionnels réels au lieu de 10 % forfaitaires ;;
+Abattement de 10 % ;; déduction forfaitaire pour frais professionnels sur les salaires ;;
+Micro-BIC / micro-foncier ;; régime simplifié avec abattement forfaitaire sur les revenus de location ;; Micro-foncier : abattement de 30 %.
+Déclaration de revenus ;; document annuel adressé à l'administration fiscale (impots.gouv.fr) ;;
+Prélèvements sociaux ;; CSG, CRDS et autres contributions sociales ;; Taux global de 17,2 % sur les revenus du patrimoine jusqu'en 2025.
+CSG ;; Contribution Sociale Généralisée ;; Financement de la Sécurité sociale.
+CRDS ;; Contribution au Remboursement de la Dette Sociale ;; Taux de 0,5 %.
+TVA ;; taxe sur la valeur ajoutée, payée par le consommateur final ;; Taux normal 20 %, intermédiaire 10 %, réduit 5,5 %, particulier 2,1 %.
+Impôt de solidarité sur la fortune immobilière (IFI) ;; impôt sur le patrimoine immobilier net supérieur à 1,3 M€ ;; Barème commence à 800 000 €.
+Taxe foncière ;; impôt local payé par le propriétaire ;;
+Taxe d'habitation sur les résidences secondaires ;; maintenue ;; Supprimée pour les résidences principales.
+Contribution sur les hauts revenus ;; surtaxe pour les revenus très élevés ;;
+Tranche marginale ;; vocabulaire pour dire « mon taux le plus élevé » ;;
+Plus-value mobilière ;; gain sur la vente de titres ;; Soumise au PFU ou au barème.
+Plus-value immobilière ;; gain sur la vente d'un bien ;; Résidence principale exonérée ; abattements pour durée de détention.
+Exonération de plus-value immobilière ;; totale après 22 ans pour l'IR et 30 ans pour les prélèvements sociaux ;;
+Régime fiscal des dividendes ;; PFU ou barème avec abattement de 40 % ;;
+
+## Patrimoine, famille, transmission | 👨‍👩‍👧
+Régime matrimonial ;; règles qui organisent les biens du couple marié ;;
+Communauté réduite aux acquêts ;; régime légal : les biens acquis pendant le mariage sont communs ;; Les biens reçus par héritage ou avant le mariage restent propres.
+Séparation de biens ;; chacun garde son patrimoine ;; Souvent choisi par les entrepreneurs.
+Communauté universelle ;; tous les biens sont communs ;; Avec clause d'attribution intégrale, le survivant reçoit tout.
+PACS ;; contrat entre deux personnes pour organiser leur vie commune ;; Pas d'héritage automatique : testament nécessaire.
+Concubinage ;; vie commune sans statut juridique ;; Aucun droit successoral.
+Réserve héréditaire ;; part de la succession obligatoirement destinée aux enfants ;; 1 enfant : 1/2 ; 2 enfants : 2/3 ; 3 enfants et plus : 3/4.
+Quotité disponible ;; part de la succession dont on peut disposer librement ;; Complément de la réserve.
+Testament ;; acte par lequel on organise sa succession ;; Olographe (manuscrit) ou authentique (devant notaire).
+Donation ;; transmission de son vivant, irrévocable ;;
+Donation-partage ;; répartition de ses biens entre ses enfants de son vivant ;; Évite les conflits : les valeurs sont figées.
+Abattement parent-enfant ;; 100 000 € par parent et par enfant, renouvelable tous les 15 ans ;;
+Don familial d'argent ;; 31 865 € exonérés (donateur de moins de 80 ans, bénéficiaire majeur) ;; Renouvelable tous les 15 ans.
+Droits de succession ;; impôt sur la transmission au décès ;; Conjoint et partenaire de PACS exonérés.
+Abattement frères et sœurs ;; 15 932 € ;; Neveux et nièces : 7 967 €.
+Démembrement de propriété ;; séparation de l'usufruit et de la nue-propriété ;;
+Usufruit ;; droit d'utiliser un bien et d'en percevoir les revenus ;;
+Nue-propriété ;; propriété sans l'usage ni les revenus ;; Récupère la pleine propriété à l'extinction de l'usufruit.
+Clause bénéficiaire démembrée ;; on désigne usufruitier et nu-propriétaire d'une assurance-vie ;;
+Pacte Dutreil ;; allège les droits de transmission d'une entreprise ;;
+Holding patrimoniale ;; société qui détient d'autres sociétés ou des placements ;;
+Pension alimentaire ;; somme versée pour subvenir aux besoins d'un enfant ou d'un ex-conjoint ;; Déductible pour celui qui paie.
+Mandat de protection future ;; désigner à l'avance qui gérera ses affaires en cas d'incapacité ;;
+Assurance-vie vs succession ;; les capitaux versés hors succession bénéficient d'abattements spécifiques ;;
+Notaire ;; officier public qui authentifie les actes (vente, succession, contrat de mariage) ;;

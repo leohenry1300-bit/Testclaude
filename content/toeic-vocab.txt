@@ -1,0 +1,325 @@
+@pack toeic-vocab | TOEIC : vocabulaire du bureau | 💼 | Les mots qui reviennent sans cesse au TOEIC (entreprise, réunions, voyages, achats...). Phrase d'exemple en indice.
+@tags toeic, vocabulaire
+
+## Emploi et ressources humaines | 👔
+to apply for ;; postuler à ;; She applied for a job at a bank.
+an applicant / a candidate ;; un candidat ;; Three applicants were interviewed.
+a résumé / a CV ;; un CV ;; Please attach your résumé to the email.
+to hire ;; embaucher ;; The company plans to hire ten new employees.
+to recruit ;; recruter ;; We are recruiting sales representatives.
+to resign ;; démissionner ;; He resigned last month.
+to retire ;; prendre sa retraite ;; She will retire next year.
+to dismiss / to fire / to lay off ;; licencier ;; The factory laid off 50 workers.
+a vacancy / an opening ;; un poste vacant ;; There is a vacancy in the accounting department.
+a position ;; un poste ;; He is applying for a management position.
+an employer / an employee ;; un employeur / un salarié ;; Employees must wear a badge.
+a colleague / a coworker ;; un collègue ;; I'll ask a colleague to help.
+a supervisor / a manager ;; un responsable ;; Report the problem to your supervisor.
+a staff / personnel ;; le personnel ;; The staff meeting starts at nine.
+a salary / wages ;; un salaire ;; The salary depends on experience.
+a raise ;; une augmentation ;; He asked for a raise.
+a promotion ;; une promotion (poste) ;; She received a promotion to director.
+a benefit ;; un avantage (social) ;; The job offers health benefits.
+a reference ;; une recommandation ;; Two references are required.
+qualifications ;; qualifications, compétences ;; The candidate has excellent qualifications.
+an internship ;; un stage ;; He did an internship in London.
+a probation period ;; une période d'essai ;; The probation period lasts three months.
+a shift ;; un poste (horaire), une équipe ;; She works the night shift.
+overtime ;; heures supplémentaires ;; Overtime is paid at a higher rate.
+a deadline ;; une date limite ;; The deadline is Friday at noon.
+to be in charge of ;; être responsable de ;; Mr. Lee is in charge of the budget.
+to be responsible for ;; être responsable de ;; She is responsible for training new staff.
+to supervise ;; superviser ;; He supervises a team of eight.
+to train ;; former ;; New staff are trained on the first day.
+a workshop ;; un atelier de formation ;; The workshop covers customer service.
+a department ;; un service, un département ;; the marketing department
+a headquarters ;; un siège social ;; The headquarters is in Chicago.
+a branch ;; une succursale, une agence ;; We opened a new branch in Lyon.
+a subsidiary ;; une filiale ;; It is a subsidiary of a Japanese firm.
+a corporation ;; une grande société ;; a multinational corporation
+a firm ;; une entreprise (cabinet) ;; a law firm
+a competitor ;; un concurrent ;; Our main competitor lowered its prices.
+a client / a customer ;; un client ;; Customers are always right.
+a vendor / a supplier ;; un fournisseur ;; We changed our supplier last year.
+a partner ;; un associé, partenaire ;; She became a partner in the firm.
+a merger ;; une fusion ;; The merger was announced yesterday.
+an acquisition ;; une acquisition, un rachat ;; The acquisition of the rival firm was approved.
+
+## Réunions, présentations, bureau | 🗓️
+a meeting ;; une réunion ;; The meeting has been postponed.
+an agenda ;; un ordre du jour ;; Let's go through the agenda.
+minutes ;; un compte rendu ;; Who will take the minutes?
+to attend ;; assister à ;; Everyone must attend the training.
+to postpone ;; reporter (à plus tard) ;; The conference was postponed until May.
+to reschedule ;; reprogrammer ;; Can we reschedule for Tuesday?
+to cancel ;; annuler ;; The flight was canceled.
+to arrange ;; organiser, prévoir ;; I'll arrange a meeting with the client.
+to hold ;; tenir (une réunion) ;; The conference will be held in Paris.
+to adjourn ;; lever la séance ;; The meeting was adjourned at noon.
+an appointment ;; un rendez-vous ;; I have a dentist appointment at four.
+a conference ;; une conférence ;; She will speak at an international conference.
+a presentation ;; une présentation ;; He gave a presentation on sales figures.
+a handout ;; un document distribué ;; Please take a handout.
+a projector ;; un projecteur ;; The projector isn't working.
+a whiteboard ;; un tableau blanc ;; Write the ideas on the whiteboard.
+to brief ;; informer, briefer ;; She briefed the team on the project.
+to discuss ;; discuter de (sans « about ») ;; We discussed the budget. (pas « discuss about »)
+to propose / to suggest ;; proposer ;; I suggest that we meet on Monday.
+to approve ;; approuver ;; The board approved the plan.
+to agree on ;; se mettre d'accord sur ;; They agreed on a price.
+to negotiate ;; négocier ;; We negotiated a better contract.
+to follow up ;; assurer le suivi ;; I'll follow up with the client tomorrow.
+to remind ;; rappeler (à qqn) ;; Please remind me to call him.
+to inform / to notify ;; informer, notifier ;; You will be notified by email.
+to submit ;; soumettre, remettre ;; Submit your report by Friday.
+to review ;; examiner, relire ;; Please review the contract before signing.
+to revise ;; réviser, modifier ;; The schedule has been revised.
+to draft ;; rédiger un brouillon ;; I'll draft a letter.
+to forward ;; transférer (un mail) ;; Could you forward me the message?
+to attach ;; joindre ;; I attached the invoice.
+to reply / to respond ;; répondre ;; Please respond by Monday.
+an invitation ;; une invitation ;; Thank you for your invitation.
+a memo ;; une note de service ;; The memo announces a new policy.
+a notice ;; un avis, un préavis ;; A notice was posted on the door.
+an announcement ;; une annonce ;; The company made an important announcement.
+stationery ;; la papeterie ;; We need to order more stationery.
+a photocopier / a copier ;; un photocopieur ;; The copier is out of paper.
+a cubicle ;; un box (bureau) ;; Her cubicle is next to the window.
+a break room ;; une salle de pause ;; Lunch is served in the break room.
+supplies ;; des fournitures ;; Office supplies are in the cabinet.
+equipment ;; du matériel ;; The equipment is outdated.
+a facility / facilities ;; une installation ;; The facility will be renovated.
+a reception desk ;; l'accueil ;; Please check in at the reception desk.
+a receptionist ;; un(e) réceptionniste ;; The receptionist answered the phone.
+a visitor's badge ;; un badge visiteur ;; Visitors must wear a badge.
+
+## Finance, comptabilité, budget | 💶
+a budget ;; un budget ;; We are over budget.
+an expense ;; une dépense ;; Travel expenses will be reimbursed.
+to reimburse ;; rembourser ;; The company reimburses travel costs.
+a refund ;; un remboursement ;; You can get a full refund within 30 days.
+an invoice ;; une facture ;; The invoice is due in 30 days.
+a bill ;; une note, une facture ;; Can I have the bill, please?
+a receipt ;; un reçu ;; Keep the receipt for returns.
+an estimate / a quote ;; un devis ;; We asked for a quote for the repairs.
+a payment ;; un paiement ;; Payment is due on receipt.
+to pay in installments ;; payer en plusieurs fois ;; You can pay in three installments.
+due / overdue ;; dû / en retard (paiement) ;; The account is overdue.
+a balance ;; un solde ;; The balance is $200.
+a deposit ;; un acompte, un dépôt ;; A 20% deposit is required.
+a fee ;; des frais, des honoraires ;; There is a small service fee.
+a fare ;; un tarif (transport) ;; The train fare has increased.
+a charge ;; des frais, une facturation ;; There is no charge for delivery.
+a discount ;; une réduction ;; Members get a 10% discount.
+a rebate ;; une remise, un remboursement partiel ;; a manufacturer's rebate
+revenue / income ;; chiffre d'affaires / revenu ;; Revenue grew by 8%.
+profit / loss ;; bénéfice / perte ;; The company made a profit.
+earnings ;; résultats, bénéfices ;; Quarterly earnings exceeded forecasts.
+a quarter ;; un trimestre ;; Sales rose in the second quarter.
+a fiscal year ;; un exercice fiscal ;; The fiscal year ends in March.
+an audit ;; un audit ;; The audit is scheduled for May.
+an accountant ;; un comptable ;; Our accountant prepares the tax returns.
+assets / liabilities ;; actifs / passifs ;; Assets exceed liabilities.
+an investment ;; un investissement ;; It was a smart investment.
+an investor ;; un investisseur ;; Investors were pleased with the results.
+a shareholder ;; un actionnaire ;; Shareholders approved the dividend.
+a loan ;; un prêt ;; She took out a loan to buy a house.
+interest ;; l'intérêt ;; The interest rate is 3%.
+a tax ;; un impôt, une taxe ;; Sales tax is included in the price.
+a tax return ;; une déclaration d'impôts ;; File your tax return by April.
+a forecast ;; une prévision ;; The forecast is optimistic.
+to increase / to rise ;; augmenter ;; Prices rose sharply.
+to decrease / to decline ;; diminuer ;; Sales declined slightly.
+to fluctuate ;; fluctuer ;; Exchange rates fluctuate daily.
+to remain steady / stable ;; rester stable ;; Profits remained steady.
+to afford ;; avoir les moyens de ;; We can't afford a new truck.
+to owe ;; devoir (de l'argent) ;; He owes the bank $5,000.
+to withdraw / to deposit ;; retirer / déposer ;; I withdrew $100 from my account.
+affordable ;; abordable ;; The hotel is affordable.
+a bargain ;; une bonne affaire ;; At that price it's a bargain.
+
+## Marketing, ventes, produits | 📈
+a product line ;; une gamme de produits ;; The new product line launches in May.
+to launch ;; lancer ;; They launched a new smartphone.
+a campaign ;; une campagne ;; an advertising campaign
+an advertisement / an ad ;; une publicité ;; The ad appeared in the newspaper.
+a brochure ;; une brochure ;; Brochures are available at the front desk.
+a survey ;; une enquête ;; The survey shows high satisfaction.
+a questionnaire ;; un questionnaire ;; Please fill out the questionnaire.
+market share ;; part de marché ;; We have a 15% market share.
+a target audience ;; un public cible ;; The target audience is young adults.
+a trend ;; une tendance ;; a growing trend
+a brand ;; une marque ;; a well-known brand
+a trademark ;; une marque déposée ;; The logo is a registered trademark.
+a warranty / a guarantee ;; une garantie ;; The warranty covers repairs for two years.
+a sample ;; un échantillon ;; Free samples are available.
+a coupon / a voucher ;; un bon de réduction ;; Show this coupon at checkout.
+a sale ;; une vente, des soldes ;; The summer sale starts Friday.
+a promotion ;; une promotion (commerciale) ;; a special promotion this week
+a bulk order ;; une commande en gros ;; Bulk orders receive a discount.
+retail / wholesale ;; vente au détail / en gros ;; wholesale prices
+a retailer ;; un détaillant ;; Retailers expect strong holiday sales.
+a distributor ;; un distributeur ;; We work with a local distributor.
+a shipment ;; une expédition, un envoi ;; The shipment arrived late.
+to ship ;; expédier ;; Orders ship within two days.
+a delivery ;; une livraison ;; Free delivery on orders over $50.
+an order ;; une commande ;; We received an order for 500 units.
+to place an order ;; passer une commande ;; She placed an order online.
+in stock / out of stock ;; en stock / en rupture ;; This item is out of stock.
+to restock ;; réapprovisionner ;; The store will restock on Monday.
+inventory ;; l'inventaire, le stock ;; Inventory is counted monthly.
+a refund policy ;; une politique de remboursement ;; See our refund policy.
+a defect / defective ;; un défaut / défectueux ;; The product was defective.
+a complaint ;; une réclamation ;; We received several complaints.
+customer satisfaction ;; la satisfaction client ;; Customer satisfaction is our priority.
+a loyalty program ;; un programme de fidélité ;; Join our loyalty program.
+a subscription ;; un abonnement ;; a monthly subscription
+to renew ;; renouveler ;; Your membership will be renewed automatically.
+to expire ;; expirer ;; The coupon expires on June 30.
+a feature ;; une fonctionnalité, une caractéristique ;; The new model has several features.
+a specification ;; une spécification, caractéristique technique ;; See the technical specifications.
+to manufacture ;; fabriquer ;; The company manufactures car parts.
+a manufacturer ;; un fabricant ;; The manufacturer recalled the product.
+an outlet ;; un point de vente ;; a factory outlet
+a prototype ;; un prototype ;; The prototype will be tested next week.
+
+## Voyages, transports, hôtels | ✈️
+a flight ;; un vol ;; Flight 202 has been delayed.
+a boarding pass ;; une carte d'embarquement ;; Please show your boarding pass.
+a gate ;; une porte d'embarquement ;; Go to Gate 12.
+luggage / baggage ;; les bagages ;; Baggage claim is on the first floor.
+a carry-on ;; un bagage à main ;; Only one carry-on is allowed.
+to board ;; embarquer ;; Passengers are now boarding.
+to check in / to check out ;; s'enregistrer / quitter l'hôtel ;; Check-out is at noon.
+a layover / a stopover ;; une escale ;; We have a two-hour layover in Dubai.
+a delay ;; un retard ;; A delay of one hour is expected.
+a departure / an arrival ;; un départ / une arrivée ;; The departure time is 8:15.
+an itinerary ;; un itinéraire, programme de voyage ;; The itinerary includes three cities.
+a reservation / a booking ;; une réservation ;; I'd like to make a reservation.
+to book ;; réserver ;; Book early to get a discount.
+a round-trip ticket ;; un billet aller-retour ;; a round-trip ticket to Boston
+a one-way ticket ;; un aller simple ;;
+a passenger ;; un passager ;; Passengers must remain seated.
+an aisle seat / a window seat ;; un siège côté couloir / hublot ;;
+a commuter ;; un banlieusard (qui fait des trajets quotidiens) ;; Commuters face long delays.
+a vehicle ;; un véhicule ;; Vehicles are not allowed here.
+a rental car ;; une voiture de location ;; We picked up a rental car.
+a toll ;; un péage ;; The toll is $3.
+a detour ;; une déviation ;; Take the detour on Main Street.
+a platform ;; un quai ;; The train leaves from platform 5.
+a timetable / a schedule ;; un horaire ;; The train schedule has changed.
+a suite ;; une suite (hôtel) ;; We booked a suite.
+a vacancy / No vacancy ;; chambre libre / complet ;; The hotel has no vacancy.
+a complimentary breakfast ;; un petit-déjeuner offert ;; Complimentary breakfast is included.
+a shuttle ;; une navette ;; A free shuttle runs to the airport.
+a tourist attraction ;; une attraction touristique ;; The tower is a popular tourist attraction.
+sightseeing ;; visite touristique ;; We went sightseeing in Rome.
+customs ;; la douane ;; Passengers pass through customs.
+a visa ;; un visa ;; You need a visa to enter the country.
+currency ;; la devise, la monnaie ;; Foreign currency can be exchanged here.
+an exchange rate ;; un taux de change ;; The exchange rate changes daily.
+
+## Logistique, achats, entrepôt | 📦
+procurement ;; les achats (approvisionnement) ;; the procurement department
+a warehouse ;; un entrepôt ;; Goods are stored in the warehouse.
+a container ;; un conteneur ;; The container was shipped from Asia.
+freight ;; le fret ;; Air freight is expensive.
+a carrier ;; un transporteur ;; We use a reliable carrier.
+a pallet ;; une palette ;; Each pallet holds 40 boxes.
+to load / to unload ;; charger / décharger ;; Workers unloaded the truck.
+a tracking number ;; un numéro de suivi ;; Use the tracking number to follow your parcel.
+a purchase order ;; un bon de commande ;; Please send a purchase order.
+a packing slip ;; un bordereau de livraison ;; The packing slip lists the items.
+fragile ;; fragile ;; Handle with care: fragile contents.
+perishable ;; périssable ;; Perishable goods must be refrigerated.
+a backlog ;; un retard de commandes à traiter ;; We have a backlog of orders.
+a supply chain ;; une chaîne logistique ;; Supply chain problems delayed production.
+lead time ;; le délai d'approvisionnement ;; The lead time is two weeks.
+to dispatch ;; expédier, envoyer ;; Orders are dispatched daily.
+to replace ;; remplacer ;; We will replace the damaged item.
+to repair ;; réparer ;; The machine needs to be repaired.
+maintenance ;; l'entretien, la maintenance ;; Routine maintenance is scheduled for Sunday.
+a malfunction ;; un dysfonctionnement ;; The malfunction was caused by a software bug.
+out of order ;; en panne ;; The elevator is out of order.
+to inspect ;; inspecter, contrôler ;; Inspectors checked the safety equipment.
+a safety regulation ;; une règle de sécurité ;; Follow all safety regulations.
+a hazard ;; un danger ;; a fire hazard
+to comply with ;; se conformer à ;; The company complies with environmental laws.
+a standard ;; une norme ;; international standards
+a quality control ;; un contrôle qualité ;; Quality control checks every unit.
+
+## Informatique, téléphone, communication | 💻
+software / hardware ;; logiciel / matériel informatique ;; Install the latest software update.
+to install / to uninstall ;; installer / désinstaller ;;
+to upgrade ;; mettre à niveau ;; We upgraded our computers.
+to back up ;; sauvegarder ;; Back up your files regularly.
+a password ;; un mot de passe ;; Please change your password.
+to log in / to log out ;; se connecter / se déconnecter ;; Log in with your user name.
+a database ;; une base de données ;; The database stores customer records.
+a network ;; un réseau ;; The network is down.
+a server ;; un serveur ;; The server crashed.
+to download / to upload ;; télécharger / téléverser ;; Download the app from the website.
+an attachment ;; une pièce jointe ;; See the attachment for details.
+a mailing list ;; une liste de diffusion ;; Join our mailing list.
+to subscribe / to unsubscribe ;; s'abonner / se désabonner ;; Click here to unsubscribe.
+a voicemail ;; une messagerie vocale ;; I left a voicemail.
+to put someone through ;; passer qqn (au téléphone) ;; I'll put you through to the manager.
+to hold the line ;; patienter au téléphone ;; Could you hold the line, please?
+to hang up ;; raccrocher ;; He hung up the phone.
+to call back ;; rappeler ;; I'll call you back in ten minutes.
+a switchboard ;; un standard téléphonique ;; Call the switchboard and ask for extension 12.
+an extension ;; un poste (téléphone) ;; Please dial extension 305.
+available / unavailable ;; disponible / indisponible ;; She is unavailable until Monday.
+to reach ;; joindre (qqn) ;; How can I reach you?
+a message ;; un message ;; Would you like to leave a message?
+a signal / reception ;; réseau, signal ;; The reception is poor.
+a device ;; un appareil ;; Turn off all electronic devices.
+a charger ;; un chargeur ;;
+a printer ;; une imprimante ;; The printer is jammed.
+a cable ;; un câble ;;
+a file ;; un fichier, un dossier ;; Save the file on the shared drive.
+a folder ;; un dossier ;;
+a template ;; un modèle ;; Use the company template.
+a spreadsheet ;; un tableur ;; The figures are in the spreadsheet.
+
+## Immobilier, bâtiment, lieu de travail | 🏢
+a landlord / a tenant ;; un propriétaire / un locataire ;; The tenant pays the rent on the first.
+rent / to rent ;; loyer / louer ;; The rent is $1,200 a month.
+a lease ;; un bail ;; The lease expires in June.
+a property ;; un bien immobilier ;; The property is for sale.
+a real estate agent ;; un agent immobilier ;; An agent will show you the apartment.
+a mortgage ;; un prêt immobilier ;; They took out a mortgage.
+a renovation ;; une rénovation ;; The building is under renovation.
+a contractor ;; un entrepreneur (de travaux) ;; The contractor will start Monday.
+a construction site ;; un chantier ;; Wear a helmet on the construction site.
+a floor plan ;; un plan d'étage ;; See the floor plan.
+a lobby ;; un hall d'entrée ;; Meet me in the lobby.
+a parking lot ;; un parking ;; The parking lot is full.
+an elevator ;; un ascenseur ;; Take the elevator to the fifth floor.
+a stairway ;; un escalier ;;
+a conference room ;; une salle de conférence ;; The conference room is booked.
+premises ;; les locaux ;; No smoking on the premises.
+a neighborhood ;; un quartier ;; a quiet neighborhood
+a utility ;; un service public (eau, électricité) ;; Utilities are included in the rent.
+a furnished apartment ;; un appartement meublé ;;
+
+## Restaurants, santé, services | 🍽️
+a menu ;; un menu, une carte ;; Could I see the menu?
+a waiter / a waitress ;; un serveur / une serveuse ;;
+a tip ;; un pourboire ;; The tip is included.
+a catering service ;; un service traiteur ;; We hired a catering service.
+a reservation for four ;; une réservation pour quatre ;;
+a prescription ;; une ordonnance ;; The doctor wrote a prescription.
+a pharmacy ;; une pharmacie ;;
+a check-up ;; un bilan de santé ;; an annual check-up
+an insurance policy ;; un contrat d'assurance ;; The policy covers accidents.
+a claim ;; une réclamation / déclaration de sinistre ;; She filed a claim.
+a coverage ;; une couverture (assurance) ;; The plan provides full coverage.
+a premium ;; une prime (assurance) ;; The monthly premium is $80.
+a deductible ;; une franchise (US) ;; The deductible is $500.
+a dentist's appointment ;; un rendez-vous chez le dentiste ;;
+a clinic ;; une clinique, un cabinet ;;
+a patient ;; un patient ;;
+an emergency ;; une urgence ;; In an emergency, dial 911.
+a gym membership ;; un abonnement à une salle de sport ;;
+a maintenance request ;; une demande d'intervention ;; Submit a maintenance request online.

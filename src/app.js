@@ -259,7 +259,7 @@ const DEFAULT_SETTINGS = {
     theme: 'auto', cardSize: 'm', showIntervals: true,
     autoSpeak: false, answerMode: 'flip', learnAhead: 20, cloudSync: true,
     quizCount: 20, writeCount: 20, chronoDuration: 60,
-    rolloverHour: 4, syncKey: '', settingsMod: 0, autoBackup: true,
+    rolloverHour: 4, syncKey: '', settingsMod: 0, autoBackup: true, libSeen: false, goalName: '', goalDate: '',
     ...OPT_DEFAULTS
 };
 function parseSteps(str, def) {
@@ -1003,13 +1003,17 @@ class SuperAnki {
             ? `<button class="btn btn-hero-ghost" data-action="extra-new">${ic('plus')}10 nouvelles de plus</button>` : '';
         const pct = k => (counts.total ? Math.round(counts[k] / counts.total * 100) : 0);
         const chronoBest = d.stats.chronoBest[d.settings.chronoDuration] || 0;
+        const goal = this.goalInfo();
+        const libTotal = PACKS.reduce((n, p) => n + this.packCardIds(p).length, 0);
+        const libBanner = !d.settings.libSeen ? `<div class="panel lib-banner"><span class="lib-ico">${ic('sparkles')}</span><div style="flex:1;min-width:200px"><b>Nouveau : la bibliothèque de paquets</b><p class="small muted">${libTotal.toLocaleString('fr-FR')} cartes prêtes à apprendre : anglais et TOEIC, banque, assurance, finance, BUT TC.</p></div><button class="btn btn-primary btn-sm" data-action="open-library">Découvrir</button></div>` : '';
 
         $('#view-dashboard').innerHTML = `
         <div class="stack">
+            ${libBanner}
             <div class="hero">
                 <div class="hero-inner">
                     <div>
-                        <span class="hero-kicker">${hello} 👋</span>
+                        <span class="hero-kicker">${hello} 👋${goal ? ` · <b>${esc(goal.name)} : ${goal.days > 0 ? `J-${goal.days}` : goal.days === 0 ? 'c\'est aujourd\'hui !' : 'terminé'}</b>` : ''}</span>
                         <h2 class="hero-title">Prêt pour ta révision ?</h2>
                         <p class="hero-sub">${sub}</p>
                     </div>
@@ -1052,7 +1056,7 @@ class SuperAnki {
             <div>
                 <div class="section-head">
                     <h3 class="section-title">Tes paquets</h3>
-                    <button class="link" data-nav="decks">Gérer ${ic('chevronRight')}</button>
+                    <span style="display:flex;gap:14px"><button class="link" data-action="open-library">${ic('layers')}Bibliothèque</button><button class="link" data-nav="decks">Gérer ${ic('chevronRight')}</button></span>
                 </div>
                 ${d.decks.length ? `<div class="deck-grid">${this.dashboardDeckCards()}</div>`
                     : `<div class="panel empty">${ic('layers')}<p>Aucun paquet pour l'instant.</p><button class="btn btn-primary" style="margin-top:14px" data-action="new-deck">${ic('folderPlus')}Créer un paquet</button></div>`}
@@ -1107,6 +1111,7 @@ class SuperAnki {
                 <div><h2 class="page-title">Paquets &amp; Cartes</h2>
                 <p class="page-sub">Choisis un paquet pour gérer tes fiches et lancer une révision.</p></div>
                 <div class="head-tools">
+                    <button class="icon-btn" data-action="open-library" title="Bibliothèque de paquets" aria-label="Bibliothèque de paquets">${ic('layers')}</button>
                     <button class="icon-btn" data-action="undo-global" title="Annuler la dernière modification (Ctrl+Z)" ${this.undoStack.length ? '' : 'disabled style="opacity:.35"'}>${ic('undo')}</button>
                     <button class="icon-btn" data-action="redo-global" title="Rétablir (Ctrl+Maj+Z)" ${this.redoStack.length ? '' : 'disabled style="opacity:.35"'}>${ic('redo')}</button>
                 </div>
@@ -1446,6 +1451,14 @@ class SuperAnki {
                     <div class="txt"><b>Le jour change à</b><span>Les révisions de la nuit comptent pour la veille, comme dans Anki (4 h par défaut).</span></div>
                     ${seg('rolloverHour', [[0, 'Minuit'], [3, '3 h'], [4, '4 h'], [6, '6 h']])}
                 </div>
+            </div>
+
+            <div class="panel panel-pad set-section">
+                <h3>${ic('target')} Objectif / examen</h3>
+                <p class="small muted">Un compte à rebours s'affiche sur l'accueil (ex. ton TOEIC).</p>
+                <div class="set-row"><div class="txt"><b>Nom</b></div><div class="opt-ctl"><input class="input" id="goal-name" value="${esc(s.goalName)}" placeholder="TOEIC" style="min-width:200px"></div></div>
+                <div class="set-row"><div class="txt"><b>Date</b><span>Laisse vide pour supprimer l'objectif.</span></div><div class="opt-ctl"><input class="input" id="goal-date" type="date" value="${esc(s.goalDate)}"></div></div>
+                <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn btn-primary btn-sm" data-action="save-goal">${ic('check')}Enregistrer</button></div>
             </div>
 
             <div class="panel panel-pad set-section" id="study-options">
@@ -2887,6 +2900,15 @@ class SuperAnki {
                 break;
             }
             case 'export-txt': this.exportTXT(); break;
+            case 'open-library': this.openLibrary(); break;
+            case 'save-goal': {
+                this.data.settings.goalName = ($('#goal-name') || {}).value || '';
+                this.data.settings.goalDate = ($('#goal-date') || {}).value || '';
+                this.data.settings.settingsMod = Date.now();
+                this.save(); this.renderSettings();
+                this.toast(this.data.settings.goalDate ? 'Objectif enregistré' : 'Objectif supprimé', 'success', ic('target'));
+                break;
+            }
             case 'backup-now': this.manualBackup(); break;
             case 'backup-restore': this.restoreBackup(ds.key); break;
             case 'backup-download': this.downloadBackup(ds.key); break;

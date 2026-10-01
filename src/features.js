@@ -694,6 +694,108 @@ Object.assign(SuperAnki.prototype, {
     },
 
     /* ============================================================
+       Library of ready-made packs (content/*.txt, built into PACKS)
+       ============================================================ */
+    packCardIds(pack) {
+        const ids = [];
+        let n = 0;
+        pack.decks.forEach(d => d.cards.forEach(c => {
+            n++;
+            if (c[0] === 'b') ids.push(`pk_${pack.id}_${n}`);
+            else clozeNumbers(c[1]).forEach(k => ids.push(`pk_${pack.id}_${n}_c${k}`));
+        }));
+        return ids;
+    },
+    packStatus(pack) {
+        const have = new Set(this.data.cards.map(c => c.id)), ids = this.packCardIds(pack);
+        return { total: ids.length, owned: ids.filter(id => have.has(id)).length };
+    },
+    /* Adds a pack (missing cards only) under group > pack > sub-deck decks. Returns the number of cards added. */
+    addPack(packId) {
+        const pack = PACKS.find(p => p.id === packId);
+        if (!pack) return 0;
+        const g = PACK_GROUPS[pack.group], now = Date.now(), have = new Set(this.data.cards.map(c => c.id));
+        const ensureDeck = (id, name, emoji, parent, description = '') => {
+            let d = this.deck(id);
+            if (!d) { d = { id, name, emoji, description, created: now, parent, opts: null, mod: 0, preset: null, limits: null }; this.data.decks.push(d); }
+            return d.id;
+        };
+        let added = 0, n = 0;
+        this.change(`ajout du paquet ${pack.title}`, [], () => {
+            const made = [], gid = ensureDeck(`pk_g_${pack.group}`, g.name, g.emoji, null, g.desc);
+            const pid = ensureDeck(`pk_${pack.id}`, pack.title, pack.emoji, gid, pack.desc);
+            pack.decks.forEach((sd, si) => {
+                const did = ensureDeck(`pk_${pack.id}_d${si}`, sd.name, sd.emoji, pid);
+                sd.cards.forEach(c => {
+                    n++;
+                    const base = { ...freshCard(), deckId: did, tags: [...pack.tags], hint: '', detail: '', created: now + n, nid: '', kind: 'basic', ord: 0, nf: null };
+                    if (c[0] === 'b') {
+                        const id = `pk_${pack.id}_${n}`;
+                        if (have.has(id)) return;
+                        this.data.cards.push({ ...base, id, front: sanitizeHtml(c[1]), back: sanitizeHtml(c[2]), hint: sanitizeHtml(c[3] || '') });
+                        made.push(id); added++;
+                    } else {
+                        const nid = `pk_${pack.id}_${n}n`;
+                        clozeNumbers(c[1]).forEach(k => {
+                            const id = `pk_${pack.id}_${n}_c${k}`;
+                            if (have.has(id)) return;
+                            const card = { ...base, id, nid, kind: 'cloze', ord: k, front: '', back: '', nf: { front: '', back: '', text: sanitizeHtml(c[1]), extra: sanitizeHtml(c[2] || '') } };
+                            materializeCard(card);
+                            this.data.cards.push(card);
+                            made.push(id); added++;
+                        });
+                    }
+                });
+            });
+            return made;
+        }, { decks: true });
+        return added;
+    },
+    openLibrary() {
+        const render = () => {
+            const groupsHtml = Object.entries(PACK_GROUPS).map(([gk, g]) => {
+                const packs = PACKS.filter(p => p.group === gk);
+                const stats = packs.map(p => this.packStatus(p));
+                const total = stats.reduce((a, s) => a + s.total, 0), owned = stats.reduce((a, s) => a + s.owned, 0);
+                return `<div class="lib-group">
+                    <div class="lib-group-head"><div><h4>${g.emoji} ${esc(g.name)}</h4><p class="small muted">${esc(g.desc)}</p></div>
+                    <button class="btn ${owned >= total ? 'btn-soft' : 'btn-primary'} btn-sm" data-libgroup="${gk}" ${owned >= total ? 'disabled' : ''}>${owned >= total ? `${ic('check')}Tout ajouté` : `Tout ajouter (${total - owned})`}</button></div>
+                    ${packs.map((p, i) => { const s = stats[i], done = s.owned >= s.total; return `
+                    <div class="lib-pack">
+                        <span class="deck-emoji">${esc(p.emoji)}</span>
+                        <div class="lib-info"><b>${esc(p.title)}</b><p class="small muted">${esc(p.desc)}</p><p class="tiny faint">${plural(s.total, 'carte')} · ${plural(p.decks.length, 'sous-paquet')}${s.owned && !done ? ` · ${s.owned} déjà ajoutées` : ''}</p></div>
+                        <button class="btn ${done ? 'btn-soft' : 'btn-primary'} btn-sm" data-libpack="${esc(p.id)}" ${done ? 'disabled' : ''}>${done ? ic('check') : ic('plus')}${done ? 'Ajouté' : s.owned ? 'Compléter' : 'Ajouter'}</button>
+                    </div>`; }).join('')}
+                </div>`;
+            }).join('');
+            return `<p class="small muted" style="margin-bottom:14px">Ajoute les paquets qui t'intéressent : tes cartes et ta progression ne sont jamais modifiées. Tu peux retirer un paquet en le supprimant. <b>Les chiffres réglementaires (taux, plafonds, seuils) sont indicatifs</b> : vérifie les valeurs à jour avant de t'en servir.</p>${groupsHtml}`;
+        };
+        const m = this.openModal({ title: `${ic('layers')} Bibliothèque de paquets`, size: 'wide', body: '<div id="lib-body"></div>', foot: '<button class="btn btn-soft" data-close>Fermer</button>' });
+        const body = $('#lib-body', m);
+        const refresh = () => { body.innerHTML = render(); };
+        refresh();
+        body.addEventListener('click', e => {
+            const one = e.target.closest('[data-libpack]'), grp = e.target.closest('[data-libgroup]');
+            if (!one && !grp) return;
+            const packs = one ? [one.dataset.libpack] : PACKS.filter(p => p.group === grp.dataset.libgroup).map(p => p.id);
+            const n = packs.reduce((a, id) => a + this.addPack(id), 0);
+            this.settingsSeenLibrary();
+            refresh();
+            this.render();
+            this.undoToast(`${plural(n, 'carte ajoutée', 'cartes ajoutées')}`, ic('layers'));
+        });
+    },
+    settingsSeenLibrary() { if (!this.data.settings.libSeen) { this.data.settings.libSeen = true; this.save(false); } },
+
+    /* ---------- Goal / exam countdown ---------- */
+    goalInfo() {
+        const s = this.data.settings;
+        if (!s.goalDate || !/^\d{4}-\d{2}-\d{2}$/.test(s.goalDate)) return null;
+        const days = daysBetweenKeys(dayKey(), s.goalDate);
+        return { name: s.goalName || 'Objectif', days, date: s.goalDate };
+    },
+
+    /* ============================================================
        Automatic backups (kept inside the browser's IndexedDB)
        ============================================================ */
     async autoBackup(source) {

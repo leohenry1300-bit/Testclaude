@@ -1,0 +1,95 @@
+@pack toeic-faux-amis | TOEIC : faux amis et erreurs de Français | ⚠️ | Les mots anglais qui ressemblent au français mais veulent dire autre chose, et les erreurs classiques des francophones.
+@tags toeic, pièges
+
+## Faux amis | 🪤
+actually ;; en fait (≠ actuellement) ;; Actually, I disagree. → Actuellement = currently
+currently ;; actuellement ;; She is currently abroad.
+eventually ;; finalement, à la fin (≠ éventuellement) ;; He eventually found a job. → éventuellement = possibly
+possibly ;; éventuellement, peut-être ;;
+to attend ;; assister à (≠ attendre) ;; Attend the meeting. → attendre = to wait
+to wait for ;; attendre ;; I'm waiting for the bus.
+a college ;; une université / un établissement supérieur (≠ collège) ;; She studies at college.
+a lecture ;; un cours magistral, une conférence (≠ lecture) ;; → lecture (lire) = reading
+a library ;; une bibliothèque (≠ librairie) ;; → librairie = bookstore
+a bookstore ;; une librairie ;;
+to demand ;; exiger (≠ demander) ;; The union demands a raise. → demander = to ask
+to ask ;; demander ;;
+a sensible person ;; une personne raisonnable (≠ sensible) ;; → sensible = sensitive
+sensitive ;; sensible, délicat ;;
+a journey ;; un voyage (trajet) (≠ journée) ;; a long journey → journée = day
+a day ;; une journée ;;
+to pretend ;; faire semblant (≠ prétendre) ;; → prétendre = to claim
+to claim ;; prétendre, réclamer ;; He claims to be an expert.
+to resume ;; reprendre, recommencer (≠ résumer) ;; Work will resume Monday. → résumer = to summarize
+a résumé ;; un CV (US) ;;
+to rest ;; se reposer (≠ rester) ;; → rester = to stay
+to stay ;; rester ;; Stay here.
+a car ;; une voiture (≠ car de transport) ;; → car = a coach / a bus
+a coach ;; un autocar ;;
+a chair ;; une chaise (≠ chair = flesh) ;;
+a location ;; un emplacement, un lieu (≠ location = rental) ;; → location = rental
+a rental ;; une location ;;
+a store ;; un magasin (≠ stock) ;; to store = stocker
+the stock ;; le stock ;;
+a blessing ;; une bénédiction (≠ blessure) ;; → blessure = injury / wound
+an injury ;; une blessure ;;
+a delay ;; un retard (≠ délai) ;; → délai = deadline, time limit
+a deadline ;; un délai, une date limite ;;
+a petrol / gas station ;; une station-service (≠ essence = gasoline) ;;
+a pain ;; une douleur (≠ pain = bread) ;;
+bread ;; du pain ;;
+a coin ;; une pièce de monnaie (≠ coin = corner) ;;
+a corner ;; un coin ;;
+a figure ;; un chiffre (≠ figure) ;; sales figures = chiffres de vente
+a fabric ;; un tissu (≠ fabrique) ;; → fabrique = factory
+a factory ;; une usine ;;
+a rumor ;; une rumeur ;;
+an issue ;; un problème, un sujet, un numéro (revue) ;; (≠ issue = sortie, exit)
+a conference ;; un congrès (≠ conférence = lecture) ;;
+to realize ;; se rendre compte (≠ réaliser = to carry out) ;; I realized I was wrong.
+to carry out ;; réaliser, mener à bien ;;
+to travel ;; voyager (≠ travailler) ;; to work = travailler
+a trade ;; un métier, un commerce ;;
+the ancient history ;; l'histoire ancienne ;; (ancien = former : my former boss)
+former ;; ancien (ex-) ;; the former CEO
+a user ;; un utilisateur ;;
+a pupil ;; un élève (≠ pupille) ;;
+a physician ;; un médecin (≠ physicien = physicist) ;;
+a physicist ;; un physicien ;;
+a grocery store ;; une épicerie ;;
+sympathetic ;; compatissant (≠ sympathique) ;; → sympathique = nice, friendly
+nice / friendly ;; sympathique ;;
+to assist ;; aider (≠ assister à) ;; She assists the manager.
+a preservative ;; un conservateur (≠ préservatif) ;;
+a luxury ;; un luxe ;;
+a delicate matter ;; une affaire délicate (≠ délicieux) ;; → délicieux = delicious
+
+## Erreurs classiques des francophones | 🇫🇷
+I am 25 / I have 25 years ;; I am 25 (years old) ;; On dit « be » pour l'âge, jamais « have ».
+I am agree ;; I agree ;; to agree = verbe, pas d'auxiliaire « be ».
+I am here since Monday ;; I have been here since Monday ;; Depuis → present perfect (since / for).
+He explained me the problem ;; He explained the problem to me ;; to explain something to someone.
+Discuss about the budget ;; Discuss the budget ;; discuss se construit sans préposition.
+Consider about it ;; Consider it ;; consider se construit sans préposition.
+I will call you when I will arrive ;; I will call you when I arrive ;; Après when, as soon as, before, after, until : présent.
+I look forward to see you ;; I look forward to seeing you ;; look forward to + -ing.
+I have 2 sisters. Their are nice. ;; They are nice. ;; their = possessif ; they're = they are ; there = là.
+The informations are useful ;; The information is useful ;; information est indénombrable (pas de -s).
+Some advices ;; Some advice / a piece of advice ;; advice, news, furniture, luggage, equipment = indénombrables.
+I am agree with you ;; I agree with you ;;
+It depends of ;; It depends on ;;
+Married with ;; married to ;;
+Different than (FR) ;; different from ;;
+Since 3 years ;; for 3 years ;;
+Make a photo ;; take a photo ;;
+Take a decision ;; make a decision ;;
+My parents are agree ;; My parents agree ;;
+Hair are long ;; Hair is long ;; hair : singulier (une chevelure).
+People is / The people is ;; People are ;; people = pluriel.
+He work here ;; He works here ;; 3e personne du singulier : -s.
+Do you can help me? ;; Can you help me? ;; can n'accepte pas do.
+I can to swim ;; I can swim ;; pas de « to » après can.
+More cheap ;; cheaper ;; adjectif court : -er.
+The most cheap ;; the cheapest ;;
+I want that you come ;; I want you to come ;; want + objet + to + verbe.
+I must to go ;; I must go ;;

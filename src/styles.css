@@ -1107,3 +1107,14 @@ details.search-help p { margin-top: 6px; line-height: 1.9; }
 .dradio i { width: 22px; height: 22px; border-radius: 99px; border: 2px solid var(--border-strong); display: block; }
 .dradio input:checked + i { border-color: var(--primary); background: radial-gradient(circle, var(--primary) 0 45%, transparent 50%); }
 .dradio input:focus-visible + i { box-shadow: 0 0 0 3px var(--ring); }
+
+.lib-banner { display: flex; align-items: center; gap: 14px; padding: 16px 18px; flex-wrap: wrap; border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); background: var(--primary-soft); }
+.lib-ico { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: var(--primary); color: var(--on-primary); flex: none; }
+.lib-group { margin-top: 18px; }
+.lib-group:first-of-type { margin-top: 0; }
+.lib-group-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.lib-group-head h4 { font-size: 1.05rem; font-weight: 800; }
+.lib-pack { display: flex; align-items: center; gap: 12px; padding: 12px; border: var(--border-w) solid var(--border); border-radius: var(--radius-sm); margin-top: 8px; background: var(--surface-2); }
+.lib-info { flex: 1; min-width: 0; }
+.lib-info b { display: block; }
+@media (max-width: 560px) { .lib-pack { flex-wrap: wrap; } .lib-pack .btn { width: 100%; } }
