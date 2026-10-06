@@ -133,10 +133,8 @@ Object.assign(SuperAnki.prototype, {
         const scope = this.statsScope();
         this.chartDefs = {};
         const errCount = this.errorCards().length;
-        const deckRows = this.sortedDecks().map(dk => {
-            const cs = this.cardsOf(dk.id), c = this.countStatuses(cs);
-            return { dk, c, n: cs.length, pct: cs.length ? Math.round(c.mature / cs.length * 100) : 0 };
-        }).sort((a, b) => b.pct - a.pct || a.dk.name.localeCompare(b.dk.name, 'fr'));
+        const dstats = this.deckStats();
+        const deckRows = this.sortedDecks().map(dk => { const c = dstats.get(dk.id); return { dk, c, n: c.total, pct: this.pctMature(c), seen: this.pctSeen(c), depth: this.deckDepth(dk.id) }; });
 
         const sections = [
             this.statToday(scope),
@@ -180,9 +178,9 @@ Object.assign(SuperAnki.prototype, {
                 <h4 class="stat-title" style="margin-bottom:8px">Maîtrise par paquet</h4>
                 ${deckRows.map(r => `
                 <button class="deck-progress-row" data-action="stats-deck" data-deck="${esc(r.dk.id)}" data-tip="${esc(tipRows(`${esc(r.dk.emoji)} ${esc(this.deckPath(r.dk.id))}`, ['new', 'learn', 'due', 'mature'].map(k => ({ label: STATUS[k].label, value: r.c[k], color: STATUS[k].color }))))}">
-                    <span class="nm">${esc(r.dk.emoji)} ${esc(this.deckPath(r.dk.id))}</span>
+                    <span class="nm" style="padding-left:${r.depth * 18}px">${r.depth ? '<span class="faint">└</span> ' : ''}${esc(r.dk.emoji)} ${esc(r.dk.name)}</span>
                     <div class="progress"><i style="width:${r.n ? r.c.mature / r.n * 100 : 0}%;background:var(--mature)"></i><i style="width:${r.n ? r.c.learn / r.n * 100 : 0}%;background:var(--learn)"></i><i style="width:${r.n ? r.c.due / r.n * 100 : 0}%;background:var(--due)"></i></div>
-                    <b>${r.pct}%</b>
+                    <b title="${r.seen} % vu · ${r.pct} % maîtrisé">${r.pct}%</b>
                 </button>`).join('') || '<p class="small muted">Aucun paquet.</p>'}
             </div>
         </div>`;

@@ -851,6 +851,52 @@ class SuperAnki {
         return this.data.cards.filter(c => set.has(c.deckId));
     }
     errorCards() { return this.data.cards.filter(c => c.errors > 0 && !c.suspended); }
+    childrenOf(id) {
+        return this.data.decks.filter(d => (d.parent || null) === (id || null)).sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base', numeric: true }));
+    }
+    /* One pass over all cards: per deck, counts including every sub-deck below it */
+    deckStats() {
+        const now = Date.now(), eod = endOfDay(now), by = new Map(this.data.decks.map(d => [d.id, d])), out = new Map();
+        by.forEach((d, id) => out.set(id, { total: 0, seen: 0, new: 0, learn: 0, due: 0, mature: 0, susp: 0 }));
+        this.data.cards.forEach(c => {
+            const k = c.state === 'new' ? 'new' : c.state === 'review' ? (c.due <= eod ? 'due' : c.interval >= MATURE_IVL ? 'mature' : 'learn') : (c.due <= now ? 'due' : 'learn');
+            let d = by.get(c.deckId), n = 0;
+            while (d && n++ < 10) {
+                const st = out.get(d.id);
+                st.total++; st[k]++; if (k !== 'new') st.seen++; if (c.suspended) st.susp++;
+                d = d.parent ? by.get(d.parent) : null;
+            }
+        });
+        return out;
+    }
+    progressHtml(st, cls = '') {
+        const t = st.total || 1;
+        return `<div class="progress ${cls}" title="Maîtrisées ${st.mature} · En cours ${st.learn} · À revoir ${st.due} · Nouvelles ${st.new}"><i style="width:${st.mature / t * 100}%;background:var(--mature)"></i><i style="width:${st.learn / t * 100}%;background:var(--learn)"></i><i style="width:${st.due / t * 100}%;background:var(--due)"></i></div>`;
+    }
+    pctSeen(st) { return st.total ? Math.round(st.seen / st.total * 100) : 0; }
+    pctMature(st) { return st.total ? Math.round(st.mature / st.total * 100) : 0; }
+    /* open / closed state of the deck trees (sidebar + dashboard), remembered on this device */
+    openSet(key) {
+        if (!this._open) { try { this._open = JSON.parse(localStorage.getItem('superanki_open') || '{}'); } catch { this._open = {}; } }
+        if (!this._openSets) this._openSets = {};
+        if (!this._openSets[key]) this._openSets[key] = new Set(this._open[key] || []);
+        return this._openSets[key];
+    }
+    toggleOpen(key, id) {
+        const set = this.openSet(key);
+        set.has(id) ? set.delete(id) : set.add(id);
+        this.saveOpen();
+    }
+    saveOpen() {
+        const o = {}; Object.entries(this._openSets || {}).forEach(([k, v]) => { o[k] = [...v]; });
+        try { localStorage.setItem('superanki_open', JSON.stringify(o)); } catch { /* ignore */ }
+    }
+    setAllOpen(key, open) {
+        const set = this.openSet(key);
+        set.clear();
+        if (open) this.data.decks.forEach(d => { if (this.childrenOf(d.id).length) set.add(d.id); });
+        this.saveOpen();
+    }
     /* Study options: the "default" preset lives in the settings; other presets are assigned to decks
        (a deck inherits the preset of its nearest ancestor that has one). */
     presetIdFor(deckId) {
@@ -1084,14 +1130,25 @@ class SuperAnki {
             : mode === 'alpha' ? byName
             : mode === 'size' ? (a, b) => b.cards.length - a.cards.length || byName(a, b)
             : (a, b) => recency(b) - recency(a) || byName(a, b));
+        const stats = this.deckStats(), openD = this.openSet('dash');
+        const subRows = (parentId, depth) => this.childrenOf(parentId).map(k => {
+            const st = stats.get(k.id), kids = this.childrenOf(k.id), isOpen = openD.has(k.id);
+            return `<div class="sub-row" style="--d:${depth}">
+                ${kids.length ? `<button class="dl-chev ${isOpen ? 'open' : ''}" data-action="dash-toggle" data-deck="${esc(k.id)}" aria-label="${isOpen ? 'Replier' : 'Déplier'}" aria-expanded="${isOpen}">${ic('chevronRight')}</button>` : '<span class="dl-chev ph"></span>'}
+                <button class="sub-name" data-action="open-deck" data-deck="${esc(k.id)}" title="Voir les cartes"><span>${esc(k.emoji)}</span><b>${esc(k.name)}</b></button>
+                <span class="sub-bar">${this.progressHtml(st)}<small>${this.pctSeen(st)} % vu · ${this.pctMature(st)} % maîtrisé · ${st.total}</small></span>
+                ${st.due ? `<span class="due-badge" title="À revoir">${st.due}</span>` : '<span class="due-badge ph"></span>'}
+                <button class="icon-btn icon-btn-sm" title="Réviser ce sous-paquet" data-action="study" data-deck="${esc(k.id)}">${ic('play')}</button>
+            </div>${kids.length && isOpen ? subRows(k.id, depth + 1) : ''}`;
+        }).join('');
         return rows.map(({ deck, cards, c, todo }) => {
-            const total = cards.length || 1;
-            const mastery = Math.round(c.mature / total * 100);
+            const st = stats.get(deck.id), total = st.total || 1;
+            const kids = this.childrenOf(deck.id), nSub = this.descendantIds(deck.id).length - 1, isOpen = openD.has(deck.id);
             return `
-            <div class="panel deck-card" data-action="open-deck" data-deck="${esc(deck.id)}">
+            <div class="panel deck-card ${kids.length && isOpen ? 'wide' : ''}" data-action="open-deck" data-deck="${esc(deck.id)}">
                 <div class="deck-head">
                     <span class="deck-emoji">${esc(deck.emoji)}</span>
-                    <div style="min-width:0"><div class="deck-name">${esc(this.deckPath(deck.id))}</div><div class="deck-meta">${plural(cards.length, 'carte')} · ${mastery}% maîtrisé</div></div>
+                    <div style="min-width:0"><div class="deck-name">${esc(deck.name)}</div><div class="deck-meta">${plural(cards.length, 'carte')} · ${this.pctSeen(st)} % vu · ${this.pctMature(st)} % maîtrisé</div></div>
                 </div>
                 <div class="counts">
                     <span style="color:var(--new)" title="Nouvelles">${ic('sparkle')}${c.new}</span>
@@ -1099,7 +1156,9 @@ class SuperAnki {
                     <span style="color:var(--due)" title="À revoir">${ic('repeat')}${c.due}</span>
                     <span style="color:var(--mature)" title="Maîtrisées">${ic('award')}${c.mature}</span>
                 </div>
-                <div class="progress"><i style="width:${c.mature / total * 100}%;background:var(--mature)"></i><i style="width:${c.learn / total * 100}%;background:var(--learn)"></i><i style="width:${c.due / total * 100}%;background:var(--due)"></i></div>
+                ${this.progressHtml(st)}
+                ${kids.length ? `<button class="sub-toggle ${isOpen ? 'open' : ''}" data-action="dash-toggle" data-deck="${esc(deck.id)}" aria-expanded="${isOpen}">${ic('chevronRight')}<span>${plural(nSub, 'sous-paquet')}${isOpen ? '' : ' : voir l\'avancée'}</span></button>` : ''}
+                ${kids.length && isOpen ? `<div class="sub-tree">${subRows(deck.id, 0)}</div>` : ''}
                 <div class="deck-foot">
                     ${todo > 0 ? `<button class="btn btn-primary btn-sm" data-action="study" data-deck="${esc(deck.id)}">${ic('play')}Réviser (${todo})</button>`
                         : `<button class="btn btn-soft btn-sm" data-action="practice-deck" data-deck="${esc(deck.id)}">${ic('check')}À jour</button>`}
@@ -1159,15 +1218,28 @@ class SuperAnki {
     renderDeckSidebar() {
         const ui = this.ui, box = $('#deck-sidebar');
         if (!box) return;
-        const q = this.searchMatches();
+        const q = this.searchMatches(), stats = this.deckStats(), open = this.openSet('side');
+        const forced = new Set(this.deckChain(ui.deck).slice(0, -1).map(d => d.id));   // path to the selected deck stays visible
         const count = list => (q ? list.filter(c => q.has(c.id)).length : list.length);
-        const item = (id, em, name, n, cls = '', depth = 0) => `<button class="dl-item ${cls} ${ui.deck === id ? 'active' : ''} ${q && !n ? 'dim' : ''}" style="--d:${depth}" data-action="select-deck" data-deck="${esc(id)}"><span class="em">${em}</span><span class="nm">${esc(name)}</span><span class="ct">${n}</span></button>`;
+        const item = (id, em, name, n, cls = '') => `<div class="dl-row ${ui.deck === id ? 'active' : ''}"><span class="dl-chev ph"></span><button class="dl-item ${cls} ${ui.deck === id ? 'active' : ''} ${q && !n ? 'dim' : ''}" data-action="select-deck" data-deck="${esc(id)}"><span class="em">${em}</span><span class="nm">${esc(name)}</span><span class="ct">${n}</span></button></div>`;
+        const node = (d, depth) => {
+            const kids = this.childrenOf(d.id), st = stats.get(d.id), isOpen = !!q || open.has(d.id) || forced.has(d.id);
+            const n = q ? count(this.cardsOf(d.id)) : st.total;
+            const html = `<div class="dl-row ${ui.deck === d.id ? 'active' : ''}" style="--d:${depth}">
+                ${kids.length ? `<button class="dl-chev ${isOpen ? 'open' : ''}" data-action="toggle-deck" data-key="side" data-deck="${esc(d.id)}" aria-label="${isOpen ? 'Replier' : 'Déplier'} ${esc(d.name)}" aria-expanded="${isOpen}">${ic('chevronRight')}</button>` : '<span class="dl-chev ph"></span>'}
+                <button class="dl-item ${ui.deck === d.id ? 'active' : ''} ${q && !n ? 'dim' : ''}" data-action="select-deck" data-deck="${esc(d.id)}" title="${esc(this.deckPath(d.id))} · ${this.pctSeen(st)} % vu · ${this.pctMature(st)} % maîtrisé">
+                    <span class="em">${esc(d.emoji)}</span><span class="nm">${esc(d.name)}</span>${st.due ? `<span class="due-badge" title="À revoir">${st.due}</span>` : ''}<span class="ct">${n}</span>
+                    <span class="mini">${this.progressHtml(st)}</span>
+                </button></div>`;
+            return html + (isOpen ? kids.map(k => node(k, depth + 1)).join('') : '');
+        };
+        const anyTree = this.data.decks.some(d => d.parent);
         box.innerHTML = `
-            <div class="dl-title">${q ? 'Résultats par paquet' : 'Paquets'}</div>
+            <div class="dl-title"><span>${q ? 'Résultats par paquet' : 'Paquets'}</span>${anyTree ? `<span class="dl-tools"><button data-action="tree-all" data-key="side" data-open="1" title="Tout déplier">${ic('chevronDown')}</button><button data-action="tree-all" data-key="side" data-open="0" title="Tout replier" style="transform:rotate(180deg)">${ic('chevronDown')}</button></span>` : ''}</div>
             ${item('all', '📂', 'Toutes les cartes', count(this.data.cards))}
             ${item('errors', ic('target'), 'Mes erreurs', count(this.errorCards()), 'errors')}
             <div class="dl-sep"></div>
-            ${this.sortedDecks().map(dk => item(dk.id, esc(dk.emoji), dk.name, count(this.cardsOf(dk.id)), '', this.deckDepth(dk.id))).join('')}`;
+            ${this.childrenOf(null).map(d => node(d, 0)).join('')}`;
     }
     /* Search: accent-insensitive, AND between words, "exact phrase", -exclude, typo tolerant,
        plus Anki-style filters (deck:, tag:, is:, flag:, prop:, added:, rated:, front:, back:, type:) */
@@ -1340,7 +1412,7 @@ class SuperAnki {
             title = `${ic('target')} Mes erreurs`;
             actions = statusCounts.all ? `<button class="btn btn-primary btn-sm" data-action="practice-errors">${ic('play')}Retravailler</button>` : '';
         } else {
-            title = `<span>${esc(deck.emoji)}</span> ${esc(this.deckPath(deck.id))}`;
+            title = `<span class="crumbs">${this.deckChain(deck.id).map((d, i, a) => i === a.length - 1 ? `<span>${esc(d.emoji)} ${esc(d.name)}</span>` : `<button class="crumb" data-action="select-deck" data-deck="${esc(d.id)}">${esc(d.name)}</button><span class="crumb-sep">›</span>`).join('')}</span>`;
             actions = `
                 <button class="btn btn-primary btn-sm" data-action="study" data-deck="${esc(deck.id)}">${ic('play')}Réviser</button>
                 <button class="btn btn-soft btn-sm" data-action="new-card" data-deck="${esc(deck.id)}">${ic('plus')}Carte</button>
@@ -1388,6 +1460,14 @@ class SuperAnki {
             if (!globalHits || ui.deck === 'all') emptyMsg += `<br><button class="btn btn-soft btn-sm" style="margin-top:12px" data-action="new-card-from-search">${ic('plus')}Créer une carte « ${esc(truncate(ui.search.trim(), 30))} »</button>`;
         } else emptyMsg = ui.deck === 'errors' ? 'Aucune erreur à retravailler. Les cartes que tu rates apparaîtront ici. 🎉' : 'Aucune carte ici pour le moment.';
         const resultLine = searching && statusCounts.all ? `<div class="result-line">${ic('search')}<span><b>${plural(statusCounts.all, 'résultat')}</b>${ui.deck !== 'all' ? ' dans ce paquet' : ''}${ui.deck !== 'all' && globalHits > statusCounts.all ? ` · <button class="link" data-action="select-deck" data-deck="all">${globalHits} dans tous les paquets</button>` : ''}</span></div>` : '';
+        let progBlock = '';
+        if (deck) {
+            const stats = this.deckStats(), st = stats.get(deck.id), kids = this.childrenOf(deck.id);
+            progBlock = `<div class="deck-prog">
+                <div class="deck-prog-main">${this.progressHtml(st, 'lg')}<div class="small muted"><b>${this.pctSeen(st)} %</b> vu · <b>${this.pctMature(st)} %</b> maîtrisé · ${st.due ? `<b style="color:var(--due)">${st.due}</b> à revoir · ` : ''}${st.new} nouvelle${st.new > 1 ? 's' : ''}</div></div>
+                ${kids.length ? `<div class="sub-progress"><h5>Sous-paquets</h5>${kids.map(k => { const ks = stats.get(k.id), n = this.childrenOf(k.id).length; return `<button class="sub-card" data-action="select-deck" data-deck="${esc(k.id)}"><span class="sc-top"><span>${esc(k.emoji)}</span><b>${esc(k.name)}</b>${ks.due ? `<span class="due-badge">${ks.due}</span>` : ''}</span>${this.progressHtml(ks)}<small>${this.pctSeen(ks)} % vu · ${this.pctMature(ks)} % maîtrisé · ${plural(ks.total, 'carte')}${n ? ` · ${plural(n, 'sous-paquet')}` : ''}</small></button>`; }).join('')}</div>` : ''}
+            </div>`;
+        }
         const selCount = ui.selMode ? [...ui.sel].filter(id => this.card(id)).length : 0;
         const bulk = ui.selMode ? `<div class="bulk-bar"><span><b>${selCount}</b> sélectionnée${selCount > 1 ? 's' : ''}</span>
                 <button class="btn btn-soft btn-sm" data-action="sel-all">Tout (${rows.length})</button>
@@ -1398,6 +1478,7 @@ class SuperAnki {
             <div class="deck-panel-head"><h3>${title} <span class="tag">${plural(statusCounts.all, 'carte')}</span></h3><div class="deck-panel-actions">${actions}
                 <button class="btn ${ui.selMode ? 'btn-primary' : 'btn-soft'} btn-sm" data-action="sel-toggle" title="Sélectionner plusieurs cartes">${ic('checkSq')}<span class="hide-mobile">Sélection</span></button>
                 <button class="btn btn-soft btn-sm" data-action="custom-study" data-deck="${deck ? esc(deck.id) : ''}" title="Révisions personnalisées">${ic('sliders')}<span class="hide-mobile">Perso</span></button></div></div>
+            ${progBlock}
             <div class="filter-row"><div class="chip-row">${chips}</div></div>
             ${resultLine}
             <div id="card-list">${list || `<div class="empty">${ic('search')}<p>${emptyMsg}</p></div>`}</div>
@@ -2914,6 +2995,9 @@ class SuperAnki {
             }
             case 'export-txt': this.exportTXT(); break;
             case 'open-library': this.openLibrary(); break;
+            case 'toggle-deck': this.toggleOpen('side', ds.deck); this.renderDeckSidebar(); break;
+            case 'dash-toggle': this.toggleOpen('dash', ds.deck); this.renderDashboard(); break;
+            case 'tree-all': this.setAllOpen(ds.key, ds.open === '1'); this.renderDeckSidebar(); break;
             case 'save-goal': {
                 this.data.settings.goalName = ($('#goal-name') || {}).value || '';
                 this.data.settings.goalDate = ($('#goal-date') || {}).value || '';
