@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>Battle du Ménage</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Battle Ménage" />
+<meta name="theme-color" content="#07070c" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%230ea5e9'/%3E%3Cstop offset='1' stop-color='%23ec4899'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23g)'/%3E%3Ctext x='50' y='68' font-size='56' text-anchor='middle'%3E%E2%9A%94%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: { fontFamily: {
+    sans: ["Outfit", "system-ui", "sans-serif"],
+    num: ['"Space Grotesk"', "ui-monospace", "monospace"],
+  } } } };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root { --bg:#07070c; --leo:#38bdf8; --elsa:#f472b6; }
+  html, body { background:var(--bg); -webkit-tap-highlight-color:transparent; overscroll-behavior-y:contain; }
+  body { font-family:"Outfit", system-ui, sans-serif; color:#f4f4f5; padding-top:env(safe-area-inset-top); }
+  ::-webkit-scrollbar { display:none; }
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  button { touch-action:manipulation; }
+  .num { font-family:"Space Grotesk", ui-monospace, monospace; font-variant-numeric:tabular-nums; letter-spacing:-0.02em; }
+
+  /* Fond animé */
+  .bg-orbs { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .bg-orbs span { position:absolute; border-radius:9999px; filter:blur(70px); opacity:.35; animation:drift 22s ease-in-out infinite alternate; }
+  .bg-orbs span:nth-child(1){ width:340px; height:340px; background:#0ea5e9; top:-140px; left:-120px; }
+  .bg-orbs span:nth-child(2){ width:320px; height:320px; background:#db2777; top:-100px; right:-140px; animation-delay:-8s; }
+  .bg-orbs span:nth-child(3){ width:300px; height:300px; background:#7c3aed; bottom:-160px; left:20%; opacity:.18; animation-delay:-14s; }
+  @keyframes drift { from{ transform:translate(0,0) scale(1); } to{ transform:translate(40px,60px) scale(1.15); } }
+  #app { position:relative; z-index:1; }
+
+  /* Surfaces */
+  .card { background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:22px; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+  .card-flat { background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.06); border-radius:16px; }
+  .hdr { background:linear-gradient(180deg, rgba(7,7,12,.92), rgba(7,7,12,.7)); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid rgba(255,255,255,.05); }
+  .logo { width:38px; height:38px; display:grid; place-items:center; border-radius:12px; font-size:20px; background:linear-gradient(135deg,#0ea5e9,#ec4899); box-shadow:0 6px 20px -6px rgba(236,72,153,.6); }
+  .icon-btn { width:36px; height:36px; display:grid; place-items:center; border-radius:12px; color:#a1a1aa; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); font-size:15px; }
+  .icon-btn:active { transform:scale(.92); }
+  .seg { display:flex; gap:4px; padding:4px; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); }
+  .seg button { flex:1; padding:8px 6px; border-radius:10px; font-size:12px; font-weight:700; color:#71717a; transition:all .2s; }
+  .seg button.on { background:#f4f4f5; color:#09090b; box-shadow:0 4px 14px -4px rgba(255,255,255,.35); }
+  .chip { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:999px; font-size:10.5px; font-weight:700; white-space:nowrap; }
+  .grad-text { background:linear-gradient(90deg,#7dd3fc,#f9a8d4,#7dd3fc); background-size:200% auto; -webkit-background-clip:text; background-clip:text; color:transparent; animation:shine 6s linear infinite; }
+  @keyframes shine { to { background-position:200% center; } }
+  .press { transition:transform .12s ease; }
+  .press:active { transform:scale(.96); }
+  .tile { width:44px; height:44px; display:grid; place-items:center; border-radius:14px; font-size:24px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.06); flex-shrink:0; }
+
+  /* Nav flottante */
+  .nav { position:fixed; left:12px; right:12px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:40; max-width:440px; margin:0 auto; border-radius:24px; padding:6px; display:grid; grid-template-columns:repeat(5,1fr); background:rgba(18,18,24,.82); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.08); box-shadow:0 20px 40px -12px rgba(0,0,0,.7); }
+  .nav button { display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 0 6px; border-radius:18px; font-size:10px; font-weight:700; color:#71717a; transition:all .2s; }
+  .nav button .ic { font-size:19px; line-height:1; filter:grayscale(.7); opacity:.75; transition:all .2s; }
+  .nav button.on { background:rgba(255,255,255,.08); color:#fafafa; }
+  .nav button.on .ic { filter:none; opacity:1; transform:translateY(-1px) scale(1.08); }
+
+  /* Animations */
+  @keyframes pop { 0%{transform:scale(1)} 35%{transform:scale(.93)} 70%{transform:scale(1.04)} 100%{transform:scale(1)} }
+  .pop { animation:pop .45s ease; }
+  @keyframes sheetIn { from{ transform:translateY(100%); } to{ transform:translateY(0); } }
+  @keyframes fadeIn { from{ opacity:0; } to{ opacity:1; } }
+  @keyframes scaleIn { from{ opacity:0; transform:scale(.94); } to{ opacity:1; transform:scale(1); } }
+  .fade-in { animation:fadeIn .2s ease; }
+  .sheet-in { animation:sheetIn .32s cubic-bezier(.2,.9,.25,1); }
+  .scale-in { animation:scaleIn .22s ease; }
+  .sheet { position:absolute; left:0; right:0; bottom:0; max-width:480px; margin:0 auto; max-height:88vh; overflow-y:auto; border-radius:28px 28px 0 0; background:#111117; border:1px solid rgba(255,255,255,.08); border-bottom:none; padding:10px 18px calc(24px + env(safe-area-inset-bottom)); box-shadow:0 -20px 60px -10px rgba(0,0,0,.8); }
+  .grabber { width:40px; height:5px; border-radius:99px; background:rgba(255,255,255,.18); margin:0 auto 14px; }
+  .modal-box { background:#121218; border:1px solid rgba(255,255,255,.1); border-radius:24px; padding:20px; width:100%; max-width:380px; }
+  .field { width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:11px 13px; color:#fafafa; outline:none; }
+  .field:focus { border-color:rgba(255,255,255,.3); }
+  @keyframes flame { 0%,100%{ transform:scale(1) rotate(-3deg); } 50%{ transform:scale(1.15) rotate(3deg); } }
+  .flame { display:inline-block; animation:flame 1.2s ease-in-out infinite; }
+
+  /* Toasts & effets */
+  #toasts { position:fixed; top:calc(10px + env(safe-area-inset-top)); left:0; right:0; z-index:70; display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none; padding:0 16px; }
+  .toast { padding:10px 16px; border-radius:16px; font-weight:700; font-size:13.5px; box-shadow:0 12px 30px -8px rgba(0,0,0,.6); animation:toastIn .35s cubic-bezier(.2,.9,.3,1.3); transition:all .3s; max-width:100%; text-align:center; backdrop-filter:blur(12px); }
+  .toast.out { opacity:0; transform:translateY(-10px) scale(.96); }
+  .toast-xp { background:rgba(52,211,153,.95); color:#052e16; }
+  .toast-badge { background:linear-gradient(90deg,#fbbf24,#f59e0b); color:#1c1300; }
+  .toast-error { background:rgba(239,68,68,.95); color:#fff; }
+  .toast-info { background:rgba(244,244,245,.96); color:#09090b; }
+  .toast-level { background:linear-gradient(90deg,#38bdf8,#a78bfa,#f472b6); color:#fff; }
+  @keyframes toastIn { from{ opacity:0; transform:translateY(-16px) scale(.9); } to{ opacity:1; transform:none; } }
+  #fx { position:fixed; inset:0; z-index:65; pointer-events:none; overflow:hidden; }
+  .float-xp { position:fixed; font-family:"Space Grotesk", monospace; font-weight:700; font-size:22px; animation:floatUp 1s ease-out forwards; text-shadow:0 4px 20px rgba(0,0,0,.6); }
+  @keyframes floatUp { 0%{ opacity:0; transform:translate(-50%,0) scale(.6); } 15%{ opacity:1; transform:translate(-50%,-12px) scale(1.15); } 100%{ opacity:0; transform:translate(-50%,-80px) scale(1); } }
+  .confetti { position:fixed; width:8px; height:12px; border-radius:2px; animation:burst var(--dur,1s) cubic-bezier(.15,.7,.4,1) forwards; }
+  @keyframes burst { 0%{ transform:translate(0,0) rotate(0); opacity:1; } 100%{ transform:translate(var(--dx),var(--dy)) rotate(var(--rot)); opacity:0; } }
+
+  /* Heatmap */
+  .heat { display:grid; grid-template-rows:repeat(7,1fr); grid-auto-flow:column; gap:3px; }
+  .heat > div { aspect-ratio:1; border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="bg-orbs" aria-hidden="true"><span></span><span></span><span></span></div>
+<div id="app" class="min-h-screen flex flex-col"></div>
+<div id="fx"></div>
+<div id="toasts"></div>
+
+<script>
+/* ============================================================
+   CONSTANTES
+   (les clés de stockage et la table Supabase sont inchangées :
+    toutes les données existantes sont reprises telles quelles)
+============================================================ */
+const STORAGE_KEY = "battle-menage-standalone-v2";
+const ME_KEY = "battle-menage-me";        // qui utilise CE téléphone (propre à l'appareil)
+const UI_KEY = "battle-menage-ui-v3";     // préférences d'affichage (propre à l'appareil)
+
+const PLAYERS = [
+  { id:"leo",  name:"Léo",  emoji:"👨", accent:"sky" },
+  { id:"elsa", name:"Elsa", emoji:"👩", accent:"pink" },
+];
+
+const ACCENT = {
+  sky:  { text:"text-sky-400",  bgSolid:"bg-sky-400",  bgSoft:"bg-sky-400/10",  border:"border-sky-400/30",  hex:"#38bdf8", hex2:"#0284c7", rgb:"56,189,248" },
+  pink: { text:"text-pink-400", bgSolid:"bg-pink-400", bgSoft:"bg-pink-400/10", border:"border-pink-400/30", hex:"#f472b6", hex2:"#db2777", rgb:"244,114,182" },
+};
+
+const DEFAULT_TASKS = [
+  { id:"vaisselle", name:"Vaisselle", emoji:"🧽", xp:10 },
+  { id:"aspirateur", name:"Aspirateur", emoji:"🧹", xp:15 },
+  { id:"aspi_serpillere", name:"Aspirateur + serpillière", emoji:"🧼", xp:25 },
+  { id:"sdb", name:"Nettoyer la salle de bain", emoji:"🚿", xp:20 },
+  { id:"toilettes", name:"Toilettes", emoji:"🚽", xp:10 },
+  { id:"cuisine", name:"Nettoyer la cuisine", emoji:"🍳", xp:20 },
+  { id:"poubelles", name:"Sortir les poubelles", emoji:"🗑️", xp:5 },
+  { id:"verre", name:"Vider le verre", emoji:"🥛", xp:10 },
+  { id:"machine", name:"Machine à laver", emoji:"🧺", xp:5 },
+  { id:"linge", name:"Étendre / ranger le linge", emoji:"👕", xp:10 },
+  { id:"draps", name:"Changer les draps", emoji:"🛏️", xp:15 },
+  { id:"ranger", name:"Ranger l'appartement", emoji:"🧹", xp:15 },
+  { id:"bricolage", name:"Bricolage & réparation", emoji:"🔧", xp:30 },
+];
+
+const DEFAULT_REWARDS = [
+  { id:"bisous", name:"Bisous", emoji:"💋", cost:20, tier:"green" },
+  { id:"calin", name:"Câlin", emoji:"🫂", cost:20, tier:"green" },
+  { id:"film", name:"Choix du film", emoji:"🎬", cost:60, tier:"green" },
+  { id:"repas", name:"Choix du repas", emoji:"🍕", cost:60, tier:"green" },
+  { id:"boisson", name:"Boisson préparée par l'autre", emoji:"🥤", cost:100, tier:"green" },
+  { id:"massage", name:"Massage 20 minutes", emoji:"💆", cost:350, tier:"orange" },
+  { id:"repas_weekend", name:"Prépare un repas le week-end", emoji:"👨‍🍳", cost:550, tier:"red" },
+  { id:"semaine_repos", name:"Semaine de repos", emoji:"😴", cost:900, tier:"red" },
+];
+
+const TIER_STYLE = {
+  green:  { label:"Fréquent",            text:"text-emerald-400", dot:"bg-emerald-400", border:"border-emerald-400/25" },
+  orange: { label:"Intermédiaire",       text:"text-amber-400",   dot:"bg-amber-400",   border:"border-amber-400/25" },
+  red:    { label:"Objectif long terme", text:"text-rose-400",    dot:"bg-rose-400",    border:"border-rose-400/25" },
+};
+
+const STREAK_BADGES = [
+  { id:"week", days:7, name:"1 semaine", emoji:"🔥" },
+  { id:"month", days:30, name:"1 mois", emoji:"🏆" },
+  { id:"legend", days:100, name:"Légende", emoji:"💎" },
+];
+
+// Succès débloquables (calculés à partir de l'historique, rien de nouveau à stocker)
+const ACHIEVEMENTS = [
+  { id:"first",    emoji:"🌱", name:"Premier pas",          desc:"Valider une première tâche",   goal:1,    val:s=>s.tasks },
+  { id:"t10",      emoji:"💪", name:"Motivé·e",             desc:"10 tâches validées",           goal:10,   val:s=>s.tasks },
+  { id:"t50",      emoji:"🏠", name:"Pilier de la maison",  desc:"50 tâches validées",           goal:50,   val:s=>s.tasks },
+  { id:"t100",     emoji:"💯", name:"Centurion",            desc:"100 tâches validées",          goal:100,  val:s=>s.tasks },
+  { id:"t250",     emoji:"👑", name:"Légende du ménage",    desc:"250 tâches validées",          goal:250,  val:s=>s.tasks },
+  ...STREAK_BADGES.map(b => ({ id:b.id, emoji:b.emoji, name:`Série ${b.name}`, desc:`${b.days} jours d'affilée`, goal:b.days, val:s=>s.longest })),
+  { id:"dish25",   emoji:"🍽️", name:"Roi·Reine de la plonge", desc:"25 vaisselles",             goal:25,   val:s=>s.byItem.vaisselle||0 },
+  { id:"trash20",  emoji:"♻️", name:"Éboueur d'élite",      desc:"20 sorties de poubelles",      goal:20,   val:s=>s.byItem.poubelles||0 },
+  { id:"diy5",     emoji:"🛠️", name:"Bricoleur·se",         desc:"5 bricolages",                 goal:5,    val:s=>s.byItem.bricolage||0 },
+  { id:"variety",  emoji:"🎨", name:"Polyvalent·e",         desc:"8 tâches différentes",         goal:8,    val:s=>s.distinct },
+  { id:"marathon", emoji:"🏃", name:"Marathon",             desc:"5 tâches le même jour",        goal:5,    val:s=>s.maxTasksDay },
+  { id:"bigday",   emoji:"⚡", name:"Journée de feu",       desc:"100 XP en une journée",        goal:100,  val:s=>s.maxXpDay },
+  { id:"early",    emoji:"🌅", name:"Lève-tôt",             desc:"Une tâche avant 8 h",          goal:1,    val:s=>s.early },
+  { id:"night",    emoji:"🦉", name:"Oiseau de nuit",       desc:"Une tâche après 23 h",         goal:1,    val:s=>s.night },
+  { id:"xp1000",   emoji:"💎", name:"Machine à XP",         desc:"1 000 XP gagnés",              goal:1000, val:s=>s.earned },
+  { id:"spender",  emoji:"🛍️", name:"Accro du shopping",    desc:"5 récompenses échangées",      goal:5,    val:s=>s.rewards },
+];
+
+const LEVEL_TITLES = ["Apprenti·e","Éponge junior","Chiffon agile","Balai d'argent","Plumeau d'or","Maître du Swiffer","Ninja de la poussière","Champion·ne du foyer","Seigneur de la propreté","Légende immaculée"];
+
+const MONTH_LABELS = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
+const WEEKDAY_LABELS = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+const WEEKDAY_FULL = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+
+const TABS = [
+  { id:"home",    label:"Accueil",  icon:"🏠" },
+  { id:"tasks",   label:"Tâches",   icon:"🧽" },
+  { id:"duel",    label:"Duel",     icon:"⚔️" },
+  { id:"shop",    label:"Boutique", icon:"🎁" },
+  { id:"journal", label:"Journal",  icon:"📜" },
+];
+
+/* ============================================================
+   HELPERS PURS
+============================================================ */
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function dayKey(d){
+  const dt = new Date(d);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+}
+function startOfDay(d){ const x = new Date(d); x.setHours(0,0,0,0); return x; }
+function startOfWeek(d){
+  const x = startOfDay(d);
+  const day = x.getDay();
+  x.setDate(x.getDate() + ((day === 0 ? -6 : 1) - day));
+  return x;
+}
+function calDaysAgo(d){ return Math.round((startOfDay(new Date()) - startOfDay(d)) / 86400000); }
+function playerOf(id){ return PLAYERS.find(p => p.id === id) || { id, name:"?", emoji:"❓", accent:"sky" }; }
+function otherOf(id){ return PLAYERS.find(p => p.id !== id); }
+function accOf(id){ return ACCENT[playerOf(id).accent]; }
+function classifyRewardTier(cost){ return cost <= 100 ? "green" : cost <= 450 ? "orange" : "red"; }
+function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function clampPct(v){ return Math.max(0, Math.min(100, v || 0)); }
+function esc(s){ return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])); }
+function fmt(n){ return Number(n).toLocaleString("fr-FR"); }
+function plural(n, one, many){ return n > 1 ? many : one; }
+
+function sinceLabel(days){
+  if (days === null || days === undefined) return "jamais";
+  if (days <= 0) return "aujourd'hui";
+  if (days === 1) return "hier";
+  if (days < 7) return `il y a ${days} j`;
+  if (days < 30) { const w = Math.round(days/7); return `il y a ${w} sem`; }
+  if (days < 365) return `il y a ${Math.round(days/30)} mois`;
+  return `il y a ${Math.round(days/365)} an${days >= 730 ? "s" : ""}`;
+}
+function relTime(d){
+  const t = new Date(d);
+  const min = Math.floor((Date.now() - t.getTime()) / 60000);
+  if (min < 1) return "à l'instant";
+  if (min < 60) return `il y a ${min} min`;
+  const days = calDaysAgo(t);
+  if (days === 0) return `il y a ${Math.floor(min/60)} h`;
+  return sinceLabel(days);
+}
+function timeHM(d){ return new Date(d).toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" }); }
+function dayTitle(key){
+  const [y,m,dd] = key.split("-").map(Number);
+  const d = new Date(y, m-1, dd);
+  const ago = calDaysAgo(d);
+  if (ago === 0) return "Aujourd'hui";
+  if (ago === 1) return "Hier";
+  return capitalize(d.toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long", ...(d.getFullYear() !== new Date().getFullYear() ? { year:"numeric" } : {}) }));
+}
+
+function getPeriodRange(period, offset){
+  const now = new Date();
+  if (period === "week") {
+    const start = startOfWeek(now); start.setDate(start.getDate() + offset*7);
+    const end = new Date(start); end.setDate(end.getDate()+7);
+    return { start, end };
+  }
+  if (period === "month") {
+    const base = new Date(now.getFullYear(), now.getMonth()+offset, 1);
+    return { start: base, end: new Date(base.getFullYear(), base.getMonth()+1, 1) };
+  }
+  if (period === "year") {
+    const y = now.getFullYear() + offset;
+    return { start: new Date(y,0,1), end: new Date(y+1,0,1) };
+  }
+  return { start:null, end:null };
+}
+function formatPeriodLabel(period, offset){
+  const { start, end } = getPeriodRange(period, offset);
+  if (period === "week") {
+    const endIncl = new Date(end); endIncl.setDate(endIncl.getDate()-1);
+    const f = d => d.toLocaleDateString("fr-FR", { day:"numeric", month:"short" });
+    return `${f(start)} – ${f(endIncl)} ${endIncl.getFullYear()}`;
+  }
+  if (period === "month") return capitalize(start.toLocaleDateString("fr-FR", { month:"long", year:"numeric" }));
+  if (period === "year") return `${start.getFullYear()}`;
+  return "Depuis le début";
+}
+function inRange(date, range){
+  if (!range || (!range.start && !range.end)) return true;
+  const d = new Date(date);
+  if (range.start && d < range.start) return false;
+  if (range.end && d >= range.end) return false;
+  return true;
+}
+
+function computeAvailable(history, playerId){ return history.filter(h => h.playerId === playerId).reduce((s,h) => s+h.xp, 0); }
+function computeEarned(history, playerId, range){ return history.filter(h => h.playerId===playerId && h.kind==="task" && inRange(h.date, range)).reduce((s,h)=>s+h.xp,0); }
+function computeSpent(history, playerId, range){ return history.filter(h => h.playerId===playerId && h.kind==="reward" && inRange(h.date, range)).reduce((s,h)=>s+Math.abs(h.xp),0); }
+function computeTaskCount(history, playerId, range){ return history.filter(h => h.playerId===playerId && h.kind==="task" && inRange(h.date, range)).length; }
+function getActiveDays(history, playerId){
+  return Array.from(new Set(history.filter(h => h.playerId===playerId && h.kind==="task").map(h => dayKey(h.date)))).sort();
+}
+function computeCurrentStreak(history, playerId){
+  const days = new Set(getActiveDays(history, playerId));
+  if (!days.size) return 0;
+  const cursor = startOfDay(new Date());
+  if (!days.has(dayKey(cursor))) {
+    cursor.setDate(cursor.getDate()-1);
+    if (!days.has(dayKey(cursor))) return 0;
+  }
+  let streak = 0;
+  while (days.has(dayKey(cursor))) { streak++; cursor.setDate(cursor.getDate()-1); }
+  return streak;
+}
+function computeLongestStreak(history, playerId){
+  const days = getActiveDays(history, playerId);
+  if (!days.length) return 0;
+  let longest = 1, cur = 1;
+  for (let i=1;i<days.length;i++){
+    const diff = Math.round((new Date(days[i]) - new Date(days[i-1])) / 86400000);
+    cur = diff === 1 ? cur+1 : 1;
+    longest = Math.max(longest, cur);
+  }
+  return longest;
+}
+
+function xpForLevel(l){ return 40*(l-1)*l; } // N2 = 80, N3 = 240, N5 = 800, N10 = 3 600
+function levelInfo(xp){
+  let lvl = 1;
+  while (xpForLevel(lvl+1) <= xp) lvl++;
+  const cur = xpForLevel(lvl), next = xpForLevel(lvl+1);
+  return { lvl, title: LEVEL_TITLES[Math.min(LEVEL_TITLES.length-1, Math.floor((lvl-1)/2))], cur, next, pct:(xp-cur)/(next-cur)*100, toNext: next - xp };
+}
+
+/* ============================================================
+   ÉTAT DE L'APPLICATION
+============================================================ */
+const state = {
+  history: [],
+  tasks: DEFAULT_TASKS.slice(),
+  rewards: DEFAULT_REWARDS.slice(),
+  me: null,
+  tab: "home",
+  selectedPlayer: "leo",
+  modal: null,          // { type:'reset'|'deleteTask'|'deleteReward'|'deleteEntry'|'sync'|'who', ... }
+  sheet: null,          // { taskId }
+  sheetAnim: false,
+  sheetWhen: 0,         // 0 = aujourd'hui, 1 = hier, 2 = avant-hier
+  editor: null,         // { kind:'task'|'reward', id? }
+  editorAnim: false,
+  statsPeriod: "week",
+  statsOffset: 0,
+  taskSort: "default",
+  journalView: "history",
+  histPlayer: "all",
+  histKind: "all",
+  histLimit: 80,
+  pulseId: null,
+  undoDismissed: false,
+  syncStatus: "connecting",
+};
+
+function allTasks(){ return state.tasks; }
+function allRewards(){ return state.rewards; }
+function lastEntry(){ return state.history.length ? state.history[state.history.length-1] : null; }
+
+/* ---- Index mis en cache (recalculé seulement quand les données changent) ---- */
+let dataVersion = 0, ctxVersion = -1, CTX = null;
+function bump(){ dataVersion++; }
+function ctx(){
+  if (ctxVersion === dataVersion && CTX) return CTX;
+  const tasksH = state.history
+    .filter(h => h.kind === "task")
+    .map(h => ({ ...h, t: new Date(h.date) }))
+    .sort((a,b) => a.t - b.t);
+  const byTask = new Map();
+  const dayMap = new Map(); // dayKey -> { leo:xp, elsa:xp, n }
+  tasksH.forEach(e => {
+    if (!byTask.has(e.itemId)) byTask.set(e.itemId, []);
+    byTask.get(e.itemId).push(e);
+    const k = dayKey(e.t);
+    if (!dayMap.has(k)) { const o = { n:0 }; PLAYERS.forEach(p => o[p.id] = 0); dayMap.set(k, o); }
+    const o = dayMap.get(k); o.n++; if (e.playerId in o) o[e.playerId] += e.xp;
+  });
+  CTX = { tasksH, byTask, dayMap, infos: new Map(), summaries: new Map() };
+  ctxVersion = dataVersion;
+  return CTX;
+}
+
+/* ---- Tout savoir sur une tâche : qui, combien, depuis quand ---- */
+function taskInfo(taskId){
+  const c = ctx();
+  if (c.infos.has(taskId)) return c.infos.get(taskId);
+  const list = c.byTask.get(taskId) || [];
+  const res = { total:list.length, count:{}, recent:{}, last:{}, daysSinceP:{}, otherSince:{}, lastEntry:list[list.length-1] || null, list };
+  const cutoff = Date.now() - 30*86400000;
+  PLAYERS.forEach(p => { res.count[p.id] = 0; res.recent[p.id] = 0; res.last[p.id] = null; });
+  list.forEach(e => {
+    if (!(e.playerId in res.count)) return;
+    res.count[e.playerId]++;
+    res.last[e.playerId] = e.t;
+    if (e.t.getTime() >= cutoff) res.recent[e.playerId]++;
+  });
+  PLAYERS.forEach(p => {
+    res.daysSinceP[p.id] = res.last[p.id] ? calDaysAgo(res.last[p.id]) : null;
+    const since = res.last[p.id];
+    res.otherSince[p.id] = list.filter(e => e.playerId !== p.id && (!since || e.t > since)).length;
+  });
+  const days = [...new Set(list.map(e => dayKey(e.t)))].sort();
+  res.avgInterval = null;
+  if (days.length >= 3) {
+    const span = (new Date(days[days.length-1]) - new Date(days[0])) / 86400000;
+    res.avgInterval = Math.max(1, Math.round(span / (days.length-1) * 10) / 10);
+  }
+  res.daysSince = res.lastEntry ? calDaysAgo(res.lastEntry.t) : null;
+  if (res.daysSince === null) res.status = "never";
+  else if (res.avgInterval) {
+    const r = res.daysSince / res.avgInterval;
+    res.status = r < 0.85 ? "fresh" : r < 1.6 ? "soon" : "late";
+  } else res.status = res.daysSince >= 30 ? "late" : res.daysSince >= 14 ? "soon" : "fresh";
+  res.overdueBy = res.avgInterval && res.daysSince !== null ? Math.max(0, Math.round(res.daysSince - res.avgInterval)) : 0;
+  res.turn = whoseTurn(res);
+  c.infos.set(taskId, res);
+  return res;
+}
+// Au tour de qui ? → celui qui en a fait nettement moins sur 30 jours, sinon celui qui ne l'a pas faite en dernier.
+function whoseTurn(info){
+  if (!info.total) return null;
+  const [a, b] = PLAYERS.map(p => p.id);
+  if (info.count[a] === 0 && info.count[b] > 0) return a;
+  if (info.count[b] === 0 && info.count[a] > 0) return b;
+  const diff = info.recent[a] - info.recent[b];
+  if (Math.abs(diff) >= 2) return diff < 0 ? a : b;
+  if (info.lastEntry && info.lastEntry.playerId in info.count) return otherOf(info.lastEntry.playerId).id;
+  return null;
+}
+const STATUS_STYLE = {
+  fresh: { dot:"#34d399", label:"À jour",    cls:"bg-emerald-400/10 text-emerald-300" },
+  soon:  { dot:"#fbbf24", label:"Bientôt",   cls:"bg-amber-400/10 text-amber-300" },
+  late:  { dot:"#f43f5e", label:"En retard", cls:"bg-rose-500/15 text-rose-300" },
+  never: { dot:"#52525b", label:"Jamais faite", cls:"bg-zinc-500/15 text-zinc-400" },
+};
+const STATUS_WEIGHT = { late:3, soon:2, never:1, fresh:0 };
+
+/* ---- Résumé d'un joueur (pour les succès) ---- */
+function playerSummary(pid){
+  const c = ctx();
+  if (c.summaries.has(pid)) return c.summaries.get(pid);
+  const mine = c.tasksH.filter(e => e.playerId === pid);
+  const byItem = {}, perDayN = {}, perDayXp = {};
+  let early = 0, night = 0;
+  mine.forEach(e => {
+    byItem[e.itemId] = (byItem[e.itemId] || 0) + 1;
+    const k = dayKey(e.t);
+    perDayN[k] = (perDayN[k] || 0) + 1;
+    perDayXp[k] = (perDayXp[k] || 0) + e.xp;
+    const h = e.t.getHours();
+    if (h >= 4 && h < 8) early = 1;
+    if (h >= 23 || h < 4) night = 1;
+  });
+  const s = {
+    tasks: mine.length, byItem, distinct: Object.keys(byItem).length,
+    maxTasksDay: Math.max(0, ...Object.values(perDayN)), maxXpDay: Math.max(0, ...Object.values(perDayXp)),
+    early, night,
+    earned: mine.reduce((a,e) => a+e.xp, 0),
+    rewards: state.history.filter(h => h.playerId === pid && h.kind === "reward").length,
+    longest: computeLongestStreak(state.history, pid),
+    current: computeCurrentStreak(state.history, pid),
+    lastTask: mine.length ? mine[mine.length-1] : null,
+  };
+  c.summaries.set(pid, s);
+  return s;
+}
+function unlockedSet(pid){
+  const s = playerSummary(pid);
+  return new Set(ACHIEVEMENTS.filter(a => a.val(s) >= a.goal).map(a => a.id));
+}
+
+/* ============================================================
+   PRÉFÉRENCES LOCALES (par appareil)
+============================================================ */
+function loadUi(){
+  try {
+    const me = localStorage.getItem(ME_KEY);
+    if (me && PLAYERS.some(p => p.id === me)) { state.me = me; state.selectedPlayer = me; }
+    const ui = JSON.parse(localStorage.getItem(UI_KEY) || "{}");
+    if (TABS.some(t => t.id === ui.tab)) state.tab = ui.tab;
+    if (["default","urgent","mine"].includes(ui.taskSort)) state.taskSort = ui.taskSort;
+  } catch (e) {}
+}
+function saveUi(){
+  try { localStorage.setItem(UI_KEY, JSON.stringify({ tab:state.tab, taskSort:state.taskSort })); } catch (e) {}
+}
+
+/* ============================================================
+   SUPABASE — synchronisation temps réel entre les téléphones
+============================================================ */
+const SUPABASE_URL = "https://yrdkpaouihjpgvxqrgvw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Aghj3dARBMtlaXrvHhjMwA_GRYm0daJ";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const TABLE = "game_state";
+const ROW_ID = "shared";
+let applyingRemote = false;
+
+function currentPayload(){ return { history: state.history, tasks: state.tasks, rewards: state.rewards }; }
+
+function save(){
+  bump();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(currentPayload())); }
+  catch (e) { console.error("Sauvegarde locale impossible", e); }
+  if (!applyingRemote) saveRemote(currentPayload());
+}
+async function saveRemote(payload){
+  try {
+    const { error } = await sb.from(TABLE).upsert({ id: ROW_ID, data: payload, updated_at: new Date().toISOString() });
+    if (error) { console.error("Sauvegarde en ligne impossible", error); setSync("offline"); }
+  } catch (e) { console.error("Sauvegarde en ligne impossible", e); setSync("offline"); }
+}
+function setSync(s){ if (state.syncStatus !== s) { state.syncStatus = s; render(); } }
+
+function loadLocal(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state.history = Array.isArray(parsed.history) ? parsed.history : [];
+      state.tasks = Array.isArray(parsed.tasks) ? parsed.tasks : [...DEFAULT_TASKS, ...(Array.isArray(parsed.customTasks) ? parsed.customTasks : [])];
+      state.rewards = Array.isArray(parsed.rewards) ? parsed.rewards : [...DEFAULT_REWARDS, ...(Array.isArray(parsed.customRewards) ? parsed.customRewards : [])];
+    }
+  } catch (e) {}
+  bump();
+}
+function applyRemoteData(remote){
+  if (!remote) return;
+  applyingRemote = true;
+  state.history = Array.isArray(remote.history) ? remote.history : [];
+  state.tasks = Array.isArray(remote.tasks) ? remote.tasks : DEFAULT_TASKS.slice();
+  state.rewards = Array.isArray(remote.rewards) ? remote.rewards : DEFAULT_REWARDS.slice();
+  bump();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(currentPayload())); } catch (e) {}
+  render();
+  applyingRemote = false;
+}
+async function loadRemote(){
+  try {
+    const { data, error } = await sb.from(TABLE).select("data").eq("id", ROW_ID).maybeSingle();
+    if (error) throw error;
+    return { ok:true, data: data ? data.data : null };
+  } catch (e) {
+    console.error("Chargement en ligne impossible", e);
+    return { ok:false, data:null };
+  }
+}
+function subscribeRealtime(){
+  sb.channel("game_state_sync")
+    .on("postgres_changes", { event:"*", schema:"public", table:TABLE, filter:`id=eq.${ROW_ID}` }, (payload) => {
+      if (payload.new && payload.new.data) applyRemoteData(payload.new.data);
+    })
+    .subscribe((status) => {
+      if (status === "SUBSCRIBED") setSync("live");
+      else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") setSync("offline");
+    });
+}
+async function boot(){
+  loadUi();
+  loadLocal();
+  render();
+  const remote = await loadRemote();
+  if (remote.data) applyRemoteData(remote.data);
+  else if (remote.ok) saveRemote(currentPayload()); // première fois : on crée la ligne partagée
+  else setSync("offline");
+  subscribeRealtime();
+}
+
+/* ============================================================
+   EFFETS (toasts, confettis, XP flottants, vibrations)
+============================================================ */
+function addToast({ kind, text }){
+  const root = document.getElementById("toasts");
+  const el = document.createElement("div");
+  el.className = `toast toast-${kind || "info"}`;
+  el.textContent = text;
+  root.appendChild(el);
+  while (root.children.length > 3) root.firstChild.remove();
+  setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 300); }, kind === "badge" || kind === "level" ? 3600 : 2400);
+}
+function pointOf(ev){
+  if (ev && typeof ev.clientX === "number" && (ev.clientX || ev.clientY)) return { x: ev.clientX, y: ev.clientY };
+  return { x: window.innerWidth/2, y: window.innerHeight*0.45 };
+}
+function floatXp(pt, text, color){
+  const el = document.createElement("div");
+  el.className = "float-xp";
+  el.style.left = pt.x + "px"; el.style.top = (pt.y - 20) + "px"; el.style.color = color;
+  el.textContent = text;
+  document.getElementById("fx").appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+function confetti(pt, colors, n = 18, power = 1){
+  const fx = document.getElementById("fx");
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement("i");
+    el.className = "confetti";
+    const ang = Math.random() * Math.PI * 2;
+    const dist = (60 + Math.random() * 120) * power;
+    el.style.left = pt.x + "px"; el.style.top = pt.y + "px";
+    el.style.background = colors[i % colors.length];
+    el.style.setProperty("--dx", Math.cos(ang) * dist + "px");
+    el.style.setProperty("--dy", (Math.sin(ang) * dist + 80 * power) + "px");
+    el.style.setProperty("--rot", (Math.random() * 720 - 360) + "deg");
+    el.style.setProperty("--dur", (0.8 + Math.random() * 0.6) + "s");
+    if (Math.random() > .5) { el.style.width = "7px"; el.style.height = "7px"; el.style.borderRadius = "50%"; }
+    fx.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+  }
+}
+function bigCelebration(){
+  const colors = ["#38bdf8","#f472b6","#fbbf24","#34d399","#a78bfa"];
+  confetti({ x: window.innerWidth*0.25, y: window.innerHeight*0.35 }, colors, 30, 1.6);
+  setTimeout(() => confetti({ x: window.innerWidth*0.75, y: window.innerHeight*0.35 }, colors, 30, 1.6), 150);
+}
+function buzz(ms){ try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
+
+/* ============================================================
+   ACTIONS
+============================================================ */
+function setTab(t){ state.tab = t; saveUi(); render(); window.scrollTo(0, 0); }
+function setSelectedPlayer(p){ state.selectedPlayer = p; render(); }
+function setMe(id){
+  state.me = id; state.selectedPlayer = id;
+  try { localStorage.setItem(ME_KEY, id); } catch (e) {}
+  state.modal = null;
+  render();
+  addToast({ kind:"info", text:`Salut ${playerOf(id).name} ! ${playerOf(id).emoji}` });
+}
+function openWho(){ state.modal = { type:"who" }; render(); }
+
+function addTask(taskId, ev, forPlayer, daysAgo){
+  const task = allTasks().find(t => t.id === taskId);
+  if (!task) return;
+  const pid = forPlayer || state.selectedPlayer;
+  const p = playerOf(pid), acc = accOf(pid);
+  const pt = pointOf(ev);
+  const when = new Date();
+  if (daysAgo) when.setDate(when.getDate() - daysAgo);
+
+  const before = unlockedSet(pid);
+  const lvlBefore = levelInfo(playerSummary(pid).earned).lvl;
+  const today = dayKey(new Date());
+  const alreadyActiveToday = state.history.some(h => h.playerId===pid && h.kind==="task" && dayKey(h.date)===today);
+
+  state.history.push({
+    id: uid(), playerId: pid, kind:"task",
+    itemId: task.id, name: task.name, emoji: task.emoji, xp: task.xp,
+    date: when.toISOString(),
+  });
+  state.undoDismissed = false;
+  save();
+
+  buzz(18);
+  floatXp(pt, `+${task.xp}`, acc.hex);
+  confetti(pt, [acc.hex, "#fbbf24", "#34d399", "#ffffff"], 14);
+  addToast({ kind:"xp", text:`${p.emoji} ${p.name} +${task.xp} XP · ${task.emoji} ${task.name}${daysAgo ? (daysAgo === 1 ? " (hier)" : " (avant-hier)") : ""}` });
+
+  const after = unlockedSet(pid);
+  const fresh = ACHIEVEMENTS.filter(a => after.has(a.id) && !before.has(a.id));
+  const lvlAfter = levelInfo(playerSummary(pid).earned).lvl;
+  let delay = 350;
+  if (lvlAfter > lvlBefore) {
+    const li = levelInfo(playerSummary(pid).earned);
+    setTimeout(() => { addToast({ kind:"level", text:`⬆️ ${p.name} passe niveau ${li.lvl} — ${li.title} !` }); bigCelebration(); buzz([30,40,30]); }, delay);
+    delay += 500;
+  }
+  fresh.forEach(a => {
+    setTimeout(() => { addToast({ kind:"badge", text:`${a.emoji} ${p.name} débloque « ${a.name} » !` }); bigCelebration(); }, delay);
+    delay += 500;
+  });
+  if (!daysAgo && !alreadyActiveToday && !fresh.length) {
+    const streak = computeCurrentStreak(state.history, pid);
+    if (streak > 1) setTimeout(() => addToast({ kind:"xp", text:`🔥 Série de ${streak} jours pour ${p.name} !` }), delay);
+  }
+
+  state.pulseId = task.id;
+  render();
+  setTimeout(() => { state.pulseId = null; render(); }, 500);
+}
+
+function buyReward(rewardId, ev){
+  const reward = allRewards().find(r => r.id === rewardId);
+  if (!reward) return;
+  const available = computeAvailable(state.history, state.selectedPlayer);
+  if (available < reward.cost) { addToast({ kind:"error", text:"XP insuffisants" }); return; }
+  state.history.push({
+    id: uid(), playerId: state.selectedPlayer, kind:"reward",
+    itemId: reward.id, name: reward.name, emoji: reward.emoji, xp: -reward.cost,
+    date: new Date().toISOString(),
+  });
+  state.undoDismissed = false;
+  save();
+  buzz([20,30,20]);
+  confetti(pointOf(ev), ["#fbbf24","#f472b6","#38bdf8","#34d399"], 26, 1.3);
+  addToast({ kind:"badge", text:`${reward.emoji} ${reward.name} débloqué ! Le bon t'attend dans la boutique 🎟️` });
+  render();
+}
+function useCoupon(entryId){
+  const e = state.history.find(h => h.id === entryId);
+  if (!e) return;
+  e.used = true;
+  e.usedAt = new Date().toISOString();
+  save();
+  addToast({ kind:"info", text:`${e.emoji} Bon utilisé, profitez-en !` });
+  render();
+}
+
+function undoLast(){
+  const entry = lastEntry();
+  if (!entry) return;
+  state.history = state.history.filter(e => e.id !== entry.id);
+  save();
+  addToast({ kind:"info", text:"↩️ Action annulée" });
+  render();
+}
+function dismissUndo(){ state.undoDismissed = true; render(); }
+
+function openTaskSheet(id){ state.sheet = { taskId:id }; state.sheetAnim = true; state.sheetWhen = 0; render(); }
+function closeSheet(){ state.sheet = null; render(); }
+function setSheetWhen(n){ state.sheetWhen = n; render(); }
+function sheetValidate(pid, ev){ addTask(state.sheet.taskId, ev, pid, state.sheetWhen); state.sheetWhen = 0; render(); }
+
+function openEditor(kind, id){ state.editor = { kind, id: id || null }; state.editorAnim = true; render(); setTimeout(() => { const el = document.getElementById("add-name"); if (el && !id) el.focus(); }, 60); }
+function openAddTask(){ openEditor("task"); }
+function openAddReward(){ openEditor("reward"); }
+function closeEditor(){ state.editor = null; render(); }
+function submitEditor(){
+  const ed = state.editor; if (!ed) return;
+  const isTask = ed.kind === "task";
+  const name = document.getElementById("add-name").value.trim();
+  const emoji = document.getElementById("add-emoji").value.trim() || (isTask ? "📝" : "🎁");
+  const value = Math.round(Number(document.getElementById("add-value").value));
+  if (!name || !(value > 0)) { addToast({ kind:"error", text:"Remplis le nom et une valeur > 0" }); return; }
+  if (ed.id) {
+    const list = isTask ? state.tasks : state.rewards;
+    const item = list.find(x => x.id === ed.id);
+    if (item) {
+      item.name = name; item.emoji = emoji;
+      if (isTask) item.xp = value; else { item.cost = value; item.tier = classifyRewardTier(value); }
+    }
+  } else if (isTask) state.tasks.push({ id:`task_${uid()}`, name, emoji, xp:value });
+  else state.rewards.push({ id:`reward_${uid()}`, name, emoji, cost:value, tier:classifyRewardTier(value) });
+  save();
+  state.editor = null;
+  render();
+  addToast({ kind:"info", text: ed.id ? "Modifications enregistrées ✨" : (isTask ? "Tâche ajoutée !" : "Récompense ajoutée !") });
+}
+
+function requestDeleteTask(id){
+  const t = state.tasks.find(x => x.id === id); if (!t) return;
+  state.modal = { type:"deleteTask", id, name:t.name }; render();
+}
+function requestDeleteReward(id){
+  const r = state.rewards.find(x => x.id === id); if (!r) return;
+  state.modal = { type:"deleteReward", id, name:r.name }; render();
+}
+function requestDeleteEntry(id){
+  const e = state.history.find(x => x.id === id); if (!e) return;
+  state.modal = { type:"deleteEntry", id, name:`${e.emoji} ${e.name} (${playerOf(e.playerId).name}, ${e.xp > 0 ? "+" : ""}${e.xp} XP)` }; render();
+}
+function openReset(){ state.modal = { type:"reset" }; render(); }
+function openSync(){ state.modal = { type:"sync" }; render(); }
+function closeModal(){ state.modal = null; render(); }
+function confirmModal(){
+  const m = state.modal; if (!m) return;
+  if (m.type === "reset") { state.history = []; state.tasks = DEFAULT_TASKS.slice(); state.rewards = DEFAULT_REWARDS.slice(); }
+  else if (m.type === "deleteTask") { state.tasks = state.tasks.filter(t => t.id !== m.id); state.sheet = null; }
+  else if (m.type === "deleteReward") state.rewards = state.rewards.filter(r => r.id !== m.id);
+  else if (m.type === "deleteEntry") state.history = state.history.filter(h => h.id !== m.id);
+  save();
+  state.modal = null;
+  render();
+}
+
+function copyExport(){
+  const data = JSON.stringify(currentPayload());
+  const el = document.getElementById("export-text");
+  if (el) { el.select(); el.setSelectionRange(0, data.length); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(data).then(() => addToast({ kind:"info", text:"Code copié !" })).catch(() => addToast({ kind:"error", text:"Copie manuelle : sélectionne le texte" }));
+  } else addToast({ kind:"error", text:"Sélectionne et copie le texte manuellement" });
+}
+function applyImport(){
+  const el = document.getElementById("import-text");
+  if (!el || !el.value.trim()) { addToast({ kind:"error", text:"Colle d'abord un code" }); return; }
+  try {
+    const parsed = JSON.parse(el.value.trim());
+    if (!Array.isArray(parsed.history)) throw new Error("format invalide");
+    state.history = parsed.history;
+    state.tasks = Array.isArray(parsed.tasks) ? parsed.tasks : (Array.isArray(parsed.customTasks) ? [...DEFAULT_TASKS, ...parsed.customTasks] : DEFAULT_TASKS.slice());
+    state.rewards = Array.isArray(parsed.rewards) ? parsed.rewards : (Array.isArray(parsed.customRewards) ? [...DEFAULT_REWARDS, ...parsed.customRewards] : DEFAULT_REWARDS.slice());
+    save();
+    state.modal = null;
+    addToast({ kind:"info", text:"Données importées !" });
+    render();
+  } catch (e) { addToast({ kind:"error", text:"Code invalide, vérifie le copier-coller" }); }
+}
+
+function changeStatsPeriod(p){ state.statsPeriod = p; state.statsOffset = 0; render(); }
+function setStatsOffset(o){ state.statsOffset = o; render(); }
+function setTaskSort(s){ state.taskSort = s; saveUi(); render(); }
+function setJournalView(v){ state.journalView = v; render(); }
+function setHistPlayer(v){ state.histPlayer = v; state.histLimit = 80; render(); }
+function setHistKind(v){ state.histKind = v; state.histLimit = 80; render(); }
+function moreHistory(){ state.histLimit += 120; render(); }
+
+/* ============================================================
+   PETITS COMPOSANTS
+============================================================ */
+function progressBar(pct, fill, h = 8){
+  return `<div class="w-full rounded-full bg-white/[.06] overflow-hidden" style="height:${h}px">
+    <div class="h-full rounded-full transition-all duration-700 ease-out" style="width:${clampPct(pct)}%;background:${fill}"></div>
+  </div>`;
+}
+function sectionTitle(text, icon, right = ""){
+  return `<div class="flex items-center gap-2 mb-2.5 px-1">
+    ${icon ? `<span class="text-sm">${icon}</span>` : ""}
+    <h2 class="text-[11px] font-extrabold uppercase tracking-[.14em] text-zinc-400">${text}</h2>
+    ${right ? `<div class="ml-auto">${right}</div>` : ""}
+  </div>`;
+}
+function seg(value, options, fn){
+  return `<div class="seg">${options.map(o => `<button onclick="${fn}('${o.value}')" class="${value === o.value ? "on" : ""}">${o.label}</button>`).join("")}</div>`;
+}
+function periodNavigator(period, offset, fn){
+  if (period === "all") return "";
+  return `<div class="flex items-center gap-2">
+    <button onclick="${fn}(${offset-1})" class="icon-btn shrink-0">◀</button>
+    <div class="flex-1 text-center min-w-0">
+      <div class="text-sm font-bold text-zinc-100 truncate">${formatPeriodLabel(period, offset)}</div>
+      ${offset !== 0 ? `<button onclick="${fn}(0)" class="text-[11px] text-amber-300 font-semibold">↺ revenir à maintenant</button>` : `<div class="text-[11px] text-zinc-500">en cours</div>`}
+    </div>
+    <button onclick="${fn}(${Math.min(0, offset+1)})" ${offset >= 0 ? "disabled" : ""} class="icon-btn shrink-0 ${offset >= 0 ? "opacity-30" : ""}">▶</button>
+  </div>`;
+}
+function playerToggle(label){
+  return `<div>
+    ${label ? `<div class="text-[11px] font-bold text-zinc-500 mb-1.5 px-1">${label}</div>` : ""}
+    <div class="grid grid-cols-2 gap-2">
+    ${PLAYERS.map(p => {
+      const acc = ACCENT[p.accent];
+      const on = state.selectedPlayer === p.id;
+      return `<button onclick="setSelectedPlayer('${p.id}')" class="press flex items-center justify-center gap-2 py-3 rounded-2xl border font-extrabold transition-all ${on ? `${acc.text}` : "border-white/5 text-zinc-500 bg-white/[.03]"}"
+        style="${on ? `background:linear-gradient(135deg, rgba(${acc.rgb},.22), rgba(${acc.rgb},.06));border-color:rgba(${acc.rgb},.5);box-shadow:0 8px 30px -10px rgba(${acc.rgb},.6)` : ""}">
+        <span class="text-xl">${p.emoji}</span>${p.name}${state.me === p.id ? `<span class="text-[10px] font-bold opacity-70">(moi)</span>` : ""}
+      </button>`;
+    }).join("")}
+    </div>
+  </div>`;
+}
+function ring(pct, color, size = 64, stroke = 6, inner = ""){
+  const r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  return `<div class="relative shrink-0" style="width:${size}px;height:${size}px">
+    <svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" stroke="rgba(255,255,255,.08)" stroke-width="${stroke}" fill="none"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" stroke="${color}" stroke-width="${stroke}" fill="none" stroke-linecap="round"
+        stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - clampPct(pct)/100)).toFixed(1)}" style="transition:stroke-dashoffset .8s ease"/>
+    </svg>
+    <div class="absolute inset-0 grid place-items-center">${inner}</div>
+  </div>`;
+}
+function turnChip(pid, prefix = "Au tour de"){
+  if (!pid) return "";
+  const p = playerOf(pid), acc = ACCENT[p.accent];
+  const mine = state.me === pid;
+  return `<span class="chip" style="background:rgba(${acc.rgb},.14);color:${acc.hex}">${mine ? "👉 À toi" : `${prefix} ${p.emoji} ${p.name}`}</span>`;
+}
+function statusChip(info){
+  const s = STATUS_STYLE[info.status];
+  const txt = info.status === "late" && info.overdueBy ? `En retard · ${info.overdueBy} j` : s.label;
+  return `<span class="chip ${s.cls}"><span class="w-1.5 h-1.5 rounded-full" style="background:${s.dot}"></span>${txt}</span>`;
+}
+function emptyState(icon, text){
+  return `<div class="card p-6 text-center text-sm text-zinc-500"><div class="text-3xl mb-2">${icon}</div>${text}</div>`;
+}
+
+/* ============================================================
+   ONGLET ACCUEIL
+============================================================ */
+function scoreboardHero(){
+  const range = getPeriodRange("week", 0);
+  const [a, b] = PLAYERS;
+  const xa = computeEarned(state.history, a.id, range), xb = computeEarned(state.history, b.id, range);
+  const total = xa + xb;
+  const pa = total ? xa / total * 100 : 50;
+  const daysLeft = Math.ceil((range.end - Date.now()) / 86400000);
+  const lead = xa === xb ? null : (xa > xb ? a : b);
+  const gap = Math.abs(xa - xb);
+  const cell = (p, xp, align) => {
+    const acc = ACCENT[p.accent];
+    const crown = lead && lead.id === p.id;
+    return `<div class="flex flex-col ${align === "r" ? "items-end text-right" : "items-start"} gap-1 min-w-0">
+      <div class="flex items-center gap-1.5 ${align === "r" ? "flex-row-reverse" : ""}">
+        <span class="text-2xl relative">${p.emoji}${crown ? `<span class="absolute -top-3 ${align === "r" ? "-left-1" : "-right-1"} text-sm">👑</span>` : ""}</span>
+        <span class="font-extrabold ${acc.text}">${p.name}</span>
+      </div>
+      <div class="num text-[40px] leading-none font-bold" style="color:${acc.hex};text-shadow:0 0 30px rgba(${acc.rgb},.45)">${fmt(xp)}</div>
+      <div class="text-[11px] text-zinc-500">${computeTaskCount(state.history, p.id, range)} ${plural(computeTaskCount(state.history, p.id, range), "tâche", "tâches")}</div>
+    </div>`;
+  };
+  return `<div class="card p-4 relative overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(120% 80% at 0% 0%, rgba(56,189,248,.14), transparent 55%), radial-gradient(120% 80% at 100% 0%, rgba(244,114,182,.14), transparent 55%)"></div>
+    <div class="relative">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-extrabold uppercase tracking-[.14em] text-zinc-400">⚔️ Duel de la semaine</span>
+        <span class="chip bg-white/5 text-zinc-400">⏳ ${daysLeft} j restant${daysLeft > 1 ? "s" : ""}</span>
+      </div>
+      <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        ${cell(a, xa, "l")}
+        <div class="text-xs font-black text-zinc-600 tracking-widest">VS</div>
+        ${cell(b, xb, "r")}
+      </div>
+      <div class="mt-4 w-full h-3 rounded-full overflow-hidden bg-white/5 flex">
+        <div class="h-full transition-all duration-700" style="width:${pa}%;background:linear-gradient(90deg,#0284c7,#38bdf8)"></div>
+        <div class="h-full transition-all duration-700" style="width:${100-pa}%;background:linear-gradient(90deg,#f472b6,#db2777)"></div>
+      </div>
+      <div class="mt-2.5 text-center text-sm font-semibold text-zinc-300">
+        ${total === 0 ? "La semaine commence, à vos éponges ! 🧽" : lead ? `<span class="${ACCENT[lead.accent].text}">${lead.name}</span> mène de <span class="num font-bold">${gap}</span> XP` : "⚖️ Égalité parfaite !"}
+      </div>
+    </div>
+  </div>`;
+}
+function playerHomeCard(p){
+  const acc = ACCENT[p.accent];
+  const s = playerSummary(p.id);
+  const li = levelInfo(s.earned);
+  const available = computeAvailable(state.history, p.id);
+  const lastDays = s.lastTask ? calDaysAgo(s.lastTask.t) : null;
+  return `<div class="card p-3.5 flex flex-col gap-3 relative overflow-hidden" style="border-color:rgba(${acc.rgb},.22)">
+    <div class="flex items-center gap-3">
+      ${ring(li.pct, acc.hex, 54, 5, `<span class="text-2xl">${p.emoji}</span>`)}
+      <div class="min-w-0">
+        <div class="font-extrabold ${acc.text} leading-tight">${p.name}</div>
+        <div class="text-[11px] text-zinc-400 leading-tight">Niv. <span class="num font-bold text-zinc-200">${li.lvl}</span></div>
+        <div class="text-[10px] text-zinc-500 leading-tight truncate">${li.title}</div>
+      </div>
+    </div>
+    <div>
+      <div class="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">XP dispo</div>
+      <div class="num text-[28px] font-bold leading-none ${acc.text}">${fmt(available)}</div>
+    </div>
+    <div class="grid grid-cols-2 gap-1.5 text-center">
+      <div class="card-flat py-1.5"><div class="text-[13px] font-bold ${s.current ? "text-orange-400" : "text-zinc-500"}">${s.current ? `<span class="flame">🔥</span>` : "🔥"} <span class="num">${s.current}</span>j</div><div class="text-[9px] text-zinc-500">série</div></div>
+      <div class="card-flat py-1.5"><div class="text-[13px] font-bold text-zinc-200 num">${s.tasks}</div><div class="text-[9px] text-zinc-500">tâches</div></div>
+    </div>
+    <div class="text-[10.5px] text-zinc-500 leading-tight">Dernière tâche : <span class="text-zinc-300 font-semibold">${s.lastTask ? relTime(s.lastTask.t) : "jamais"}</span>${lastDays !== null && lastDays >= 3 ? " 😴" : ""}</div>
+    <div class="text-[10px] text-zinc-600 -mt-2">${fmt(li.toNext)} XP avant niv. ${li.lvl + 1}</div>
+  </div>`;
+}
+function myTaskLine(info, me){
+  const other = otherOf(me);
+  const n = info.otherSince[me];
+  const d = info.daysSinceP[me];
+  if (info.count[me] === 0) return `Tu ne l'as jamais faite 😅 · ${other.name} : <b class="text-zinc-200">${info.count[other.id]}×</b>`;
+  if (n >= 1) return `Pas faite par toi depuis <b class="text-zinc-200">${d === 0 ? "aujourd'hui" : d === 1 ? "hier" : d + " j"}</b> · ${other.name} l'a faite <b class="${ACCENT[other.accent].text}">${n}×</b> entre-temps 👀`;
+  return `Ta dernière fois : ${sinceLabel(d)}`;
+}
+function homeTurnSection(){
+  const me = state.me || state.selectedPlayer;
+  const mp = playerOf(me);
+  const mine = allTasks().map(t => ({ t, info: taskInfo(t.id) }))
+    .filter(x => x.info.turn === me)
+    .sort((a,b) => (STATUS_WEIGHT[b.info.status] - STATUS_WEIGHT[a.info.status]) || (b.info.otherSince[me] - a.info.otherSince[me]) || ((b.info.daysSince||0) - (a.info.daysSince||0)))
+    .slice(0, 4);
+  const rows = mine.map(({ t, info }) => `
+    <div class="flex items-center gap-3 py-2.5 ${"border-t border-white/5 first:border-0"}">
+      <button onclick="openTaskSheet('${t.id}')" class="tile press">${esc(t.emoji)}</button>
+      <button onclick="openTaskSheet('${t.id}')" class="flex-1 min-w-0 text-left">
+        <div class="flex items-center gap-1.5"><span class="text-sm font-bold text-zinc-100 truncate">${esc(t.name)}</span>${info.status === "late" ? `<span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>` : ""}</div>
+        <div class="text-[11.5px] text-zinc-400 leading-snug">${myTaskLine(info, me)}</div>
+      </button>
+      <button onclick="addTask('${t.id}', event, '${me}')" class="press shrink-0 px-3 py-2 rounded-xl text-xs font-extrabold text-zinc-900" style="background:${ACCENT[mp.accent].hex}">+${t.xp}</button>
+    </div>`).join("");
+  return `<div>
+    ${sectionTitle(`À ton tour, ${mp.name}`, "👉", `<button onclick="setTab('tasks')" class="text-[11px] font-bold text-zinc-500">tout voir →</button>`)}
+    <div class="card px-3.5 py-1">${rows || `<div class="py-5 text-center text-sm text-zinc-500">Rien ne t'attend, tu es à jour 😎</div>`}</div>
+  </div>`;
+}
+function homeRedZone(){
+  const late = allTasks().map(t => ({ t, info: taskInfo(t.id) }))
+    .filter(x => x.info.status === "late")
+    .sort((a,b) => (b.info.daysSince/(b.info.avgInterval||30)) - (a.info.daysSince/(a.info.avgInterval||30)))
+    .slice(0, 4);
+  if (!late.length) return "";
+  const rows = late.map(({ t, info }) => `
+    <button onclick="openTaskSheet('${t.id}')" class="press w-full flex items-center gap-3 py-2.5 border-t border-white/5 first:border-0 text-left">
+      <span class="text-2xl">${esc(t.emoji)}</span>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-bold text-zinc-100 truncate">${esc(t.name)}</div>
+        <div class="text-[11.5px] text-rose-300/90">Pas faite depuis ${info.daysSince} j${info.avgInterval ? ` · d'habitude tous les ${Math.round(info.avgInterval)} j` : ""}</div>
+      </div>
+      ${turnChip(info.turn)}
+    </button>`).join("");
+  return `<div>
+    ${sectionTitle("Zone rouge", "🚨")}
+    <div class="card px-3.5 py-1" style="border-color:rgba(244,63,94,.25);background:linear-gradient(180deg, rgba(244,63,94,.08), rgba(255,255,255,.02))">${rows}</div>
+  </div>`;
+}
+function homeFeed(){
+  const last = state.history.slice().sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
+  if (!last.length) return "";
+  const rows = last.map(e => {
+    const p = playerOf(e.playerId), acc = ACCENT[p.accent];
+    const pos = e.xp > 0;
+    return `<div class="flex items-center gap-3 py-2 border-t border-white/5 first:border-0">
+      <div class="relative shrink-0"><span class="text-xl">${esc(e.emoji)}</span><span class="absolute -bottom-1 -right-1.5 text-[11px] rounded-full w-[18px] h-[18px] grid place-items-center" style="background:rgba(${acc.rgb},.25)">${p.emoji}</span></div>
+      <div class="flex-1 min-w-0">
+        <div class="text-[13px] text-zinc-200 truncate"><b class="${acc.text}">${p.name}</b> ${pos ? "a fait" : "a pris"} ${esc(e.name)}</div>
+        <div class="text-[10.5px] text-zinc-500">${relTime(e.date)}</div>
+      </div>
+      <span class="num text-xs font-bold ${pos ? "text-emerald-400" : "text-rose-400"}">${pos ? "+" : ""}${e.xp}</span>
+    </div>`;
+  }).join("");
+  return `<div>
+    ${sectionTitle("En direct", "⚡", `<button onclick="setTab('journal')" class="text-[11px] font-bold text-zinc-500">journal →</button>`)}
+    <div class="card px-3.5 py-1.5">${rows}</div>
+  </div>`;
+}
+function nextRewardWidget(p){
+  const acc = ACCENT[p.accent];
+  const available = computeAvailable(state.history, p.id);
+  const next = allRewards().slice().sort((a,b) => a.cost - b.cost).find(r => r.cost > available);
+  if (!next) return `<div class="card-flat p-3 flex items-center gap-3"><span class="text-xl">${p.emoji}</span><div class="text-sm text-zinc-300">${allRewards().length ? "Toute la boutique est accessible ! 🎉" : "Boutique vide pour l'instant."}</div></div>`;
+  return `<div class="card-flat p-3">
+    <div class="flex items-center justify-between text-sm mb-2 gap-2">
+      <span class="flex items-center gap-1.5 text-zinc-200 font-semibold min-w-0"><span>${p.emoji}</span><span>${esc(next.emoji)}</span><span class="truncate">${esc(next.name)}</span></span>
+      <span class="num text-xs text-zinc-500 shrink-0">${available}/${next.cost}</span>
+    </div>
+    ${progressBar(available / next.cost * 100, `linear-gradient(90deg, ${acc.hex2}, ${acc.hex})`)}
+  </div>`;
+}
+function renderHome(){
+  return `<div class="flex flex-col gap-5">
+    ${scoreboardHero()}
+    <div class="grid grid-cols-2 gap-3">${PLAYERS.map(playerHomeCard).join("")}</div>
+    ${homeTurnSection()}
+    ${homeRedZone()}
+    ${homeFeed()}
+    <div>${sectionTitle("Prochaine récompense", "🎁")}<div class="flex flex-col gap-2">${PLAYERS.map(nextRewardWidget).join("")}</div></div>
+  </div>`;
+}
+
+/* ============================================================
+   ONGLET TÂCHES
+============================================================ */
+function taskCard(t){
+  const info = taskInfo(t.id);
+  const st = STATUS_STYLE[info.status];
+  const [a, b] = PLAYERS;
+  const tot = info.count[a.id] + info.count[b.id];
+  const pa = tot ? info.count[a.id] / tot * 100 : 50;
+  const lastP = info.lastEntry ? playerOf(info.lastEntry.playerId) : null;
+  return `<div onclick="addTask('${t.id}', event)" class="card press relative p-3 flex flex-col gap-2 text-left cursor-pointer select-none ${state.pulseId === t.id ? "pop" : ""}"
+      style="${state.pulseId === t.id ? "box-shadow:0 0 0 2px rgba(52,211,153,.6), 0 0 30px -5px rgba(52,211,153,.5)" : ""}">
+    <div class="flex items-start justify-between">
+      <div class="tile">${esc(t.emoji)}</div>
+      <button onclick="event.stopPropagation(); openTaskSheet('${t.id}')" class="w-8 h-8 -mr-1 -mt-1 grid place-items-center rounded-full text-zinc-400 bg-white/5 text-sm" aria-label="Détails">ⓘ</button>
+    </div>
+    <div class="text-[13.5px] font-bold text-zinc-100 leading-tight min-h-[34px]">${esc(t.name)}</div>
+    <div class="flex items-center gap-1.5 flex-wrap">
+      <span class="chip bg-emerald-400/10 text-emerald-300 num">+${t.xp} XP</span>
+      <span class="w-2 h-2 rounded-full" style="background:${st.dot}" title="${st.label}"></span>
+    </div>
+    <div>
+      <div class="flex items-center justify-between text-[10.5px] font-bold mb-1">
+        <span class="text-sky-400">${a.emoji} ${info.count[a.id]}</span>
+        <span class="text-pink-400">${info.count[b.id]} ${b.emoji}</span>
+      </div>
+      <div class="h-1.5 rounded-full overflow-hidden flex bg-white/5">
+        ${tot ? `<div style="width:${pa}%;background:#38bdf8"></div><div style="width:${100-pa}%;background:#f472b6"></div>` : ""}
+      </div>
+    </div>
+    <div class="text-[10.5px] text-zinc-500 leading-tight">${lastP ? `${lastP.emoji} ${relTime(info.lastEntry.t)}` : "Jamais faite"}</div>
+    ${info.turn ? `<div class="-mt-0.5">${turnChip(info.turn)}</div>` : ""}
+  </div>`;
+}
+function renderTasks(){
+  let list = allTasks().slice();
+  const me = state.me || state.selectedPlayer;
+  if (state.taskSort === "urgent") {
+    list.sort((a,b) => {
+      const ia = taskInfo(a.id), ib = taskInfo(b.id);
+      return (STATUS_WEIGHT[ib.status] - STATUS_WEIGHT[ia.status]) || ((ib.daysSince ?? 999) - (ia.daysSince ?? 999));
+    });
+  } else if (state.taskSort === "mine") {
+    list = list.filter(t => taskInfo(t.id).turn === me);
+  }
+  const counts = { late:0, soon:0 };
+  allTasks().forEach(t => { const s = taskInfo(t.id).status; if (s in counts) counts[s]++; });
+  return `<div class="flex flex-col gap-4">
+    ${playerToggle("Qui vient de faire la tâche ?")}
+    <div class="flex items-center gap-2">
+      <div class="flex-1">${seg(state.taskSort, [{value:"default",label:"Toutes"},{value:"urgent",label:"Urgentes"},{value:"mine",label:"Mon tour"}], "setTaskSort")}</div>
+    </div>
+    ${counts.late || counts.soon ? `<div class="flex items-center gap-2 text-[11px] text-zinc-400 px-1 -mt-1">
+      ${counts.late ? `<span class="chip ${STATUS_STYLE.late.cls}">🚨 ${counts.late} en retard</span>` : ""}
+      ${counts.soon ? `<span class="chip ${STATUS_STYLE.soon.cls}">⏳ ${counts.soon} bientôt</span>` : ""}
+    </div>` : ""}
+    <div class="grid grid-cols-2 gap-3">
+      ${list.map(taskCard).join("")}
+      ${state.taskSort !== "mine" ? `<button onclick="openAddTask()" class="press rounded-[22px] border-2 border-dashed border-white/10 p-3 flex flex-col items-center justify-center gap-1 text-zinc-500 min-h-[180px]">
+        <span class="text-2xl">＋</span><span class="text-xs font-bold">Nouvelle tâche</span>
+      </button>` : ""}
+    </div>
+    ${state.taskSort === "mine" && !list.length ? emptyState("😎", "Aucune tâche à ton tour. Profite !") : ""}
+    <p class="text-[11px] text-zinc-600 text-center leading-relaxed">Touche une carte pour valider · ⓘ pour voir qui l'a faite, combien de fois et depuis quand<br/>
+      <span style="color:#34d399">●</span> à jour <span style="color:#fbbf24">●</span> bientôt <span style="color:#f43f5e">●</span> en retard (selon votre rythme habituel)</p>
+  </div>`;
+}
+
+/* ---- Fiche détaillée d'une tâche ---- */
+function renderSheet(){
+  if (!state.sheet) return "";
+  const t = state.tasks.find(x => x.id === state.sheet.taskId);
+  if (!t) return "";
+  const info = taskInfo(t.id);
+  const anim = state.sheetAnim;
+  const [a, b] = PLAYERS;
+  const tot = info.count[a.id] + info.count[b.id];
+  const pa = tot ? info.count[a.id] / tot * 100 : 50;
+  const monthR = getPeriodRange("month", 0);
+  const monthCount = pid => info.list.filter(e => e.playerId === pid && inRange(e.t, monthR)).length;
+
+  const playerTile = p => {
+    const acc = ACCENT[p.accent];
+    const d = info.daysSinceP[p.id];
+    const isMe = state.me === p.id;
+    const behind = info.otherSince[p.id];
+    return `<div class="card-flat p-3" style="border-color:rgba(${acc.rgb},.25)">
+      <div class="flex items-center gap-1.5 mb-1.5"><span>${p.emoji}</span><span class="text-xs font-extrabold ${acc.text}">${isMe ? "Toi" : p.name}</span></div>
+      <div class="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">Dernière fois</div>
+      <div class="text-[15px] font-extrabold text-zinc-100 leading-tight">${d === null ? "Jamais 🙈" : capitalize(sinceLabel(d))}</div>
+      ${info.last[p.id] ? `<div class="text-[10.5px] text-zinc-500">${info.last[p.id].toLocaleDateString("fr-FR", { weekday:"short", day:"numeric", month:"short" })} · ${timeHM(info.last[p.id])}</div>` : ""}
+      ${behind > 0 && info.total ? `<div class="mt-1.5 text-[10.5px] ${behind >= 2 ? "text-rose-300" : "text-zinc-400"}">L'autre l'a faite ${behind}× depuis</div>` : ""}
+    </div>`;
+  };
+
+  const timeline = info.list.slice(-10).reverse().map(e => {
+    const p = playerOf(e.playerId), acc = ACCENT[p.accent];
+    return `<div class="flex items-center gap-2.5 py-1.5">
+      <span class="w-2 h-2 rounded-full shrink-0" style="background:${acc.hex}"></span>
+      <span class="text-sm">${p.emoji}</span>
+      <span class="text-[12.5px] font-semibold ${acc.text}">${p.name}</span>
+      <span class="text-[11.5px] text-zinc-500 ml-auto">${dayTitle(dayKey(e.t))} · ${timeHM(e.t)}</span>
+    </div>`;
+  }).join("");
+
+  const whenOpts = [{v:0,l:"Aujourd'hui"},{v:1,l:"Hier"},{v:2,l:"Avant-hier"}];
+  return `<div class="fixed inset-0 z-50 ${anim ? "fade-in" : ""}">
+    <div class="absolute inset-0 bg-black/65 backdrop-blur-sm" onclick="closeSheet()"></div>
+    <div class="sheet ${anim ? "sheet-in" : ""}">
+      <div class="grabber"></div>
+      <div class="flex items-center gap-3 mb-4">
+        <div class="tile" style="width:58px;height:58px;font-size:32px;border-radius:18px">${esc(t.emoji)}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-lg font-extrabold leading-tight">${esc(t.name)}</div>
+          <div class="flex items-center gap-1.5 mt-1 flex-wrap"><span class="chip bg-emerald-400/10 text-emerald-300 num">+${t.xp} XP</span>${statusChip(info)}</div>
+        </div>
+        <button onclick="closeSheet()" class="icon-btn">✕</button>
+      </div>
+
+      <div class="card p-4 mb-3">
+        <div class="text-[11px] font-extrabold uppercase tracking-[.14em] text-zinc-400 text-center mb-2">Qui l'a faite le plus ?</div>
+        <div class="flex items-end justify-between">
+          <div><div class="num text-4xl font-bold text-sky-400 leading-none">${info.count[a.id]}</div><div class="text-[11px] text-zinc-500 mt-1">fois · ${a.emoji} ${a.name}</div></div>
+          <div class="text-center pb-1">${tot ? `<div class="text-2xl">${info.count[a.id] === info.count[b.id] ? "🤝" : "👑"}</div><div class="text-[10px] text-zinc-500 font-bold">${info.count[a.id] === info.count[b.id] ? "égalité" : (info.count[a.id] > info.count[b.id] ? a.name : b.name)}</div>` : ""}</div>
+          <div class="text-right"><div class="num text-4xl font-bold text-pink-400 leading-none">${info.count[b.id]}</div><div class="text-[11px] text-zinc-500 mt-1">${b.name} ${b.emoji} · fois</div></div>
+        </div>
+        <div class="mt-3 h-2.5 rounded-full overflow-hidden flex bg-white/5">
+          ${tot ? `<div style="width:${pa}%;background:linear-gradient(90deg,#0284c7,#38bdf8)"></div><div style="width:${100-pa}%;background:linear-gradient(90deg,#f472b6,#db2777)"></div>` : ""}
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-3 text-center">
+          <div class="card-flat py-2"><div class="num text-base font-bold">${info.total}</div><div class="text-[10px] text-zinc-500">au total</div></div>
+          <div class="card-flat py-2"><div class="num text-base font-bold">${info.avgInterval ? `${info.avgInterval < 10 ? info.avgInterval.toString().replace(".", ",") : Math.round(info.avgInterval)} j` : "—"}</div><div class="text-[10px] text-zinc-500">rythme moyen</div></div>
+          <div class="card-flat py-2"><div class="num text-base font-bold"><span class="text-sky-400">${monthCount(a.id)}</span><span class="text-zinc-600"> / </span><span class="text-pink-400">${monthCount(b.id)}</span></div><div class="text-[10px] text-zinc-500">ce mois-ci</div></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 mb-3">${PLAYERS.map(playerTile).join("")}</div>
+
+      ${info.turn ? `<div class="card-flat p-3 mb-3 flex items-center gap-2 text-sm" style="background:rgba(${accOf(info.turn).rgb},.08);border-color:rgba(${accOf(info.turn).rgb},.25)">
+        <span class="text-xl">👉</span><div>C'est au tour de <b style="color:${accOf(info.turn).hex}">${playerOf(info.turn).name}</b>${info.count[info.turn] === 0 ? " (jamais faite !)" : info.otherSince[info.turn] >= 2 ? ` (${info.otherSince[info.turn]}× de retard)` : ""}</div>
+      </div>` : ""}
+
+      <div class="text-[11px] font-bold text-zinc-500 mb-1.5 px-1">Valider la tâche</div>
+      <div class="seg mb-2">${whenOpts.map(o => `<button onclick="setSheetWhen(${o.v})" class="${state.sheetWhen === o.v ? "on" : ""}">${o.l}</button>`).join("")}</div>
+      <div class="grid grid-cols-2 gap-2 mb-4">
+        ${PLAYERS.map(p => { const acc = ACCENT[p.accent]; return `<button onclick="sheetValidate('${p.id}', event)" class="press py-3.5 rounded-2xl font-extrabold text-zinc-900 flex items-center justify-center gap-2" style="background:linear-gradient(135deg, ${acc.hex}, ${acc.hex2});box-shadow:0 10px 25px -10px rgba(${acc.rgb},.8)"><span class="text-lg">${p.emoji}</span>${p.name} l'a fait</button>`; }).join("")}
+      </div>
+
+      ${timeline ? `<div class="mb-4">${sectionTitle("Dernières fois", "🕘")}<div class="card-flat px-3 py-1.5">${timeline}</div></div>` : ""}
+
+      <div class="flex gap-2">
+        <button onclick="openEditor('task','${t.id}')" class="press flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold text-zinc-300">✏️ Modifier</button>
+        <button onclick="requestDeleteTask('${t.id}')" class="press flex-1 py-3 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-sm font-bold text-rose-300">🗑️ Supprimer</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   ONGLET DUEL (classement + stats)
+============================================================ */
+function dailyData(start, end, mode){
+  const rows = [];
+  const cursor = new Date(start);
+  const dm = ctx().dayMap;
+  while (cursor < end) {
+    const o = dm.get(dayKey(cursor)) || {};
+    const row = { label: mode === "week" ? `${WEEKDAY_LABELS[cursor.getDay()]}` : `${cursor.getDate()}`, future: cursor > new Date() };
+    PLAYERS.forEach(p => row[p.id] = o[p.id] || 0);
+    rows.push(row);
+    cursor.setDate(cursor.getDate()+1);
+  }
+  return rows;
+}
+function monthsData(first, n){
+  const rows = [];
+  for (let i = 0; i < n; i++) {
+    const s = new Date(first.getFullYear(), first.getMonth()+i, 1), e = new Date(s.getFullYear(), s.getMonth()+1, 1);
+    const row = { label: MONTH_LABELS[s.getMonth()], future: s > new Date() };
+    PLAYERS.forEach(p => row[p.id] = computeEarned(state.history, p.id, { start:s, end:e }));
+    rows.push(row);
+  }
+  return rows;
+}
+function barChart(data){
+  const max = Math.max(1, ...data.flatMap(d => PLAYERS.map(p => d[p.id] || 0)));
+  const narrow = data.length > 14;
+  const cols = data.map((d, i) => {
+    const showLabel = !narrow || i % 3 === 0 || i === data.length - 1;
+    return `<div class="flex-1 flex flex-col items-center gap-1 min-w-0 ${d.future ? "opacity-30" : ""}">
+      <div class="flex items-end gap-[2px] h-32 w-full justify-center">
+        ${PLAYERS.map(p => { const acc = ACCENT[p.accent]; const v = d[p.id] || 0; return `<div class="rounded-t-[4px] transition-all duration-500" style="width:${narrow ? 3 : 9}px;height:${v ? Math.max(4, v / max * 100) : 0}%;background:linear-gradient(180deg, ${acc.hex}, ${acc.hex2})"></div>`; }).join("")}
+      </div>
+      <span class="text-[9px] text-zinc-500 whitespace-nowrap h-3">${showLabel ? d.label : ""}</span>
+    </div>`;
+  }).join("");
+  return `<div class="relative">
+    <div class="absolute right-0 -top-1 text-[9px] text-zinc-600 num">max ${max} XP</div>
+    <div class="flex gap-[3px] pt-3 border-b border-white/5">${cols}</div>
+  </div>`;
+}
+function heatmap(){
+  const weeks = 18;
+  const start = startOfWeek(new Date()); start.setDate(start.getDate() - (weeks - 1) * 7);
+  const dm = ctx().dayMap;
+  let max = 1;
+  dm.forEach(o => { const tot = PLAYERS.reduce((s,p) => s + o[p.id], 0); if (tot > max) max = tot; });
+  const today = startOfDay(new Date());
+  const cells = [];
+  const cur = new Date(start);
+  for (let i = 0; i < weeks * 7; i++) {
+    const o = dm.get(dayKey(cur));
+    let style = "background:rgba(255,255,255,.045)";
+    if (cur > today) style = "background:transparent";
+    else if (o) {
+      const [a, b] = PLAYERS;
+      const tot = o[a.id] + o[b.id];
+      const al = (0.3 + 0.7 * Math.min(1, tot / max)).toFixed(2);
+      const A = `rgba(${ACCENT[a.accent].rgb},${al})`, B = `rgba(${ACCENT[b.accent].rgb},${al})`;
+      if (o[a.id] && o[b.id]) style = `background:linear-gradient(135deg, ${A} 50%, ${B} 50%)`;
+      else style = `background:${o[a.id] ? A : B}`;
+    }
+    const isToday = cur.getTime() === today.getTime();
+    cells.push(`<div style="${style}${isToday ? ";outline:1.5px solid rgba(255,255,255,.7);outline-offset:1px" : ""}" title="${dayKey(cur)}"></div>`);
+    cur.setDate(cur.getDate() + 1);
+  }
+  return `<div class="flex gap-2">
+    <div class="grid grid-rows-7 gap-[3px] text-[8.5px] text-zinc-600 font-bold" style="grid-template-rows:repeat(7,1fr)">${["L","M","M","J","V","S","D"].map(l => `<div class="flex items-center">${l}</div>`).join("")}</div>
+    <div class="heat flex-1" style="grid-template-columns:repeat(${weeks},1fr)">${cells.join("")}</div>
+  </div>
+  <div class="flex items-center gap-3 text-[10px] text-zinc-500 mt-2.5 flex-wrap">
+    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm" style="background:#38bdf8"></span>Léo</span>
+    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm" style="background:#f472b6"></span>Elsa</span>
+    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm" style="background:linear-gradient(135deg,#38bdf8 50%,#f472b6 50%)"></span>les deux</span>
+    <span class="ml-auto">plus c'est vif, plus il y a d'XP</span>
+  </div>`;
+}
+function whoDoesWhat(range){
+  const map = new Map();
+  ctx().tasksH.forEach(e => {
+    if (!inRange(e.t, range)) return;
+    if (!map.has(e.itemId)) { const cur = allTasks().find(t => t.id === e.itemId); const o = { name: cur ? cur.name : e.name, emoji: cur ? cur.emoji : e.emoji }; PLAYERS.forEach(p => o[p.id] = 0); map.set(e.itemId, o); }
+    const o = map.get(e.itemId); if (e.playerId in o) o[e.playerId]++;
+  });
+  const [a, b] = PLAYERS;
+  const rows = [...map.values()].sort((x,y) => (y[a.id]+y[b.id]) - (x[a.id]+x[b.id]));
+  if (!rows.length) return `<div class="py-4 text-center text-sm text-zinc-500">Aucune tâche sur cette période.</div>`;
+  const max = Math.max(1, ...rows.flatMap(r => [r[a.id], r[b.id]]));
+  return rows.map(r => `
+    <div class="py-2 border-t border-white/5 first:border-0">
+      <div class="flex items-center gap-1.5 text-[12.5px] font-semibold text-zinc-200 mb-1.5"><span>${esc(r.emoji)}</span><span class="truncate">${esc(r.name)}</span>
+        ${r[a.id] !== r[b.id] ? `<span class="ml-auto text-[10px] font-bold" style="color:${r[a.id] > r[b.id] ? "#38bdf8" : "#f472b6"}">${r[a.id] > r[b.id] ? a.name : b.name} +${Math.abs(r[a.id]-r[b.id])}</span>` : `<span class="ml-auto text-[10px] text-zinc-500 font-bold">égalité</span>`}
+      </div>
+      <div class="grid grid-cols-[22px_1fr_1fr_22px] items-center gap-1.5">
+        <span class="num text-[11px] font-bold text-sky-400 text-right">${r[a.id]}</span>
+        <div class="flex justify-end"><div class="h-2.5 rounded-l-full" style="width:${r[a.id]/max*100}%;background:linear-gradient(270deg,#38bdf8,#0284c7)"></div></div>
+        <div class="flex"><div class="h-2.5 rounded-r-full" style="width:${r[b.id]/max*100}%;background:linear-gradient(90deg,#f472b6,#db2777)"></div></div>
+        <span class="num text-[11px] font-bold text-pink-400">${r[b.id]}</span>
+      </div>
+    </div>`).join("");
+}
+function lastTimeTable(){
+  const [a, b] = PLAYERS;
+  const rows = allTasks().map(t => ({ t, info: taskInfo(t.id) }))
+    .sort((x,y) => {
+      const k = i => i.total ? Math.max(i.daysSinceP[a.id] ?? 999, i.daysSinceP[b.id] ?? 999) : -1; // jamais faites → en bas
+      return k(y.info) - k(x.info);
+    });
+  const cell = (info, p) => {
+    const d = info.daysSinceP[p.id];
+    const o = info.daysSinceP[otherOf(p.id).id];
+    const worse = d === null ? o !== null : (o !== null && d - o >= 3);
+    return `<div class="text-right"><span class="text-[11.5px] font-bold ${worse ? "text-rose-300" : "text-zinc-300"}">${d === null ? "jamais" : d === 0 ? "auj." : d === 1 ? "hier" : `${d} j`}</span></div>`;
+  };
+  return `<div class="grid grid-cols-[1fr_64px_64px] gap-x-2 text-[10px] font-bold text-zinc-500 pb-1.5 border-b border-white/5">
+      <span>Tâche</span><span class="text-right text-sky-400">${a.emoji} ${a.name}</span><span class="text-right text-pink-400">${b.emoji} ${b.name}</span>
+    </div>
+    ${rows.map(({ t, info }) => `<button onclick="openTaskSheet('${t.id}')" class="w-full grid grid-cols-[1fr_64px_64px] gap-x-2 items-center py-2 border-b border-white/5 last:border-0 text-left">
+      <span class="text-[12.5px] text-zinc-200 truncate">${esc(t.emoji)} ${esc(t.name)}</span>${cell(info, a)}${cell(info, b)}
+    </button>`).join("")}
+    <div class="text-[10px] text-zinc-600 mt-2">En rouge : nettement plus longtemps que l'autre 👀</div>`;
+}
+function funFacts(range){
+  const list = ctx().tasksH.filter(e => inRange(e.t, range));
+  if (!list.length) return "";
+  const facts = [];
+  PLAYERS.forEach(p => {
+    const m = {};
+    list.filter(e => e.playerId === p.id).forEach(e => m[e.itemId] = (m[e.itemId] || 0) + 1);
+    const top = Object.entries(m).sort((x,y) => y[1] - x[1])[0];
+    if (top) {
+      const cur = allTasks().find(t => t.id === top[0]) || list.find(e => e.itemId === top[0]);
+      facts.push({ icon: cur.emoji, title: `Tâche fétiche de ${p.name}`, value: `${cur.name} · ${top[1]}×`, color: ACCENT[p.accent].hex });
+    }
+  });
+  const wd = Array(7).fill(0); list.forEach(e => wd[e.t.getDay()]++);
+  const bestWd = wd.indexOf(Math.max(...wd));
+  facts.push({ icon:"📅", title:"Jour le plus productif", value:`Le ${WEEKDAY_FULL[bestWd]} (${wd[bestWd]} tâches)` });
+  const hrs = Array(24).fill(0); list.forEach(e => hrs[e.t.getHours()]++);
+  const h = hrs.indexOf(Math.max(...hrs));
+  facts.push({ icon:"🕐", title:"Heure de pointe", value:`Entre ${h} h et ${h+1} h` });
+  const days = {}; list.forEach(e => { const k = dayKey(e.t) + "|" + e.playerId; days[k] = (days[k] || 0) + e.xp; });
+  const rec = Object.entries(days).sort((x,y) => y[1] - x[1])[0];
+  if (rec) { const [k, pid] = rec[0].split("|"); facts.push({ icon:"🚀", title:"Plus grosse journée", value:`${playerOf(pid).name} · ${rec[1]} XP (${dayTitle(k).toLowerCase()})`, color: accOf(pid).hex }); }
+  return `<div class="grid grid-cols-2 gap-2">${facts.map(f => `
+    <div class="card-flat p-3">
+      <div class="text-xl mb-1">${esc(f.icon)}</div>
+      <div class="text-[10px] uppercase tracking-wider text-zinc-500 font-bold leading-tight">${f.title}</div>
+      <div class="text-[12.5px] font-bold mt-0.5 leading-snug" style="color:${f.color || "#e4e4e7"}">${esc(f.value)}</div>
+    </div>`).join("")}</div>`;
+}
+function renderDuel(){
+  const range = getPeriodRange(state.statsPeriod, state.statsOffset);
+  let chart;
+  if (state.statsPeriod === "week") chart = dailyData(range.start, range.end, "week");
+  else if (state.statsPeriod === "month") chart = dailyData(range.start, range.end, "month");
+  else if (state.statsPeriod === "year") chart = monthsData(range.start, 12);
+  else { const n = new Date(); chart = monthsData(new Date(n.getFullYear(), n.getMonth() - 11, 1), 12); }
+
+  const rows = PLAYERS.map(p => ({
+    p, earned: computeEarned(state.history, p.id, range), tasks: computeTaskCount(state.history, p.id, range), spent: computeSpent(state.history, p.id, range),
+    s: playerSummary(p.id),
+  }));
+  const tie = rows[0].earned === rows[1].earned;
+  const winner = tie ? null : (rows[0].earned > rows[1].earned ? rows[0] : rows[1]);
+  const isPast = state.statsPeriod !== "all" && state.statsOffset < 0;
+
+  const card = r => {
+    const acc = ACCENT[r.p.accent];
+    const win = winner && winner.p.id === r.p.id;
+    return `<div class="card p-3.5 relative overflow-hidden" style="${win ? `border-color:rgba(${acc.rgb},.5);box-shadow:0 10px 40px -15px rgba(${acc.rgb},.8)` : ""}">
+      ${win ? `<div class="absolute top-2 right-2 text-lg">${isPast ? "🏆" : "👑"}</div>` : ""}
+      <div class="flex items-center gap-1.5 mb-2"><span class="text-xl">${r.p.emoji}</span><span class="font-extrabold ${acc.text}">${r.p.name}</span></div>
+      <div class="num text-3xl font-bold leading-none" style="color:${acc.hex}">${fmt(r.earned)}<span class="text-sm text-zinc-500 ml-1">XP</span></div>
+      <div class="mt-3 grid grid-cols-2 gap-1.5 text-[11px]">
+        <div class="text-zinc-400">🧽 <b class="num text-zinc-200">${r.tasks}</b> tâches</div>
+        <div class="text-zinc-400">🎁 <b class="num text-zinc-200">${r.spent}</b> dép.</div>
+        <div class="text-zinc-400">🔥 <b class="num text-orange-400">${r.s.current}</b> j</div>
+        <div class="text-zinc-400">🏅 rec. <b class="num text-amber-300">${r.s.longest}</b> j</div>
+      </div>
+    </div>`;
+  };
+
+  return `<div class="flex flex-col gap-4">
+    ${seg(state.statsPeriod, [{value:"week",label:"Semaine"},{value:"month",label:"Mois"},{value:"year",label:"Année"},{value:"all",label:"Total"}], "changeStatsPeriod")}
+    ${periodNavigator(state.statsPeriod, state.statsOffset, "setStatsOffset")}
+    <div class="grid grid-cols-2 gap-3">${rows.map(card).join("")}</div>
+    ${winner ? `<div class="text-center text-sm text-zinc-400 -mt-1">${isPast ? "Vainqueur" : "En tête"} : <b style="color:${ACCENT[winner.p.accent].hex}">${winner.p.name}</b> avec <b class="num text-zinc-200">${Math.abs(rows[0].earned - rows[1].earned)}</b> XP d'avance</div>` : (rows[0].earned ? `<div class="text-center text-sm text-zinc-400 -mt-1">⚖️ Égalité parfaite</div>` : "")}
+
+    <div class="card p-4">
+      ${sectionTitle(state.statsPeriod === "all" ? "12 derniers mois" : "Évolution", "📈")}
+      ${barChart(chart)}
+      <div class="flex items-center gap-4 text-[11px] text-zinc-500 mt-2.5">
+        ${PLAYERS.map(p => `<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background:${ACCENT[p.accent].hex}"></span>${p.name}</span>`).join("")}
+      </div>
+    </div>
+
+    <div class="card p-4">
+      ${sectionTitle("Qui fait quoi ?", "🧮")}
+      ${whoDoesWhat(range)}
+    </div>
+
+    ${funFacts(range) ? `<div>${sectionTitle("Le saviez-vous ?", "💡")}${funFacts(range)}</div>` : ""}
+
+    <div class="card p-4">
+      ${sectionTitle("Dernière fois par personne", "⏱️")}
+      ${lastTimeTable()}
+    </div>
+
+    <div class="card p-4">
+      ${sectionTitle("Calendrier d'activité · 18 semaines", "🗓️")}
+      ${heatmap()}
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   ONGLET BOUTIQUE
+============================================================ */
+function renderShop(){
+  const pid = state.selectedPlayer;
+  const available = computeAvailable(state.history, pid);
+  const acc = accOf(pid);
+  const coupons = state.history.filter(h => h.kind === "reward" && h.playerId === pid && !h.used).sort((a,b) => new Date(b.date) - new Date(a.date));
+  const usedCount = state.history.filter(h => h.kind === "reward" && h.playerId === pid && h.used).length;
+
+  const rewardCard = r => {
+    const style = TIER_STYLE[r.tier] || TIER_STYLE.green;
+    const ok = available >= r.cost;
+    return `<div class="card p-3.5 ${style.border}" style="${ok ? "border-color:rgba(52,211,153,.35)" : ""}">
+      <div class="flex items-center gap-3 mb-2.5">
+        <div class="tile">${esc(r.emoji)}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-bold text-zinc-100 leading-tight">${esc(r.name)}</div>
+          <div class="num text-[13px] font-bold ${style.text}">${fmt(r.cost)} XP</div>
+        </div>
+        <button onclick="openEditor('reward','${r.id}')" class="w-8 h-8 grid place-items-center rounded-full bg-white/5 text-xs" aria-label="Modifier">✏️</button>
+        <button onclick="requestDeleteReward('${r.id}')" class="w-8 h-8 grid place-items-center rounded-full bg-white/5 text-xs" aria-label="Supprimer">🗑️</button>
+      </div>
+      ${progressBar(available / r.cost * 100, ok ? "linear-gradient(90deg,#10b981,#34d399)" : `linear-gradient(90deg, ${acc.hex2}, ${acc.hex})`, 6)}
+      <button onclick="buyReward('${r.id}', event)" ${ok ? "" : "disabled"} class="press w-full mt-2.5 py-2.5 rounded-xl font-extrabold text-sm ${ok ? "bg-zinc-50 text-zinc-900" : "bg-white/5 text-zinc-500"}">
+        ${ok ? "Échanger ✨" : `Encore ${fmt(r.cost - available)} XP`}
+      </button>
+    </div>`;
+  };
+  const tiers = ["green","orange","red"].map(tier => {
+    const items = allRewards().filter(r => (r.tier || "green") === tier).sort((a,b) => a.cost - b.cost);
+    if (!items.length) return "";
+    const st = TIER_STYLE[tier];
+    return `<div>
+      <div class="flex items-center gap-2 mb-2 px-1"><span class="w-2 h-2 rounded-full ${st.dot}"></span><span class="text-[11px] font-extrabold uppercase tracking-[.14em] ${st.text}">${st.label}</span></div>
+      <div class="flex flex-col gap-2.5">${items.map(rewardCard).join("")}</div>
+    </div>`;
+  }).join("");
+
+  return `<div class="flex flex-col gap-4">
+    ${playerToggle()}
+    <div class="card p-5 relative overflow-hidden" style="border-color:rgba(${acc.rgb},.35)">
+      <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(100% 120% at 100% 0%, rgba(${acc.rgb},.25), transparent 60%)"></div>
+      <div class="relative flex items-end justify-between">
+        <div>
+          <div class="text-[11px] uppercase tracking-[.14em] text-zinc-400 font-extrabold">Porte-monnaie de ${playerOf(pid).name}</div>
+          <div class="num text-5xl font-bold leading-none mt-1.5" style="color:${acc.hex}">${fmt(available)}<span class="text-lg text-zinc-500 ml-1">XP</span></div>
+        </div>
+        <div class="text-5xl">${playerOf(pid).emoji}</div>
+      </div>
+    </div>
+
+    ${coupons.length ? `<div>
+      ${sectionTitle(`Bons à utiliser (${coupons.length})`, "🎟️")}
+      <div class="flex flex-col gap-2">${coupons.map(c => `
+        <div class="relative flex items-center gap-3 p-3 rounded-2xl border border-dashed border-amber-400/40" style="background:linear-gradient(90deg, rgba(251,191,36,.10), rgba(251,191,36,.03))">
+          <span class="text-2xl">${esc(c.emoji)}</span>
+          <div class="flex-1 min-w-0"><div class="text-sm font-bold text-amber-100 truncate">${esc(c.name)}</div><div class="text-[11px] text-amber-200/60">obtenu ${relTime(c.date)} · offert par ${otherOf(pid).name}</div></div>
+          <button onclick="useCoupon('${c.id}')" class="press px-3 py-2 rounded-xl bg-amber-400 text-zinc-900 text-xs font-extrabold">Utilisé ✓</button>
+        </div>`).join("")}
+      </div>
+    </div>` : ""}
+    ${usedCount ? `<div class="text-[11px] text-zinc-600 text-center -mt-2">${usedCount} bon${usedCount > 1 ? "s" : ""} déjà profité${usedCount > 1 ? "s" : ""} 💝</div>` : ""}
+
+    ${tiers}
+    <button onclick="openAddReward()" class="press rounded-[22px] border-2 border-dashed border-white/10 p-4 flex items-center justify-center gap-2 text-zinc-500">
+      <span class="text-lg">＋</span><span class="text-sm font-bold">Ajouter une récompense</span>
+    </button>
+    ${allRewards().length === 0 ? emptyState("🛍️", "La boutique est vide — ajoute une première récompense !") : ""}
+  </div>`;
+}
+
+/* ============================================================
+   ONGLET JOURNAL (historique + trophées)
+============================================================ */
+function renderHistory(){
+  let list = state.history.slice();
+  if (state.histPlayer !== "all") list = list.filter(h => h.playerId === state.histPlayer);
+  if (state.histKind !== "all") list = list.filter(h => h.kind === state.histKind);
+  list.sort((a,b) => new Date(b.date) - new Date(a.date));
+  const total = list.length;
+  list = list.slice(0, state.histLimit);
+
+  const chipBtn = (on, label, fn) => `<button onclick="${fn}" class="chip !py-1.5 !px-3 !text-[11.5px] ${on ? "bg-zinc-50 text-zinc-900" : "bg-white/5 text-zinc-400"}">${label}</button>`;
+  const filters = `<div class="flex gap-1.5 flex-wrap">
+    ${chipBtn(state.histPlayer === "all", "Tous", "setHistPlayer('all')")}
+    ${PLAYERS.map(p => chipBtn(state.histPlayer === p.id, `${p.emoji} ${p.name}`, `setHistPlayer('${p.id}')`)).join("")}
+    <span class="w-px bg-white/10 mx-0.5"></span>
+    ${chipBtn(state.histKind === "all", "Tout", "setHistKind('all')")}
+    ${chipBtn(state.histKind === "task", "🧽 Tâches", "setHistKind('task')")}
+    ${chipBtn(state.histKind === "reward", "🎁 Récomp.", "setHistKind('reward')")}
+  </div>`;
+  if (!list.length) return `${filters}<div class="mt-4">${emptyState("⚔️", "Aucune action ici pour l'instant.<br/>Valide une tâche pour commencer l'aventure !")}</div>`;
+
+  const map = new Map();
+  list.forEach(h => { const k = dayKey(h.date); if (!map.has(k)) map.set(k, []); map.get(k).push(h); });
+  const groups = [...map.entries()].map(([k, entries]) => {
+    const sums = PLAYERS.map(p => ({ p, xp: entries.filter(e => e.playerId === p.id && e.kind === "task").reduce((s,e) => s+e.xp, 0) })).filter(x => x.xp);
+    return `<div>
+      <div class="flex items-center justify-between mb-2 px-1">
+        <span class="text-[12px] font-extrabold text-zinc-300">${dayTitle(k)}</span>
+        <span class="flex gap-2">${sums.map(x => `<span class="num text-[11px] font-bold" style="color:${ACCENT[x.p.accent].hex}">${x.p.emoji} +${x.xp}</span>`).join("")}</span>
+      </div>
+      <div class="card px-3 py-1">${entries.map(e => {
+        const p = playerOf(e.playerId), acc = ACCENT[p.accent], pos = e.xp > 0;
+        return `<div class="flex items-center gap-2.5 py-2 border-t border-white/5 first:border-0">
+          <span class="text-[10.5px] text-zinc-500 num w-9 shrink-0">${timeHM(e.date)}</span>
+          <span class="w-1 self-stretch rounded-full shrink-0" style="background:${acc.hex}"></span>
+          <span class="text-lg">${esc(e.emoji)}</span>
+          <div class="flex-1 min-w-0"><div class="text-[13px] text-zinc-200 truncate">${esc(e.name)}</div><div class="text-[10.5px] ${acc.text} font-semibold">${p.emoji} ${p.name}${e.kind === "reward" ? (e.used ? " · bon utilisé" : " · bon en attente") : ""}</div></div>
+          <span class="num font-bold text-[13px] ${pos ? "text-emerald-400" : "text-rose-400"}">${pos ? "+" : ""}${e.xp}</span>
+          <button onclick="requestDeleteEntry('${e.id}')" class="w-7 h-7 grid place-items-center rounded-full text-zinc-600 text-xs" aria-label="Supprimer">✕</button>
+        </div>`;
+      }).join("")}</div>
+    </div>`;
+  }).join("");
+  return `<div class="flex flex-col gap-4">
+    ${filters}
+    ${groups}
+    ${total > list.length ? `<button onclick="moreHistory()" class="press py-3 rounded-2xl bg-white/5 text-sm font-bold text-zinc-400">Voir plus (${total - list.length} restantes)</button>` : ""}
+  </div>`;
+}
+function renderTrophies(){
+  const pid = state.selectedPlayer;
+  const p = playerOf(pid), acc = ACCENT[p.accent];
+  const s = playerSummary(pid);
+  const li = levelInfo(s.earned);
+  const unlocked = ACHIEVEMENTS.filter(a => a.val(s) >= a.goal).length;
+  const ach = ACHIEVEMENTS.map(a => {
+    const v = a.val(s), ok = v >= a.goal;
+    return `<div class="card p-3 flex flex-col items-center text-center gap-1 ${ok ? "" : "opacity-80"}" style="${ok ? "border-color:rgba(251,191,36,.4);background:linear-gradient(180deg, rgba(251,191,36,.12), rgba(251,191,36,.02))" : ""}">
+      <span class="text-3xl ${ok ? "" : "grayscale opacity-30"}">${a.emoji}</span>
+      <span class="text-[11.5px] font-extrabold leading-tight ${ok ? "text-amber-300" : "text-zinc-400"}">${a.name}</span>
+      <span class="text-[9.5px] text-zinc-500 leading-tight">${a.desc}</span>
+      ${ok ? `<span class="text-[10px] text-amber-400/80 font-bold">✓ débloqué</span>` : `<div class="w-full mt-1">${progressBar(v / a.goal * 100, "rgba(255,255,255,.35)", 4)}<div class="num text-[9.5px] text-zinc-500 mt-0.5">${Math.min(v, a.goal)}/${a.goal}</div></div>`}
+    </div>`;
+  }).join("");
+  return `<div class="flex flex-col gap-4">
+    ${playerToggle()}
+    <div class="card p-4 flex items-center gap-4 relative overflow-hidden" style="border-color:rgba(${acc.rgb},.35)">
+      <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(90% 120% at 0% 50%, rgba(${acc.rgb},.2), transparent 60%)"></div>
+      ${ring(li.pct, acc.hex, 92, 8, `<div class="text-center leading-none"><div class="text-[9px] text-zinc-400 font-bold">NIV.</div><div class="num text-3xl font-bold">${li.lvl}</div></div>`)}
+      <div class="relative min-w-0">
+        <div class="text-lg font-extrabold grad-text">${li.title}</div>
+        <div class="text-[12px] text-zinc-400"><span class="num font-bold text-zinc-200">${fmt(s.earned)}</span> XP gagnés à vie</div>
+        <div class="text-[11px] text-zinc-500 mt-1">Encore <b class="num text-zinc-300">${fmt(li.toNext)}</b> XP pour le niveau ${li.lvl + 1}</div>
+        <div class="text-[11px] text-zinc-500">🔥 Série <b class="text-orange-400">${s.current} j</b> · record <b class="text-amber-300">${s.longest} j</b></div>
+      </div>
+    </div>
+    ${sectionTitle(`Succès · ${unlocked}/${ACHIEVEMENTS.length}`, "🏅")}
+    <div class="grid grid-cols-3 gap-2.5 -mt-2">${ach}</div>
+  </div>`;
+}
+function renderJournal(){
+  return `<div class="flex flex-col gap-4">
+    ${seg(state.journalView, [{value:"history",label:"📜 Historique"},{value:"trophies",label:"🏅 Trophées"}], "setJournalView")}
+    ${state.journalView === "history" ? renderHistory() : renderTrophies()}
+  </div>`;
+}
+
+/* ============================================================
+   HEADER / NAV / OVERLAYS
+============================================================ */
+function renderHeader(){
+  const me = state.me ? playerOf(state.me) : null;
+  const sync = { live:["bg-emerald-400","Synchro en direct"], connecting:["bg-amber-400 animate-pulse","Connexion…"], offline:["bg-rose-500","Hors ligne — sauvegardé sur ce téléphone"] }[state.syncStatus];
+  return `<header class="sticky top-0 z-30 hdr px-4 py-3">
+    <div class="max-w-md mx-auto flex items-center gap-3">
+      <div class="logo">⚔️</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-black tracking-tight text-[16px] leading-none">Battle du <span class="grad-text">Ménage</span></div>
+        <div class="text-[10.5px] text-zinc-500 mt-1 flex items-center gap-1.5 truncate"><span class="w-1.5 h-1.5 rounded-full shrink-0 ${sync[0]}"></span>${sync[1]}</div>
+      </div>
+      <button onclick="openSync()" class="icon-btn" aria-label="Sauvegarde">⇅</button>
+      <button onclick="openReset()" class="icon-btn" aria-label="Réinitialiser">↺</button>
+      ${me ? `<button onclick="openWho()" class="press w-10 h-10 grid place-items-center rounded-full text-xl" style="background:rgba(${ACCENT[me.accent].rgb},.18);border:1.5px solid rgba(${ACCENT[me.accent].rgb},.6)" aria-label="Changer d'utilisateur">${me.emoji}</button>` : ""}
+    </div>
+  </header>`;
+}
+function renderNav(){
+  const me = state.me || state.selectedPlayer;
+  const myTurns = allTasks().filter(t => taskInfo(t.id).turn === me).length;
+  const coupons = state.history.filter(h => h.kind === "reward" && !h.used).length;
+  const badge = { tasks: myTurns, shop: coupons };
+  return `<nav class="nav">
+    ${TABS.map(t => `<button onclick="setTab('${t.id}')" class="relative ${state.tab === t.id ? "on" : ""}">
+      <span class="ic">${t.icon}</span><span>${t.label}</span>
+      ${badge[t.id] ? `<span class="absolute top-1 right-[18%] min-w-[16px] h-4 px-1 rounded-full text-[9px] font-black grid place-items-center ${t.id === "shop" ? "bg-amber-400 text-zinc-900" : "bg-rose-500 text-white"}">${badge[t.id]}</span>` : ""}
+    </button>`).join("")}
+  </nav>`;
+}
+function renderUndoBar(){
+  const entry = lastEntry();
+  if (!entry || state.undoDismissed || state.sheet) return "";
+  const p = playerOf(entry.playerId);
+  const pos = entry.xp > 0;
+  return `<div class="fixed left-3 right-3 z-30 max-w-[440px] mx-auto rounded-2xl border border-white/10 px-3 py-2 flex items-center gap-2.5 shadow-2xl" style="bottom:calc(84px + env(safe-area-inset-bottom));background:rgba(24,24,30,.92);backdrop-filter:blur(16px)">
+    <span class="text-lg shrink-0">${p.emoji}</span><span class="text-lg shrink-0">${esc(entry.emoji)}</span>
+    <div class="flex-1 min-w-0">
+      <div class="text-xs text-zinc-300 truncate">${esc(entry.name)}</div>
+      <div class="num text-xs font-bold ${pos ? "text-emerald-400" : "text-rose-400"}">${pos ? "+" : ""}${entry.xp} XP · ${p.name}</div>
+    </div>
+    <button onclick="undoLast()" class="press bg-zinc-50 text-zinc-900 text-xs font-extrabold px-3 py-2 rounded-xl shrink-0">↩️ Annuler</button>
+    <button onclick="dismissUndo()" class="text-zinc-500 w-7 h-7 grid place-items-center shrink-0">✕</button>
+  </div>`;
+}
+function renderWho(){
+  const firstRun = !state.me;
+  if (!firstRun && !(state.modal && state.modal.type === "who")) return "";
+  return `<div class="fixed inset-0 z-[60] grid place-items-center px-6 fade-in" style="background:rgba(5,5,10,.88);backdrop-filter:blur(10px)">
+    <div class="w-full max-w-sm text-center scale-in">
+      <div class="logo mx-auto mb-4" style="width:64px;height:64px;font-size:34px;border-radius:20px">⚔️</div>
+      <div class="text-2xl font-black mb-1">${firstRun ? "Qui es-tu ?" : "Changer d'utilisateur"}</div>
+      <div class="text-sm text-zinc-400 mb-6">Ce téléphone s'en souviendra pour te montrer <b class="text-zinc-200">ce que TU n'as pas fait depuis longtemps</b> 😏</div>
+      <div class="grid grid-cols-2 gap-3">
+        ${PLAYERS.map(p => { const acc = ACCENT[p.accent]; return `<button onclick="setMe('${p.id}')" class="press card py-6 flex flex-col items-center gap-2" style="border-color:rgba(${acc.rgb},.45);background:linear-gradient(160deg, rgba(${acc.rgb},.2), rgba(${acc.rgb},.03))">
+          <span class="text-5xl">${p.emoji}</span><span class="text-lg font-extrabold ${acc.text}">${p.name}</span>
+        </button>`; }).join("")}
+      </div>
+      ${firstRun ? "" : `<button onclick="closeModal()" class="mt-5 text-sm text-zinc-500 font-semibold">Annuler</button>`}
+    </div>
+  </div>`;
+}
+function renderConfirmModal(){
+  const m = state.modal;
+  if (!m || ["sync","who"].includes(m.type)) return "";
+  let title, body;
+  if (m.type === "reset") { title = "Réinitialiser la partie ?"; body = "Tout l'historique, les XP, les séries et les badges seront supprimés, et la liste des tâches et récompenses reviendra à la sélection de départ. Pense à exporter une sauvegarde avant (bouton ⇅)."; }
+  else if (m.type === "deleteTask") { title = `Supprimer « ${esc(m.name)} » ?`; body = "Cette tâche sera retirée de la liste. L'historique déjà enregistré est conservé."; }
+  else if (m.type === "deleteReward") { title = `Supprimer « ${esc(m.name)} » ?`; body = "Cette récompense sera retirée de la boutique. L'historique déjà enregistré est conservé."; }
+  else { title = "Supprimer cette ligne ?"; body = `${esc(m.name)} sera retiré de l'historique, et les XP recalculés.`; }
+  return `<div class="fixed inset-0 z-[60] grid place-items-center bg-black/70 backdrop-blur-sm px-6 fade-in">
+    <div class="modal-box scale-in">
+      <div class="text-3xl mb-2">${m.type === "reset" ? "⚠️" : "🗑️"}</div>
+      <h3 class="text-lg font-extrabold text-zinc-50 mb-1.5">${title}</h3>
+      <p class="text-sm text-zinc-400 mb-5 leading-relaxed">${body}</p>
+      <div class="flex gap-2.5">
+        <button onclick="closeModal()" class="press flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-zinc-300 font-bold">Annuler</button>
+        <button onclick="confirmModal()" class="press flex-1 py-3 rounded-2xl bg-rose-500 text-white font-bold">Confirmer</button>
+      </div>
+    </div>
+  </div>`;
+}
+function renderEditor(){
+  const ed = state.editor;
+  if (!ed) return "";
+  const isTask = ed.kind === "task";
+  const item = ed.id ? (isTask ? state.tasks : state.rewards).find(x => x.id === ed.id) : null;
+  const anim = state.editorAnim;
+  const presets = isTask ? [5,10,15,20,30] : [20,60,100,350,900];
+  return `<div class="fixed inset-0 z-[60] grid place-items-center bg-black/70 backdrop-blur-sm px-6 ${anim ? "fade-in" : ""}">
+    <div class="modal-box ${anim ? "scale-in" : ""}">
+      <h3 class="text-lg font-extrabold text-zinc-50 mb-4">${item ? "Modifier" : (isTask ? "Nouvelle tâche" : "Nouvelle récompense")}</h3>
+      <div class="flex flex-col gap-3">
+        <div class="flex gap-2">
+          <input id="add-emoji" maxlength="4" placeholder="${isTask ? "📝" : "🎁"}" value="${item ? esc(item.emoji) : ""}" class="field !w-16 text-center text-2xl !px-1" />
+          <input id="add-name" placeholder="${isTask ? "Nom de la tâche" : "Nom de la récompense"}" value="${item ? esc(item.name) : ""}" class="field flex-1" />
+        </div>
+        <input id="add-value" type="number" inputmode="numeric" placeholder="${isTask ? "XP gagnés" : "Coût en XP"}" value="${item ? (isTask ? item.xp : item.cost) : ""}" class="field" />
+        <div class="flex gap-1.5">${presets.map(v => `<button onclick="document.getElementById('add-value').value=${v}" class="flex-1 py-1.5 rounded-lg bg-white/5 text-xs font-bold text-zinc-400 num">${v}</button>`).join("")}</div>
+        ${item && isTask ? `<p class="text-[11px] text-zinc-500">Les tâches déjà validées gardent leurs anciens XP.</p>` : ""}
+      </div>
+      <div class="flex gap-2.5 mt-5">
+        <button onclick="closeEditor()" class="press flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-zinc-300 font-bold">Annuler</button>
+        <button onclick="submitEditor()" class="press flex-1 py-3 rounded-2xl bg-zinc-50 text-zinc-900 font-extrabold">${item ? "Enregistrer" : "Ajouter"}</button>
+      </div>
+    </div>
+  </div>`;
+}
+function renderSyncModal(){
+  if (!state.modal || state.modal.type !== "sync") return "";
+  const data = JSON.stringify(currentPayload());
+  return `<div class="fixed inset-0 z-[60] grid place-items-center bg-black/70 backdrop-blur-sm px-6 fade-in">
+    <div class="modal-box scale-in max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-extrabold">⇅ Sauvegarde</h3>
+        <button onclick="closeModal()" class="icon-btn">✕</button>
+      </div>
+      <p class="text-xs text-zinc-400 mb-4 leading-relaxed">La synchronisation entre vos téléphones est automatique et en temps réel. Ce code sert seulement de secours (sauvegarde manuelle) si jamais la connexion fait défaut.</p>
+      <div class="mb-5">
+        <div class="text-[11px] font-extrabold uppercase tracking-[.14em] text-zinc-500 mb-2">Exporter</div>
+        <textarea id="export-text" readonly class="field h-20 !text-[10px] !text-zinc-400">${esc(data)}</textarea>
+        <button onclick="copyExport()" class="press w-full mt-2 py-2.5 rounded-xl bg-zinc-50 text-zinc-900 font-bold text-sm">Copier le code</button>
+      </div>
+      <div>
+        <div class="text-[11px] font-extrabold uppercase tracking-[.14em] text-zinc-500 mb-2">Importer</div>
+        <textarea id="import-text" placeholder="Colle ici le code reçu…" class="field h-20 !text-[10px]"></textarea>
+        <button onclick="applyImport()" class="press w-full mt-2 py-2.5 rounded-xl bg-rose-500 text-white font-bold text-sm">Importer (remplace les données)</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   RENDU PRINCIPAL
+============================================================ */
+const TAB_RENDERERS = { home:renderHome, tasks:renderTasks, duel:renderDuel, shop:renderShop, journal:renderJournal };
+
+function render(){
+  const app = document.getElementById("app");
+  // conserve ce qui est en cours de saisie si un rendu arrive (ex. synchro temps réel)
+  const saved = {};
+  app.querySelectorAll("input[id], textarea[id]").forEach(el => { if (el.id !== "export-text") saved[el.id] = el.value; });
+  const focusId = document.activeElement && document.activeElement.id;
+  const scrollY = window.scrollY;
+  const sheetScroll = app.querySelector(".sheet") ? app.querySelector(".sheet").scrollTop : 0;
+
+  app.innerHTML = `
+    ${renderHeader()}
+    <main class="flex-1 px-4 pt-4 max-w-md w-full mx-auto" style="padding-bottom:calc(150px + env(safe-area-inset-bottom))">
+      ${(TAB_RENDERERS[state.tab] || renderHome)()}
+    </main>
+    ${renderNav()}
+    ${renderUndoBar()}
+    ${renderSheet()}
+    ${renderConfirmModal()}
+    ${renderEditor()}
+    ${renderSyncModal()}
+    ${renderWho()}
+  `;
+
+  Object.entries(saved).forEach(([id, v]) => { const el = document.getElementById(id); if (el) el.value = v; });
+  if (focusId) { const el = document.getElementById(focusId); if (el) el.focus(); }
+  const sheet = app.querySelector(".sheet");
+  if (sheet && !state.sheetAnim) sheet.scrollTop = sheetScroll;
+  state.sheetAnim = false;
+  state.editorAnim = false;
+  window.scrollTo(0, scrollY);
+}
+
+// Les "il y a X min" restent à jour, et on change de jour proprement à minuit
+setInterval(() => { if (!state.editor && !state.modal) { bump(); render(); } }, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { bump(); render(); } });
+
+boot();
+</script>
+</body>
+</html>
