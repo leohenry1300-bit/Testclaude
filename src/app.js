@@ -430,7 +430,7 @@ function normalizeState(raw) {
     const deleted = {};
     if (raw.deleted && typeof raw.deleted === 'object') Object.entries(raw.deleted).forEach(([k, v]) => { if (num(v, 0) > 0) deleted[k] = num(v); });
     const revlog = toArray(raw.revlog).filter(r => Array.isArray(r) && r.length >= 4 && Number.isFinite(r[0])).slice(-REVLOG_MAX);
-    return { version: 6, decks, cards, presets, stats: normalizeStats(raw.stats), settings, revlog, deleted, updatedAt: num(raw.updatedAt, 0) };
+    return { version: 6, decks, cards, presets, stats: normalizeStats(raw.stats), settings, revlog, deleted, toeic: normalizeToeic(raw.toeic), updatedAt: num(raw.updatedAt, 0) };
 }
 function cardSig(c) {
     return [c.deckId, c.state, c.step, c.due, c.interval, c.ease, c.reps, c.lapses, c.suspended ? 1 : 0, c.flag, c.marked ? 1 : 0, c.buriedUntil, c.errors, c.wrong, c.right,
@@ -688,8 +688,8 @@ class SuperAnki {
     }
 
     serialize() {
-        const { version, decks, cards, presets, stats, settings, revlog, deleted, updatedAt } = this.data;
-        return JSON.stringify({ version, decks, cards, presets, stats, settings, revlog, deleted, updatedAt });
+        const { version, decks, cards, presets, stats, settings, revlog, deleted, toeic, updatedAt } = this.data;
+        return JSON.stringify({ version, decks, cards, presets, stats, settings, revlog, deleted, toeic, updatedAt });
     }
     /* Change tracking: per-card modification times let two devices merge instead of overwriting each other */
     initSigs() {
@@ -989,6 +989,7 @@ class SuperAnki {
        ============================================================ */
     go(view, opts = {}) {
         if (this.session && view !== 'session') this.endSession(false);
+        if (this.ex && view !== 'exam') this.exLeave();
         this.view = view;
         if (opts.deck !== undefined) { this.ui.deck = opts.deck; this.ui.limit = 60; }
         if (opts.filter !== undefined) this.ui.filter = opts.filter;
@@ -996,15 +997,18 @@ class SuperAnki {
         window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
     }
     render() {
-        ['dashboard', 'decks', 'stats', 'settings', 'session'].forEach(v => $(`#view-${v}`).classList.toggle('hidden', v !== this.view));
+        ['dashboard', 'decks', 'stats', 'settings', 'session', 'toeic', 'exam'].forEach(v => $(`#view-${v}`).classList.toggle('hidden', v !== this.view));
         $$('[data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === this.view && !b.classList.contains('brand') && !b.classList.contains('streak-chip') && !b.classList.contains('sync-dot')));
-        document.body.classList.toggle('in-session', this.view === 'session');
+        document.body.classList.toggle('in-session', this.view === 'session' || this.view === 'exam');
+        document.body.classList.toggle('in-exam', this.view === 'exam');
         this.renderStreak();
         this.renderSyncIndicator();
         if (this.view === 'dashboard') this.renderDashboard();
         else if (this.view === 'decks') this.renderDecks();
         else if (this.view === 'stats') this.renderStats();
         else if (this.view === 'settings') this.renderSettings();
+        else if (this.view === 'toeic') this.renderToeic();
+        else if (this.view === 'exam') this.renderExam();
     }
     renderStreak() {
         if (!this.data) return;
@@ -1095,6 +1099,10 @@ class SuperAnki {
                     <button class="panel mode-tile" style="--c:#f97316" data-action="mode" data-mode="chrono">
                         <span class="mode-ico">${ic('timer')}</span>
                         <span><h4>Chrono</h4><p>${chronoBest ? `Record : ${chronoBest} pts en ${d.settings.chronoDuration} s` : 'Un max de bonnes réponses, vite !'}</p></span>${ic('chevronRight', 'chev')}
+                    </button>
+                    <button class="panel mode-tile wide" style="--c:#4f46e5" data-nav="toeic">
+                        <span class="mode-ico">${ic('headphones')}</span>
+                        <span><h4>Simulateur TOEIC</h4><p>${(() => { const sc = (d.toeic ? d.toeic.attempts : []).filter(a => a.total != null); const g = d.toeic && d.toeic.goalDate ? daysBetweenKeys(dayKey(), d.toeic.goalDate) : null; return `Tests complets en conditions réelles${sc.length ? ` · dernier score estimé ${sc[sc.length - 1].total}` : ''}${g != null && g > 0 ? ` · J-${g}` : ''}`; })()}</p></span>${ic('chevronRight', 'chev')}
                     </button>
                 </div>
             </div>
@@ -2848,6 +2856,7 @@ class SuperAnki {
             if (kk === 'z' && !e.shiftKey) { e.preventDefault(); this.undoGlobal(); return; }
             if (kk === 'y' || (kk === 'z' && e.shiftKey)) { e.preventDefault(); this.redoGlobal(); return; }
         }
+        if (this.view === 'exam') { this.examKey(e); return; }
         const s = this.session;
         if (this.view !== 'session') return;
         if (!s) {
@@ -3085,7 +3094,7 @@ class SuperAnki {
             case 'go-stats': this.go('stats'); break;
             case 'go-settings': this.go('settings'); break;
             case 'quiz-next': this.nextQuestion(); break;
-            default: break;
+            default: if (action.startsWith('tq-')) this.toeicAction(action, el); break;
         }
     }
     startQuizFromIds(ids, count, chrono, title) {

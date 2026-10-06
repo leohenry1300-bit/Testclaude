@@ -1,0 +1,118 @@
+@P7D emploi
+D: job posting | Job advertisement – Sales Coordinator
+H: Nordic Home Furniture
+X: Nordic Home Furniture is looking for a Sales Coordinator to work at our Seattle headquarters. The ideal candidate has at least three years of experience in retail or wholesale, strong organizational skills, and proficiency with spreadsheet software.
+X: Responsibilities include managing customer orders, preparing weekly sales reports, and assisting the sales director. Salary is based on experience. Applications must be received by March 8. Send your résumé to hr@nordichome.example.
+D: e-mail | E-mail – Application
+H: To: hr@nordichome.example
+H: From: Leo Fischer
+H: Date: March 5
+H: Subject: Sales Coordinator position
+X: Dear Hiring Manager,
+X: I am writing to apply for the Sales Coordinator position advertised on your Web site. I have worked as a sales assistant for Brentwood Interiors for four years, where I managed about 150 customer orders each month and designed the spreadsheets we still use to track weekly sales. I will be moving to Seattle in April, and I would be available for an interview by video call before then.
+X: My résumé is attached. I look forward to hearing from you. Sincerely, Leo Fischer
+Q: What is NOT listed as a requirement of the job? ;; A university degree | Organizational skills | Experience in sales | Spreadsheet skills ;; Aucun diplôme n'est exigé dans l'annonce. ;; NOT question
+Q: When was Mr. Fischer's e-mail sent? ;; Before the application deadline | After the application deadline | On the deadline | In April ;; E-mail du 5 mars, date limite le 8 mars. ;; détail
+Q: What does Mr. Fischer offer to do? ;; Have an interview by video call | Visit the office in March | Send a reference letter | Work part time ;; « available for an interview by video call ». ;; détail
+Q: What qualification of Mr. Fischer matches the job ad? ;; He has more than three years of sales experience. | He has worked in Seattle. | He is skilled at hiring. | He has managed a sales team. ;; 4 ans en vente : plus des 3 ans demandés. ;; croisement de documents
+Q: What is suggested about Brentwood Interiors? ;; It uses spreadsheets Mr. Fischer created. | It is located in Seattle. | It sells office supplies. | It is a competitor of Nordic Home Furniture. ;; « the spreadsheets we still use » : il les a conçus. ;; inférence
+
+@P7D commande
+D: order confirmation | Order confirmation – Bright Office Supplies
+H: Order #55120 | Date: April 2
+R: Item | Qty | Price
+R: Ergonomic chairs | 10 | $2,300.00
+R: Standing desks | 5 | $1,750.00
+R: Delivery and assembly | 1 | $150.00
+X: Total: $4,200.00. Delivery is scheduled for April 15 between 8:00 A.M. and noon. Changes to delivery dates must be made at least three days in advance.
+D: e-mail | E-mail – Delivery change
+H: To: service@brightoffice.example
+H: From: Patricia Lane, Westline Accounting
+H: Date: April 11
+H: Subject: Order #55120
+X: Hello, our office renovation is behind schedule, and we won't be able to accept the delivery on April 15. Would it be possible to deliver the items on April 22 instead? Also, I'd like to reduce the number of standing desks from five to three. Please send us a revised invoice.
+Q: What is the purpose of Ms. Lane's e-mail? ;; To change an order | To complain about a product | To ask for a discount | To cancel a contract ;; Elle demande un nouveau jour de livraison et moins de bureaux. ;; objectif
+Q: Why does Ms. Lane need a different delivery date? ;; Renovation work is late. | An item is out of stock. | A payment is delayed. | The office is closing. ;; « our office renovation is behind schedule ». ;; cause
+Q: What is true about Ms. Lane's request? ;; It was sent within the required time limit. | It was sent too late. | It will cost an additional fee. | It was already approved. ;; Livraison le 15 : il faut prévenir 3 jours avant ; le 11 avril respecte ce délai (4 jours). ;; croisement de documents
+Q: How much did each standing desk originally cost? ;; $350 | $230 | $150 | $175 ;; 1 750 $ / 5 bureaux = 350 $. ;; calcul
+Q: What will probably happen to the total price? ;; It will decrease. | It will increase. | It will stay the same. | It will double. ;; Moins de bureaux : le prix baisse. ;; inférence
+
+@P7D voyage
+D: advertisement | Advertisement – Coastal Cruise
+H: Blue Horizon Cruises – Mediterranean Adventure
+X: Join us for an eight-day cruise from Barcelona to Rome, with stops in Marseille, Genoa, and Naples. Prices start at $1,290 per person for an interior cabin. Book before June 1 and children under twelve travel free. All meals and onboard entertainment are included, but excursions at each port are sold separately.
+D: e-mail | E-mail – Booking inquiry
+H: To: bookings@bluehorizon.example
+H: From: Ahmed Saleh
+H: Date: May 20
+H: Subject: Cruise booking
+X: Hello, I'd like to book a cabin for my wife, our two children (ages 8 and 10), and myself. We are interested in the Mediterranean Adventure departing August 14. Could you tell me whether there are any family cabins available, and what shore excursions you recommend in Naples? We would also like to know if you offer special meals for guests with food allergies, since my son is allergic to shellfish.
+Q: What is included in the cruise price? ;; Meals and entertainment | Shore excursions | Airfare to Barcelona | Hotel stays in Rome ;; « All meals and onboard entertainment are included ». ;; détail
+Q: Why does Mr. Saleh mention his son? ;; To ask about special meals | To get a discount | To request a bigger cabin | To say he cannot travel ;; Allergie aux crustacés. ;; cause
+Q: What can be inferred about the Saleh family? ;; Their children could travel free. | They live in Rome. | They have taken the cruise before. | They will travel in winter. ;; E-mail du 20 mai (avant le 1er juin) ; enfants de 8 et 10 ans (< 12). ;; croisement de documents
+Q: What information does Mr. Saleh request about Naples? ;; Recommended excursions | Hotel prices | Weather conditions | Train times ;; « what shore excursions you recommend in Naples ». ;; détail
+Q: Which of the following is NOT a stop on the cruise? ;; Venice | Marseille | Genoa | Naples ;; Venise n'est pas citée. ;; NOT question
+
+@P7T conférence
+D: e-mail | E-mail – Invitation
+H: To: Registered participants
+H: From: Event Team, Green Energy Expo
+H: Date: August 5
+X: We are delighted to confirm your registration for the Green Energy Expo, to be held September 10–12 at the Harbor Convention Center. Your badge is attached to this message; please print it and bring it with you. Attendees who arrive before 9:00 A.M. on the first day can attend a free breakfast with the keynote speaker.
+D: schedule | Conference program – Day 1
+R: Time | Session | Room
+R: 9:00 | Keynote: The Future of Solar Power | Hall A
+R: 10:30 | Workshop: Wind Turbine Maintenance | Room 3
+R: 10:30 | Panel: Financing Green Projects | Room 5
+R: 12:00 | Lunch (provided) | Atrium
+R: 1:30 | Product demonstrations | Exhibition floor
+D: e-mail | E-mail – Schedule request
+H: To: Event Team, Green Energy Expo
+H: From: Mina Sato
+H: Date: August 8
+X: Hello, I'm registered as an attendee, and I would like to attend both the wind turbine workshop and the financing panel, since they are both relevant to my work. Are the panels recorded, or can I get the slides later? Also, I'm a vegetarian, and I'd like to know whether vegetarian meals are available at lunch.
+Q: What are participants asked to do with their badge? ;; Print it and bring it | Pick it up on site | Pay for it | Send it back ;; « please print it and bring it with you ». ;; demande
+Q: What is the problem with Ms. Sato's plan? ;; Two sessions take place at the same time. | One session is full. | One room is closed. | The sessions are on different days. ;; Les deux sessions sont à 10h30. ;; croisement de documents
+Q: What is suggested about the free breakfast? ;; It is for early arrivals. | It is held in the atrium. | It requires an extra fee. | It is for speakers only. ;; « arrive before 9:00 A.M. ». ;; détail
+Q: Where will lunch be served? ;; In the atrium | In Hall A | In Room 3 | On the exhibition floor ;; Programme : Lunch – Atrium. ;; détail
+Q: What does Ms. Sato ask about? ;; Vegetarian food | Hotel rooms | Parking | Visa rules ;; « vegetarian meals are available at lunch ». ;; détail
+
+@P7T logement
+D: advertisement | Advertisement – Apartment for rent
+H: Spacious 2-bedroom apartment – Elm Street
+X: Sunny second-floor apartment close to the subway station. Rent: $1,350 per month (heating included). Pets are allowed with an additional deposit of $200. Available from July 1. Contact Tara Wells at 555-0166 or twells@elmrealty.example.
+D: e-mail | E-mail – Inquiry
+H: To: twells@elmrealty.example
+H: From: Julian Park
+H: Date: June 12
+X: Dear Ms. Wells, I am interested in the apartment on Elm Street. I have a small dog, and I work from home, so I need a quiet space. Is the building quiet during the day? Also, could I see the apartment on June 20? I am only free in the evening after 6:00 P.M.
+D: e-mail | E-mail – Reply
+H: To: Julian Park
+H: From: Tara Wells
+H: Date: June 13
+X: Dear Mr. Park, thank you for your interest. The building is very quiet during the day, as most tenants work in the city. I'm afraid I cannot show the apartment after 5:00 P.M., but I can offer you a visit at 4:30 on June 20 or a morning appointment on June 21. Please note that the deposit for pets applies even for small dogs. I look forward to hearing from you.
+Q: What does the advertisement say about the rent? ;; It includes heating. | It includes parking. | It must be paid weekly. | It is negotiable. ;; « (heating included) ». ;; détail
+Q: Why does Mr. Park mention working from home? ;; He needs a quiet environment. | He wants a larger apartment. | He needs an Internet connection. | He is looking for a discount. ;; « so I need a quiet space ». ;; cause
+Q: What problem does Ms. Wells mention? ;; She cannot meet in the evening. | The apartment is no longer available. | She does not allow pets. | The rent has increased. ;; « I cannot show the apartment after 5:00 P.M. ». ;; croisement de documents
+Q: How much will Mr. Park probably pay to move in with his dog, in addition to the rent? ;; $200 | $100 | $50 | Nothing ;; Le dépôt pour animaux est de 200 $, même pour un petit chien. ;; croisement de documents
+Q: When can Mr. Park see the apartment? ;; June 20 at 4:30 | June 20 at 6:00 | June 21 in the evening | July 1 ;; Proposition de Mme Wells : 16h30 le 20 juin ou matin du 21. ;; détail
+
+@P7T formation
+D: notice | Notice – Software update
+H: IT Department Announcement
+X: The company's accounting software, LedgerPro, will be upgraded to version 8 on Saturday, October 5. The system will be unavailable from 3:00 P.M. on Friday, October 4, until 8:00 A.M. on Monday, October 7. All users must save and close their work before 3:00 P.M. on Friday. Training sessions on the new features will be offered on October 8 and 9.
+D: e-mail | E-mail – Request
+H: To: IT Department
+H: From: Carla Mendez, Finance
+H: Date: September 30
+X: Hello, I'm worried about the system downtime. Our department has to submit the quarterly tax report to the regulator by 5:00 P.M. on Friday, October 4, and we usually need the software until the last minute. Could the shutdown be postponed until later on Friday afternoon? Alternatively, could someone from IT help us back up our files beforehand?
+D: e-mail | E-mail – Response
+H: To: Carla Mendez
+H: From: Victor Ahn, IT Department
+H: Date: October 1
+X: Dear Ms. Mendez, thank you for letting us know. Because the upgrade is scheduled as one continuous process, we cannot postpone the shutdown. However, we can extend the access time on Friday until 5:30 P.M. for the finance department only. I will also send a technician to your office on Thursday to help your team back up your files. Training for finance staff will be available on October 9 at 10:00 A.M.
+Q: When will the software be unavailable? ;; From Friday afternoon to Monday morning | All day Saturday only | During the training sessions | For one hour on Friday ;; De vendredi 15h à lundi 8h. ;; détail
+Q: Why did Ms. Mendez write to the IT department? ;; She has a deadline to meet. | She wants training. | She needs a new computer. | She found a software error. ;; Rapport fiscal à rendre vendredi 17h. ;; cause
+Q: What does Mr. Ahn offer to do? ;; Extend access for finance | Postpone the upgrade | Cancel the training | Replace the software ;; « extend the access time on Friday until 5:30 P.M. for the finance department only ». ;; détail
+Q: When will a technician visit the finance office? ;; On Thursday | On Friday | On Saturday | On October 9 ;; « I will also send a technician… on Thursday ». ;; détail
+Q: What is suggested about the finance department's report? ;; It is due after the planned shutdown begins. | It was already submitted. | It is rejected by the regulator. | It will be sent by mail. ;; Date limite vendredi 17h, alors que la coupure commence à 15h. ;; croisement de documents

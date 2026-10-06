@@ -1,0 +1,153 @@
+@P7S annonce | notice | Notice – Water supply interruption
+H: CITY WATER DEPARTMENT – PUBLIC NOTICE
+X: Residents of the Oakwood district should be aware that water service will be interrupted on Thursday, May 14, between 9:00 A.M. and 3:00 P.M. while crews replace an old main pipe on Garden Road.
+X: Customers are advised to store enough water for drinking and cooking before the interruption begins. Businesses that require water for essential operations may request a temporary tank by calling 555-0192 no later than Tuesday, May 12.
+X: Once service is restored, the water may look cloudy for a short time. This is not harmful, and it should clear after running the tap for a few minutes.
+Q: What is the purpose of the notice? ;; To announce a service interruption | To advertise a new service | To ask for payments | To describe a new law ;; Coupure d'eau programmée de 9h à 15h. ;; objectif
+Q: What can businesses do before May 12? ;; Request a water tank | Apply for a refund | Move to another district | Test their water ;; « may request a temporary tank by calling… no later than Tuesday, May 12 ». ;; détail
+Q: What is indicated about the water after service returns? ;; It may be cloudy at first. | It will be free. | It will not be safe to drink. | It will be warmer than usual. ;; « may look cloudy for a short time ». ;; détail
+
+@P7S e-mail | e-mail | E-mail – Delayed shipment
+H: To: Customer Support <support@homelux.example>
+H: From: Rita Alvarez <r.alvarez@mail.example>
+H: Date: October 3
+H: Subject: Order #48213 – missing items
+X: Hello,
+X: I ordered a dining table and six chairs from your Web site on September 18. The table was delivered on September 25, but the chairs have still not arrived. When I called your hotline on September 30, I was told they would be delivered within three days. It is now October 3, and I have received nothing.
+X: I need the chairs for a family event on October 12. If I cannot receive them before that date, I would like to cancel that part of my order and receive a refund. Please let me know how you plan to resolve this situation.
+X: Regards, Rita Alvarez
+Q: Why did Ms. Alvarez write the e-mail? ;; To complain about a late delivery | To order more furniture | To ask about a product's price | To change her address ;; Les chaises ne sont pas arrivées. ;; objectif
+Q: When was the table delivered? ;; September 25 | September 18 | September 30 | October 3 ;; « The table was delivered on September 25 ». ;; détail
+Q: What does Ms. Alvarez request if the chairs do not arrive before October 12? ;; A partial refund | A replacement table | A new delivery address | A discount on future orders ;; Elle veut annuler la partie « chaises » et être remboursée. ;; détail
+Q: The word "resolve" in paragraph 3 is closest in meaning to ;; solve | decide | repeat | explain ;; « resolve a situation » = régler/résoudre. ;; vocabulaire en contexte
+
+@P7S chat | text chain | Text-message chain
+C: Alan Wright | 10:02 ;; Hi Priya, are you still planning to attend the supplier meeting at 11?
+C: Priya Nair | 10:04 ;; I'm stuck in traffic on Route 9. An accident is blocking two lanes.
+C: Alan Wright | 10:05 ;; Do you think you'll make it on time?
+C: Priya Nair | 10:07 ;; Probably not. I'd say I'll be there around 11:30. Could you start without me?
+C: Alan Wright | 10:08 ;; Sure. I'll present the price comparison first and the delivery schedule after that.
+C: Priya Nair | 10:09 ;; Great. The delivery schedule is in the blue folder on my desk, if you need it.
+C: Alan Wright | 10:10 ;; Got it. Drive safely!
+Q: Why is Ms. Nair late? ;; There is a traffic accident. | Her car broke down. | She missed a train. | She went to the wrong office. ;; « An accident is blocking two lanes ». ;; cause
+Q: At 10:08, what does Mr. Wright mean when he writes, "Sure"? ;; He agrees to begin the meeting without her. | He is certain about the route. | He is willing to cancel the meeting. | He knows where the folder is. ;; Réponse à « Could you start without me? ». ;; intention implicite
+Q: What does Ms. Nair say is on her desk? ;; A delivery schedule | A price list | A contract | A laptop ;; « The delivery schedule is in the blue folder on my desk ». ;; détail
+
+@P7S article | article | Article – Local bakery expands
+H: BUSINESS NEWS
+X: Harvest Moon Bakery, a family-run business founded in 2009, has announced plans to open a second location in the Riverside shopping center. [1] The new shop, which will open in early March, will employ twelve people and offer a larger selection of gluten-free products.
+X: Owner Jacob Meyer says the decision came after customer demand grew steadily over the past two years. [2] "We often have lines out the door at our original shop," he explained. "A second location will let us serve more people without sacrificing quality." [3]
+X: Mr. Meyer also plans to launch a home delivery service in the summer. [4] Residents who wish to apply for a job at the new shop can submit their résumés on the bakery's Web site until January 31.
+QF: In which of the positions marked [1], [2], [3], and [4] does the following sentence best belong? "The vehicles used for delivery will be fully electric." ;; [1] | [2] | [3] | [4] ;; 4 ;; La phrase prolonge directement l'annonce du service de livraison à domicile (position [4]). ;; insertion de phrase
+Q: What is the article mainly about? ;; A business expansion | A new law | A food festival | A hiring problem ;; Ouverture d'une seconde boulangerie. ;; sujet principal
+Q: What is suggested about the original bakery? ;; It is very popular. | It will close soon. | It is located in the shopping center. | It does not sell gluten-free bread. ;; « We often have lines out the door ». ;; inférence
+Q: How can people apply for a job? ;; By submitting a résumé online | By visiting the bakery | By calling Mr. Meyer | By attending an event ;; « submit their résumés on the bakery's Web site ». ;; détail
+
+@P7S publicité | advertisement | Advertisement – Language school
+H: LINGUA PLUS – ENGLISH FOR PROFESSIONALS
+X: Improve your business English in just twelve weeks! Our evening courses are designed for busy professionals, with small groups of no more than eight students.
+L: Classes meet twice a week from 6:30 P.M. to 8:30 P.M.
+L: All instructors are native speakers with business experience.
+L: Free placement test for new students
+L: Online practice sessions are included in the tuition fee.
+X: Register before August 31 and receive 15 percent off the tuition. Students who complete the course with a certificate can also apply for a free advanced module. To sign up, visit www.linguaplus.example or come to our center at 24 Mill Street.
+Q: Who is the advertisement intended for? ;; Working adults | University students | Children | Retired people ;; « busy professionals ». ;; public cible
+Q: What is NOT mentioned as part of the course? ;; Job placement | Online practice | A placement test | Small groups ;; Pas de placement professionnel (job placement) ; les trois autres sont cités. ;; NOT question
+Q: What should people do to get a discount? ;; Register by August 31 | Take a placement test | Bring a friend | Complete an advanced module ;; « Register before August 31 and receive 15 percent off ». ;; détail
+
+@P7S mémo | memo | Memo – Office supplies
+H: MEMO
+H: To: All department heads
+H: From: Natalie Cruz, Purchasing
+H: Date: February 6
+H: Re: New ordering procedure
+X: Beginning March 1, all orders for office supplies must be placed through the new online system instead of by e-mail. Each department will receive a monthly budget, and orders that exceed this amount will require approval from the finance office.
+X: A training session will be held in Conference Room B on February 20 at 10:00 A.M. Attendance is not required, but is recommended for those who regularly order supplies. A written guide will also be posted on the intranet.
+X: Please note that urgent requests, such as supplies needed within 24 hours, can still be made by calling extension 114.
+Q: What is the memo about? ;; A change in ordering procedure | A budget reduction | A new supplier | A staff meeting ;; Nouveau système de commande en ligne. ;; sujet principal
+Q: What will happen if a department's order is over its budget? ;; It will require approval. | It will be rejected. | It will be delayed one month. | It will be sent by e-mail. ;; « will require approval from the finance office ». ;; détail
+Q: According to the memo, what should staff do for urgent requests? ;; Call an extension | Go to Conference Room B | Use the intranet | E-mail the finance office ;; « calling extension 114 ». ;; détail
+
+@P7S formulaire | form | Invoice
+H: SUMMIT PRINTING SERVICES – INVOICE #7731
+H: Customer: Greenway Dental Clinic
+H: Date: June 10 | Due date: July 10
+R: Item | Quantity | Unit price | Total
+R: Appointment cards | 500 | $0.10 | $50.00
+R: Brochures | 200 | $0.75 | $150.00
+R: Banners | 2 | $45.00 | $90.00
+R: Rush delivery fee | 1 | $25.00 | $25.00
+X: Subtotal: $315.00. Discount (10% for returning customers): –$31.50. Total due: $283.50.
+X: A late fee of 2 percent per month will apply to payments received after the due date. We accept bank transfers and major credit cards.
+Q: What is the total amount of the order before the discount? ;; $315.00 | $283.50 | $290.00 | $340.00 ;; 50 + 150 + 90 + 25 = 315. ;; calcul
+Q: Why did Greenway Dental Clinic receive a discount? ;; It has ordered from the company before. | It paid in advance. | It ordered banners. | It requested rush delivery. ;; « 10% for returning customers ». ;; détail
+Q: What is indicated about late payments? ;; An extra charge will be added. | They will be refused. | The order will be cancelled. | A phone call will be made. ;; « A late fee of 2 percent per month ». ;; détail
+
+@P7S lettre | letter | Letter – Conference invitation
+H: International Marketing Forum
+H: 14 Westbrook Avenue, Chicago
+X: Dear Ms. Moreau,
+X: On behalf of the International Marketing Forum, I am pleased to invite you to speak at our annual conference, to be held from November 4 to 6 at the Lakeview Convention Center. We were very impressed by your presentation on digital advertising at last year's event in Paris, and we believe our audience would greatly benefit from your insights.
+X: We would be happy to cover your round-trip airfare and three nights at the Lakeview Hotel. In addition, we offer a speaker's fee of $1,500. Your session would be scheduled for the morning of November 5 and last approximately fifty minutes.
+X: Please let me know by September 15 whether you can accept this invitation. If so, I will send you the details about the registration of speakers. Sincerely, Daniel Hart, Program Director
+Q: Why was Ms. Moreau invited? ;; Because of a previous presentation | Because she is a company founder | Because she won an award | Because she lives in Chicago ;; « impressed by your presentation… at last year's event ». ;; cause
+Q: What will the Forum pay for? ;; Travel and hotel costs | A conference ticket | Meals only | Advertising ;; « round-trip airfare and three nights at the Lakeview Hotel ». ;; détail
+Q: What is Ms. Moreau asked to do by September 15? ;; Respond to the invitation | Send a photograph | Book her hotel | Submit a presentation ;; « let me know… whether you can accept ». ;; demande
+
+@P7S offre d'emploi | job posting | Job advertisement – Customer Service Representative
+H: Brightline Telecom is hiring!
+X: Position: Customer Service Representative (Full time)
+X: Location: Dublin Office
+X: Brightline Telecom, a leading provider of mobile services, is seeking enthusiastic people to join our customer support team. The successful candidate will respond to customer inquiries by phone and e-mail, resolve billing problems, and record all contacts in our database.
+L: At least one year of experience in a customer-facing role
+L: Excellent written and spoken English; a second language is an advantage
+L: Ability to work some weekends
+X: We offer a competitive salary, paid training, and the possibility of promotion within the company. To apply, send your résumé and a cover letter to jobs@brightline.example by April 30. Only selected candidates will be contacted.
+Q: What is one duty of the position? ;; Handling billing problems | Selling phones in a store | Training new staff | Repairing equipment ;; « resolve billing problems ». ;; détail
+Q: Which skill is described as an advantage? ;; Speaking another language | Knowledge of finance | Computer programming | A driver's license ;; « a second language is an advantage ». ;; détail
+Q: What are applicants asked to submit? ;; A résumé and a cover letter | Two references | A completed form | A portfolio ;; « send your résumé and a cover letter ». ;; demande
+
+@P7S page web | web page | Web page – Return policy
+H: TrailPeak Outdoor Gear – Returns & Exchanges
+X: We want you to be completely satisfied with your purchase. Unused items in their original packaging may be returned within 45 days of delivery for a full refund. Items that have been worn, washed, or damaged cannot be accepted.
+X: To start a return, log in to your account and select "Return an item." You will receive a prepaid shipping label by e-mail. Refunds are issued to the original payment method within seven business days after the item is received at our warehouse.
+X: Please note: Customized products and gift cards are final sale and cannot be returned. If you received a defective item, contact us within 14 days, and we will send a replacement at no cost.
+Q: What is a requirement for a full refund? ;; The item must be unused. | The item must be washed. | A receipt must be mailed. | The purchase must be in-store. ;; « Unused items in their original packaging ». ;; condition
+Q: How will customers receive a shipping label? ;; By e-mail | By post | At a store | By phone ;; « prepaid shipping label by e-mail ». ;; détail
+Q: Which product can NOT be returned? ;; A gift card | A pair of boots | A tent | A backpack ;; « Customized products and gift cards are final sale ». ;; NOT question
+
+@P7S information | schedule | Schedule – Training workshop
+H: Annual Staff Development Day – Friday, September 20
+R: Time | Session | Room | Presenter
+R: 9:00 – 9:30 | Welcome and Overview | Auditorium | Karen Lee
+R: 9:30 – 11:00 | Effective Communication | Room 201 | Omar Haddad
+R: 11:00 – 12:00 | Time Management | Room 202 | Sonia Bell
+R: 12:00 – 1:00 | Lunch | Cafeteria | —
+R: 1:00 – 2:30 | New Software Tools | Computer Lab | Tim Brooks
+R: 2:30 – 3:00 | Closing Remarks | Auditorium | Karen Lee
+X: Participants are asked to bring their own laptops to the Computer Lab session. Coffee and snacks will be available in the lobby throughout the morning.
+Q: Who will speak at the beginning and the end of the day? ;; Karen Lee | Omar Haddad | Sonia Bell | Tim Brooks ;; Karen Lee ouvre et clôt la journée. ;; détail
+Q: Where will the lunch take place? ;; In the cafeteria | In the auditorium | In Room 202 | In the computer lab ;; Tableau : Lunch – Cafeteria. ;; détail
+Q: What should employees bring to the afternoon session? ;; A laptop | A notebook | A lunch | A signed form ;; « bring their own laptops to the Computer Lab session ». ;; détail
+
+@P7S article | article | Article – Remote working study
+H: Study: Flexible Hours Boost Employee Satisfaction
+X: A survey of 2,400 employees at mid-sized firms has found that flexible working hours lead to higher job satisfaction, according to researchers at Halden University. [1] Participants who were allowed to choose their start and finish times reported 23 percent less stress than those who worked fixed hours.
+X: However, the study also found that flexible schedules can create challenges for team coordination. [2] "Managers need to set clear core hours when everyone is available," said lead researcher Dr. Anna Berg. [3] "Without those, collaboration suffers."
+X: Dr. Berg recommends that companies test flexible policies for a trial period before adopting them company-wide. [4] The full report will be available on the university's Web site next month.
+QF: In which of the positions marked [1], [2], [3], and [4] does the following sentence best belong? "Meetings, in particular, were harder to schedule." ;; [1] | [2] | [3] | [4] ;; 2 ;; La phrase illustre le problème de coordination d'équipe évoqué juste avant [2]. ;; insertion de phrase
+Q: What did researchers find about employees with flexible hours? ;; They felt less stress. | They worked fewer hours. | They earned more money. | They changed jobs more often. ;; 23 % de stress en moins. ;; détail
+Q: What does Dr. Berg advise managers to do? ;; Establish core hours | Reduce meetings | Hire more staff | Monitor start times ;; « set clear core hours ». ;; suggestion
+Q: What is suggested about the full report? ;; It has not yet been published. | It is only for managers. | It costs money. | It was written by a company. ;; « will be available… next month » : pas encore publié. ;; inférence
+
+@P7S e-mail | e-mail | E-mail – Office relocation
+H: To: All Staff
+H: From: Gloria Mendes, Office Manager
+H: Date: January 14
+H: Subject: Office move
+X: As announced at last month's meeting, our company will move to the new building at 88 Harbor Street on the weekend of February 22. Movers will pack and transport all furniture, but employees are responsible for packing their personal belongings and any documents on their desks.
+X: Boxes will be delivered to each department on February 10. Please label each box with your name and your new desk number, which will be listed on the floor plan attached to this e-mail. Items that are not labeled may not be delivered to the right place.
+X: The new building has a fitness room and a café on the ground floor. Parking permits are available from my office. We will reopen at the new address on Monday, February 24.
+Q: What will employees be required to do before the move? ;; Pack their personal items | Move their own furniture | Rent a vehicle | Update their e-mail address ;; « responsible for packing their personal belongings ». ;; détail
+Q: When will boxes be delivered? ;; On February 10 | On January 14 | On February 22 | On February 24 ;; « Boxes will be delivered to each department on February 10 ». ;; détail
+Q: What is attached to the e-mail? ;; A floor plan | A parking permit | A budget | A list of movers ;; « the floor plan attached to this e-mail ». ;; détail

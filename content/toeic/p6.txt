@@ -1,0 +1,90 @@
+@P6 e-mail | e-mail | Staff parking
+X: To: All employees
+X: From: Facilities Management
+X: Subject: New parking arrangements
+X: Beginning on June 1, the north parking lot will be closed for [1] ____. During this time, employees are asked to use the visitor lot on Pine Street. A free shuttle bus will run every ten minutes between the visitor lot and the main entrance.
+X: [2] ____, employees who carpool will receive a reserved space in the south lot. To apply, please complete the online form on the intranet. [3] ____. We expect the work to be completed by the end of August.
+X: We [4] ____ for any inconvenience this may cause and thank you for your cooperation.
+Q: construction | constructive | constructed | constructing ;; Après la préposition « for », un nom : « construction ». ;; nom
+Q: In addition | Otherwise | For example | Nevertheless ;; Ajout d'un avantage : « In addition ». ;; connecteur
+Q: Spaces are limited, so early applications are recommended. | The shuttle bus is operated by a private company. | Last year, the lot was repaved. | The visitor lot has a new entrance. ;; La phrase doit suivre « To apply, please complete… » : elle parle du nombre limité de places. ;; insertion de phrase
+Q: apologize | apologizes | apologized | apologizing ;; Sujet « We » + présent : « apologize ». ;; temps verbal
+
+@P6 lettre | letter | Subscription renewal
+X: Dear Mr. Jordan,
+X: Your annual subscription to Business Weekly will [1] ____ on March 31. To continue receiving the magazine without interruption, please renew before that date.
+X: If you renew now, you will [2] ____ a 20 percent discount on the regular price. [3] ____. You can also choose a digital-only subscription, which is even cheaper.
+X: To renew, simply visit our Web site [4] ____ call our customer service line at 555-0127.
+X: Sincerely, The Subscription Team
+Q: expire | expel | explode | exclude ;; « expire » = arriver à échéance (abonnement). ;; vocabulaire
+Q: receive | receiving | received | receipt ;; « will + base verbale ». ;; forme verbale
+Q: This offer is valid for new and existing subscribers. | Our magazine was founded in 1950. | The delivery truck will arrive on Monday. | Mr. Jordan has been a subscriber for ten years. ;; La phrase doit prolonger l'offre de réduction. ;; insertion de phrase
+Q: or | but | so | yet ;; Deux options : site ou téléphone → « or ». ;; connecteur
+
+@P6 note interne | memo | Safety training
+X: To: All warehouse staff
+X: From: Hector Ruiz, Operations Manager
+X: Date: September 12
+X: All warehouse employees are [1] ____ to attend a mandatory safety training session on September 25. The session will cover the correct use of forklifts and emergency procedures.
+X: Employees who have [2] ____ completed the course within the past twelve months do not need to attend. [3] ____. Please bring your employee badge to the session.
+X: If you cannot attend on the 25th, [4] ____ Ms. Paula Chen in the human resources department before September 20.
+Q: required | requiring | require | requirement ;; « are required to » : voix passive. ;; voix passive
+Q: already | yet | soon | ever ;; « have already completed » (présent perfect, sens positif). ;; adverbe
+Q: A list of those employees will be posted on the notice board. | Forklifts were purchased last year. | The warehouse will close in October. | Safety shoes are available in the store. ;; Phrase qui suit logiquement la dispense : une liste affichée. ;; insertion de phrase
+Q: contact | contacting | contacts | to contact ;; Impératif en début de proposition principale. ;; impératif
+
+@P6 article | article | New café opens
+X: A new café, Bean & Leaf, opened its doors on Main Street last Saturday. The owner, Samira Hassan, left a career in finance to [1] ____ her dream of running a small business.
+X: The café offers a [2] ____ menu of sandwiches and pastries made with local ingredients. [3] ____. Ms. Hassan says that she wants the café to be a place where neighbors can meet and relax.
+X: "We already have many loyal customers," she said. "I am [4] ____ grateful for their support."
+Q: pursue | pursuit | pursuing | pursued ;; « to » + infinitif. ;; infinitif
+Q: seasonal | season | seasonally | seasons ;; Adjectif devant « menu ». ;; famille de mots
+Q: Free Wi-Fi is available to all customers. | Main Street is closed to traffic. | The bank has moved to a new building. | The menu was designed in 1995. ;; Cette phrase décrit le café comme un lieu convivial. ;; insertion de phrase
+Q: extremely | extreme | extremity | extremes ;; Adverbe devant l'adjectif « grateful ». ;; adverbe
+
+@P6 annonce | notice | Elevator maintenance
+X: NOTICE TO TENANTS
+X: The elevators in Building B will be [1] ____ for routine maintenance on Saturday, April 8, from 8:00 A.M. to 4:00 P.M. During this period, tenants will need to use the stairs.
+X: Residents who have difficulty climbing stairs should [2] ____ the building manager in advance. [3] ____. We apologize for any [4] ____ and appreciate your understanding.
+Q: unavailable | unavailably | unavailability | unavailable to ;; « be + adjectif » : « unavailable ». ;; famille de mots
+Q: notify | notice | notified | notifying ;; « should + base verbale ». ;; modal
+Q: Arrangements can be made to assist them. | The building was constructed in 2005. | Rents will increase next year. | A new tenant moved in last week. ;; Suite logique de la phrase précédente (aide pour les personnes en difficulté). ;; insertion de phrase
+Q: inconvenience | inconvenient | inconveniently | convenience ;; Après « any », un nom : « inconvenience ». ;; nom
+
+@P6 e-mail | e-mail | Order confirmation
+X: Dear Ms. Silva,
+X: Thank you for your order. Your items [1] ____ on May 3 and should arrive within five business days.
+X: [2] ____ you would like to track your package, please click on the link below. [3] ____. If you are not satisfied with your purchase, you may return it within thirty days for a full refund.
+X: We look forward to [4] ____ you again soon.
+Q: were shipped | shipping | have shipped | ship ;; Voix passive passée : « were shipped ». ;; voix passive
+Q: If | Although | Unless | During ;; Proposition conditionnelle : « If you would like… ». ;; conjonction
+Q: A tracking number is included in this message. | Your account will be closed tomorrow. | Our store is hiring new employees. | Shipping rates will rise next year. ;; Phrase qui prolonge « track your package ». ;; insertion de phrase
+Q: serving | serve | served | to serve ;; « look forward to + -ing ». ;; gérondif
+
+@P6 e-mail | e-mail | Job offer
+X: Dear Mr. Ortega,
+X: I am delighted to [1] ____ you the position of Marketing Assistant at Clearview Media. Your starting salary will be $42,000 per year, [2] ____ benefits including health insurance and paid vacation.
+X: [3] ____. Please sign and return the enclosed contract by Friday, October 4. Your first day will be Monday, October 14, at 9:00 A.M.
+X: Should you have any questions, [4] ____ feel free to contact me.
+Q: offer | offers | offered | offering ;; « to + infinitif ». ;; infinitif
+Q: along with | despite | instead of | whereas ;; « along with » = ainsi que. ;; préposition
+Q: We were impressed by your skills and experience. | The interview lasted two hours. | Our offices are on the third floor. | The previous assistant resigned. ;; Phrase d'accompagnement avant la demande de signature. ;; insertion de phrase
+Q: please | pleased | pleasing | pleasure ;; « please feel free to » : formule de politesse. ;; vocabulaire
+
+@P6 communiqué | press release | Factory expansion
+X: SPRINGFIELD – Alpha Motors announced yesterday that it will [1] ____ its Springfield factory by adding a new assembly line. The project is expected to create two hundred jobs over the next three years.
+X: "This investment shows our [2] ____ to the local community," said CEO Linda Park. [3] ____. Construction will begin in January.
+X: The company [4] ____ that production will increase by thirty percent once the new line is operational.
+Q: expand | expel | expect | explain ;; « expand a factory » = agrandir l'usine. ;; vocabulaire
+Q: commitment | commit | committed | committing ;; Après « our », un nom. ;; nom
+Q: The local government has approved the plan. | The CEO has resigned. | Sales dropped last quarter. | The factory will be closed permanently. ;; Phrase qui annonce la suite (début des travaux). ;; insertion de phrase
+Q: estimates | estimating | estimate | estimation ;; Verbe conjugué au présent simple (3e pers.). ;; temps verbal
+
+@P6 page web | web page | Fitness club
+X: Welcome to PowerFit Gym! We offer [1] ____ equipment, expert trainers, and classes for all levels. Membership options include monthly, six-month, and annual plans.
+X: New members receive a [2] ____ fitness assessment with a personal trainer. [3] ____. Our facility is open daily from 5:00 A.M. to 11:00 P.M.
+X: To learn more, [4] ____ us at 555-0188 or stop by any time.
+Q: state-of-the-art | state | stately | stating ;; « state-of-the-art equipment » = équipement de pointe. ;; vocabulaire
+Q: complimentary | complimenting | compliment | complimentarily ;; Adjectif : « complimentary » = gratuit. ;; vocabulaire
+Q: Annual members also enjoy a discount on personal training. | The gym was closed for repairs last year. | Parking is prohibited. | The trainers are all new. ;; Phrase liée aux plans d'abonnement présentés plus haut. ;; insertion de phrase
+Q: call | calls | calling | called ;; Impératif : base verbale. ;; impératif

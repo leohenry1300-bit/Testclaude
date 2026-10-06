@@ -1,0 +1,72 @@
+P1: 👩‍💻 💻 ☕ ;; office ;; A woman is working on a laptop computer. | A man is answering a telephone. | A woman is carrying some boxes. | Some people are attending a meeting. ;; La scène montre une femme devant un ordinateur portable. Les autres phrases décrivent des actions ou des personnes absentes. ;; personne seule
+P1: 🧑‍🔧 🔧 🚗 ;; garage ;; A mechanic is working on a car. | A man is washing a window. | A driver is parking in front of a house. | Some tools are being sold at a store. ;; Le mécanicien répare une voiture (tool + car). « washing a window » et « parking » ne correspondent pas. ;; personne + objet
+P1: 🧑‍🍳 🍳 🍲 ;; kitchen ;; A chef is preparing some food. | A waiter is taking an order. | A man is washing the dishes. | Some customers are seated at a counter. ;; Le cuisinier prépare un plat. Piège : « waiter », « customers » ne sont pas visibles. ;; personne seule
+P1: 🧑‍💼 📊 👥 ;; office ;; A man is giving a presentation. | A woman is writing on a whiteboard. | Some people are leaving the room. | A group is having lunch together. ;; Un homme présente un graphique devant un groupe. ;; groupe
+P1: 📦 📦 📦 🧑‍🏭 ;; warehouse ;; Boxes are stacked on the floor. | A worker is driving a truck. | Some shelves are being cleaned. | A man is unpacking a suitcase. ;; Des cartons sont empilés : voix passive / état (« are stacked »). ;; objets
+P1: 🚌 🧍 🧍 🌳 ;; street ;; Some people are waiting for a bus. | A bus is crossing a bridge. | Passengers are boarding an airplane. | A man is riding a bicycle. ;; Des gens attendent à un arrêt de bus. ;; groupe en extérieur
+P1: 🛒 🥦 🍎 👩 ;; store ;; A woman is shopping for groceries. | A cashier is scanning some items. | A man is cooking vegetables. | Some fruit is being delivered. ;; Une femme fait ses courses (shopping). ;; personne seule
+P1: 🪜 🧑‍🔧 🏠 ;; outdoor ;; A man is climbing a ladder. | A man is painting a fence. | A house is being built. | A ladder is leaning against a tree. ;; L'homme monte à l'échelle. ;; personne + objet
+P1: 📞 👨‍💼 🖥️ ;; office ;; A man is talking on the telephone. | A man is typing on a keyboard. | Some papers are being printed. | A man is shaking hands with a client. ;; Le téléphone est le point clé de l'image. ;; personne + objet
+P1: 🚲 🧑 🌳 ;; outdoor ;; A man is riding a bicycle. | Some bicycles are parked in a row. | A woman is jogging in a park. | A man is repairing a bicycle. ;; Le cycliste roule : « is riding ». ;; personne en mouvement
+P1: 🧑‍⚕️ 🩺 🧑 ;; office ;; A doctor is examining a patient. | A nurse is writing a prescription. | A man is waiting in a lobby. | Some patients are leaving a hospital. ;; Le médecin examine un patient. ;; deux personnes
+P1: 👩‍🏫 📚 🧑‍🎓 ;; office ;; A woman is speaking to a student. | A student is borrowing a book. | Some books are being shelved. | A teacher is erasing a blackboard. ;; Une enseignante parle à un élève. ;; deux personnes
+P2: When is the deadline for the budget report? ;; By the end of next week. | In the conference room. | Yes, it's very long. ;; « When » appelle une indication de temps. ;; question WH
+P2: Where can I find the printer paper? ;; In the supply closet. | I'll print two copies. | About five dollars. ;; « Where » → un lieu. « print » est un piège de son répété. ;; question WH
+P2: Who is leading the training session tomorrow? ;; Ms. Park from Human Resources. | In room 204. | It lasts about two hours. ;; « Who » → une personne. ;; question WH
+P2: Why was the meeting canceled? ;; The manager is out of town. | At three o'clock. | Yes, I canceled it. ;; « Why » → une raison. ;; question WH
+P2: How much does the monthly parking pass cost? ;; Fifty dollars. | Near the main entrance. | About twenty minutes. ;; « How much » → un prix. ;; question WH
+P2: Which laptop did you order? ;; The lighter one. | Yes, in the morning. | On the second floor. ;; « Which » → un choix (the lighter one). ;; question WH
+P2: Did you send the invoice to the client? ;; Yes, I emailed it this morning. | At the new office downtown. | Two hundred and fifty dollars. ;; Question fermée → « Yes » + précision. ;; question oui/non
+P2: Isn't the sales conference in Chicago this year? ;; No, it was moved to Denver. | Yes, a sales representative. | I'll check the conference. ;; Question négative : la réponse corrige l'information. ;; question négative
+P2: Would you like to review the contract now or after lunch? ;; After lunch would be better. | Yes, it's a long contract. | The restaurant down the street. ;; Question à choix : on ne répond pas par oui/non. ;; question à choix
+P2: Could you help me move these boxes? ;; Sure, where should I put them? | Yes, it was last week. | They arrived by truck. ;; Demande d'aide → accord. ;; demande
+P2: I think we should hire another designer. ;; I agree, our workload has doubled. | Yes, he designed it. | At the design studio. ;; Affirmation → réaction logique (accord). ;; affirmation
+P2: The projector isn't working again. ;; I'll call the technician. | Yes, I'd like a project. | It's in room 3B. ;; « projector » / « project » : piège phonétique. ;; affirmation
+P2: Why don't we take a short break? ;; Good idea. We've been working for hours. | They broke the window. | At about ten minutes. ;; « Why don't we » = suggestion. ;; suggestion
+P2: What time does the museum open? ;; At ten o'clock on weekdays. | It's an art museum. | Yes, it's open. ;; « What time » → heure. ;; question WH
+P2: How often do you travel for work? ;; About twice a month. | By plane, usually. | For three days. ;; « How often » → fréquence. ;; question WH
+P2: Who should I send the receipts to? ;; The accounting department. | Yes, I received it. | Last Friday. ;; « Who » → service ou personne. ;; question WH
+P2: Where did Ms. Rossi go? ;; She's at a client meeting. | Yes, she did. | Around three o'clock. ;; « Where » → lieu. ;; question WH
+P2: You've already finished the presentation, haven't you? ;; Yes, I sent it to everyone this morning. | A presentation room is available. | I've seen the new office. ;; Question tag : on confirme. ;; question tag
+P2: Do you know when the new employee starts? ;; I think it's next Monday. | Yes, he's very experienced. | In the HR office. ;; Question indirecte « when » → temps. ;; question indirecte
+P2: Should we order lunch or go to the cafeteria? ;; Let's eat in the cafeteria. | Yes, I ordered it last night. | The lunch was delicious. ;; Question à choix. ;; question à choix
+P2: Can I borrow your stapler? ;; Of course, it's on my desk. | Yes, the paper is stapled. | A new office supplier. ;; Demande → accord + précision. ;; demande
+P2: Where is the nearest subway station? ;; Two blocks from here. | Every ten minutes. | Yes, I take the subway. ;; « Where » → distance / lieu. ;; question WH
+P2: Why is the lobby so crowded? ;; There's a job fair today. | It's on the third floor. | Yes, it's quite large. ;; « Why » → raison. ;; question WH
+P2: How did the interview go? ;; Pretty well, I think. | In the main conference room. | Next week, probably. ;; « How did... go » → appréciation. ;; question WH
+P2: Who's going to pick up the clients from the airport? ;; Mr. Bell volunteered. | At terminal two. | They're flying from Seoul. ;; « Who » → nom de personne. ;; question WH
+P2: What's the best way to get to the convention center? ;; You can take the number 5 bus. | It starts at nine. | A registration fee. ;; « way to get » → moyen de transport. ;; question WH
+P2: Have you seen the new catalog? ;; Not yet. Is it available online? | I'll be at the office all day. | Five hundred copies, I think. ;; Réponse indirecte naturelle. ;; question oui/non
+P2: I can't log in to my account. ;; Have you tried resetting your password? | Yes, an account manager. | At the bank on Main Street. ;; Problème → suggestion de solution. ;; affirmation
+P2: Could you tell me how to get to the training room? ;; It's down the hall on your left. | About an hour. | Yes, I trained there. ;; « how to get to » → indication de chemin. ;; question indirecte
+P2: When will the quarterly results be announced? ;; Probably sometime next week. | In the annual report. | Mostly in Asia. ;; « When » → moment. ;; question WH
+P2: Why did the shipment arrive late? ;; There was a problem at customs. | Two large boxes. | By express mail. ;; « Why » → cause. ;; question WH
+P2: Which seats did you reserve for the show? ;; Two in the front row. | At eight o'clock. | Yes, I enjoyed it. ;; « Which seats » → description des places. ;; question WH
+P2: Is the office closed on Friday? ;; Only in the afternoon. | By the front door. | Please close it. ;; Réponse nuancée sans yes/no. ;; question oui/non
+P2: Could you turn down the music? ;; Sorry, I didn't realize it was loud. | Yes, it's a musical. | Turn left at the corner. ;; « music » / « musical » : piège. ;; demande
+P2: Where should we put the new sofa? ;; Next to the window would be nice. | It's very comfortable. | Two weeks ago. ;; « Where » → emplacement. ;; question WH
+P2: Do you prefer the blue or the green design? ;; Neither, I'd go with the gray one. | Yes, it's designed well. | In the design department. ;; Question à choix : réponse « neither ». ;; question à choix
+P2: Who ordered all these office supplies? ;; I think it was Ms. Duncan. | Yes, they're on sale. | Next to the filing cabinet. ;; « Who » → personne. ;; question WH
+P2: How long will the renovation take? ;; Around three weeks. | Every Tuesday. | In the lobby area. ;; « How long » → durée. ;; question WH
+P2: What did you think of the new manager's proposal? ;; It needs a little more work. | Last Thursday afternoon. | At the end of the hall. ;; « What did you think » → opinion. ;; question WH
+P2: Haven't we met before? ;; Yes, at the trade show in Boston. | It's a long meeting. | I'd like to meet her. ;; « met / meeting / meet » : sons proches. ;; question négative
+P2: Please remember to lock the door when you leave. ;; I always do. | Yes, it's a heavy door. | Around the corner. ;; Rappel → « I always do ». ;; affirmation
+P2: Do you want me to print the agenda or send it by e-mail? ;; E-mail is fine. | He agreed to the plan. | At the front desk. ;; Question à choix. ;; question à choix
+P2: Where will the awards ceremony be held? ;; In the grand ballroom. | Yes, she won. | For the best employee. ;; « Where » → lieu. ;; question WH
+P2: Our cafeteria is going to close for repairs. ;; Where will we have lunch, then? | Yes, it's near the pharmacy. | At about half past twelve. ;; Réaction logique par une question. ;; affirmation
+P2: Why did you apply for this position? ;; I'd like to work in the travel industry. | Yes, I applied. | By the end of the month. ;; « Why » → motivation. ;; question WH
+P2: How can I get a refund? ;; You'll need to bring your receipt. | A hundred dollars. | No, I can't afford it. ;; « How can I » → procédure. ;; question WH
+P2: When did Mr. Silva leave for the airport? ;; About an hour ago. | A flight to Madrid. | At gate five. ;; « When did » → moment passé. ;; question WH
+P2: The elevator is out of order. ;; Then we'll take the stairs. | Yes, in the lobby. | I ordered it yesterday. ;; « order » / « out of order » : piège. ;; affirmation
+P2: What's the topic of today's workshop? ;; Effective time management. | On the fifth floor. | It's an hour long. ;; « topic » → sujet. ;; question WH
+P2: Would you like some more coffee? ;; No, thanks, I've had enough. | At the cafe on the corner. | I'll see you next time. ;; Proposition → refus poli. ;; offre
+P2: Does this bus go to the stadium? ;; No, you need the number 12. | Tickets are twenty dollars. | The game starts at seven. ;; Question oui/non → « No » + correction. ;; question oui/non
+P2: Who wrote this report? ;; The research team did. | About the sales figures. | Yes, I wrote a letter. ;; « Who » → groupe de personnes. ;; question WH
+P2: Do you have any questions about the schedule? ;; Just one about Friday. | It's five pages long. | At two o'clock tomorrow. ;; Réponse naturelle (« Just one »). ;; question oui/non
+P2: What happened to the sales brochures? ;; They're being reprinted. | Yes, they sell well. | In a brochure rack. ;; « What happened » → explication. ;; question WH
+P2: Can you recommend a good restaurant near the hotel? ;; There's an Italian place around the corner. | Yes, I made a reservation. | The hotel has three hundred rooms. ;; Demande de conseil. ;; demande
+P2: You're attending the seminar, aren't you? ;; Yes, I registered last week. | The seminar room is upstairs. | I'd like the window seat. ;; Question tag → confirmation. ;; question tag
+P2: Why isn't the copier working? ;; It's out of toner. | I copy them twice. | Yes, in the corner. ;; « Why » → cause. ;; question WH
+P2: How do I get a parking permit? ;; You can apply online. | By the east gate. | For ten dollars. ;; « How do I » → démarche. ;; question WH
+P2: The client wants the revised design by Monday. ;; That's only two days away. | At the client's office. | She designs very well. ;; Réaction : constat sur le délai. ;; affirmation
+P2: Whose turn is it to lead the weekly meeting? ;; I think it's Jun's. | At nine thirty. | Yes, every week. ;; « Whose » → possesseur. ;; question WH

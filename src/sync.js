@@ -97,7 +97,10 @@ function mergeStates(L, R) {
     revlog.sort((a, b) => a[0] - b[0]);
     if (revlog.length > L.revlog.length) localChanged = true;
     if (revlog.length > R.revlog.length) remoteChanged = true;
-    const data = normalizeState({ version: 6, decks, cards, presets, stats, settings, revlog, deleted: tomb, updatedAt: Math.max(L.updatedAt || 0, R.updatedAt || 0) });
+    const toeic = mergeToeic(L.toeic || normalizeToeic(), R.toeic || normalizeToeic());
+    if (toeic.attempts.length > (L.toeic ? L.toeic.attempts.length : 0)) localChanged = true;
+    if (toeic.attempts.length > (R.toeic ? R.toeic.attempts.length : 0)) remoteChanged = true;
+    const data = normalizeState({ version: 6, decks, cards, presets, stats, settings, revlog, deleted: tomb, toeic, updatedAt: Math.max(L.updatedAt || 0, R.updatedAt || 0) });
     return { data, localChanged, remoteChanged };
 }
 
@@ -164,14 +167,14 @@ const Cloud = {
     },
     async sync(manual = false) {
         if (!app.data.settings.cloudSync) { this.setStatus('off'); return; }
-        if (app.session) { this.deferred = true; return; }
+        if (app.session || app.examActive()) { this.deferred = true; return; }
         this.setStatus('busy');
         try {
             if (this.key() && !SyncCrypto.available()) throw new Error('Chiffrement indisponible (ouvre l\'app en https)');
             const row = await this.pull();
             if (!row || !row.data) { await this.push(); if (manual) app.toast('Sauvegarde envoyée dans le cloud', 'success'); return; }
             const remote = await this.decode(row);
-            if (app.session) { this.deferred = true; this.setStatus('ok'); return; }
+            if (app.session || app.examActive()) { this.deferred = true; this.setStatus('ok'); return; }
             const m = mergeStates(app.data, remote);
             if (m.localChanged) {
                 m.data.settings.syncKey = app.data.settings.syncKey; m.data.settings.cloudSync = app.data.settings.cloudSync;

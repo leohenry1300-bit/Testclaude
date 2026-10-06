@@ -1,0 +1,78 @@
+@P4 annonce de gare
+T: Attention, passengers traveling to Boston on the 3:40 express. Due to track maintenance, this train will depart from platform six instead of platform two. Please note that the departure time remains the same. Passengers with large luggage may use the elevator near the ticket office. We apologize for the inconvenience and thank you for your patience.
+Q: Where is this announcement most likely being made? ;; At a train station | At an airport | At a bus depot | At a ferry terminal ;; « platform », « express », « ticket office » : une gare ferroviaire. ;; lieu
+Q: What has changed? ;; The departure platform | The departure time | The destination | The ticket price ;; Le train partira du quai 6 au lieu du quai 2. ;; détail
+Q: According to the speaker, what can passengers with large luggage do? ;; Use an elevator | Check in early | Board first | Ask for assistance by phone ;; « may use the elevator near the ticket office ». ;; détail
+
+@P4 message vocal
+T: Hello, Ms. Brown, this is Greg Hall from Hall Office Supplies. I'm calling about the order you placed on Monday for two hundred notebooks and fifty desk lamps. Unfortunately, the lamps are out of stock until next week. I can ship the notebooks today and send the lamps as soon as they arrive, at no extra cost for the second delivery. If you would prefer to cancel the lamps, please call me back at five five five, zero one four two before three o'clock this afternoon.
+Q: Why is the speaker calling? ;; To report a problem with an order | To ask for a payment | To promote a sale | To confirm a delivery time ;; Les lampes sont en rupture de stock. ;; sujet principal
+Q: What does the speaker offer to do? ;; Make a second delivery free of charge | Give a discount | Replace the notebooks | Extend a deadline ;; « at no extra cost for the second delivery ». ;; détail
+Q: What does the speaker ask the listener to do by three o'clock? ;; Call if she wants to cancel an item | Pay the invoice | Pick up the order | Visit a store ;; Rappeler avant 15h pour annuler les lampes. ;; demande
+
+@P4 réunion
+T: Good morning, everyone. Before we start our weekly meeting, I have a few announcements. First, we've hired three new sales representatives, who will join us on Monday. Please make them feel welcome. Second, as you know, our office will be renovated next month. The construction team will begin on the fourth floor, so everyone who works there will move temporarily to the second floor. Finally, I'd like to remind you that your performance reviews are due by Friday. Now, let's turn to our sales figures.
+Q: Who most likely are the listeners? ;; Employees of a company | Construction workers | Customers | Job applicants ;; Réunion hebdomadaire d'une équipe, avec annonces internes. ;; auditeurs
+Q: What will happen next month? ;; The office will be renovated. | New employees will start. | A new product will launch. | The company will move. ;; « our office will be renovated next month ». ;; détail
+Q: What does the speaker remind the listeners to do? ;; Complete their performance reviews | Move to another floor | Welcome visitors | Update their schedules ;; « performance reviews are due by Friday ». ;; demande
+
+@P4 publicité
+T: Are you tired of slow Internet? Switch to FiberNet today! For only thirty-five dollars a month, you'll enjoy speeds up to ten times faster than standard connections. And if you sign up before the end of this month, we'll install the service free of charge and give you the first three months at half price. There's no long-term contract, so you can cancel at any time. Visit our Web site or call one-eight-hundred-FIBER to find out whether our service is available in your neighborhood.
+Q: What is being advertised? ;; An Internet service | A mobile phone | A television | A computer repair shop ;; « slow Internet », « speeds ». ;; sujet principal
+Q: What is offered to customers who sign up this month? ;; Free installation | A free router | A one-year warranty | Unlimited calls ;; « we'll install the service free of charge » + 3 mois à moitié prix. ;; détail
+Q: What can listeners do on the Web site? ;; Check if the service is available | Pay a bill | Watch a video | Order equipment ;; Vérifier si le service est disponible dans leur quartier. ;; détail
+
+@P4 visite guidée
+T: Welcome to the Riverside Glass Factory. My name is Elena, and I'll be your guide this afternoon. Our tour will last about forty-five minutes, and we'll begin in the workshop, where you'll see how artists shape molten glass by hand. Please stay behind the yellow line at all times, and remember that photography is allowed only in the gallery at the end of the tour. After the tour, you're welcome to visit our gift shop, where all items are twenty percent off today.
+Q: Where is the tour taking place? ;; At a glass factory | At a museum | At a furniture store | At a restaurant ;; « Riverside Glass Factory ». ;; lieu
+Q: What are visitors asked to do? ;; Stay behind a line | Wear a helmet | Leave their bags outside | Keep silent ;; « stay behind the yellow line at all times ». ;; demande
+Q: Why is the gift shop mentioned? ;; Prices are reduced today. | It closes early. | It has a new manager. | It is hard to find. ;; « all items are twenty percent off today ». ;; détail
+
+@P4 discours
+T: Thank you all for being here tonight. It's an honor to receive this award on behalf of the entire Greenfield Design team. Ten years ago, we were only four people working in a small garage. Today, we employ more than two hundred people in six countries. None of this would have been possible without the loyalty of our clients and the hard work of our staff. I would especially like to thank Mr. Lopez, who gave us our first big contract. Now, I'd like to invite everyone to enjoy dinner.
+Q: What is the occasion? ;; An award ceremony | A product launch | A retirement party | A job fair ;; « receive this award ». ;; sujet principal
+Q: What does the speaker say about the company? ;; It has grown considerably. | It plans to merge. | It is moving abroad. | It lost a client. ;; De 4 personnes à plus de 200 dans six pays. ;; détail
+Q: Who is Mr. Lopez? ;; A client who helped the company early on | A founder of the company | A member of the audience staff | The event organizer ;; Il a donné au groupe son premier gros contrat. ;; détail
+
+@P4 météo radio
+T: Good morning, listeners, and welcome to the Channel Nine traffic and weather report. We have heavy fog across the northern part of the city, so drivers on Highway twelve should expect delays of up to thirty minutes. The Bridge Street exit is closed for repairs, and officials recommend using Oak Avenue instead. Later today, the fog should clear, and we'll see sunny skies with temperatures around twenty degrees. Stay tuned for the news after this short break.
+Q: What is the report mainly about? ;; Road and weather conditions | A new highway project | A local festival | A business merger ;; Trafic + météo. ;; sujet principal
+Q: What are drivers advised to do? ;; Use an alternative route | Stay at home | Take the train | Drive faster ;; « using Oak Avenue instead ». ;; suggestion
+Q: What will probably happen later today? ;; The weather will improve. | The highway will close. | A storm will arrive. | A bridge will open. ;; Le brouillard se dissipera. ;; action future
+
+@P4 réunion d'équipe
+T: Before we finish, I want to talk about our customer feedback. Last quarter, our satisfaction rating dropped from ninety to eighty-two percent, mainly because our response time to e-mails was too slow. To fix this, we're going to hire two more customer service agents and introduce a new ticketing system next month. Training will take place on the fifth, so please keep your schedules clear that day. I know this means extra work in the short term, but I'm confident it will pay off.
+Q: What problem does the speaker mention? ;; Customers are less satisfied. | Sales have decreased. | Some products are defective. | A deadline was missed. ;; La satisfaction est passée de 90 à 82 %. ;; problème
+Q: What will the company do to solve the problem? ;; Hire more staff | Lower its prices | Open a store | Replace a supplier ;; « hire two more customer service agents ». ;; détail
+Q: What does the speaker say will happen on the fifth? ;; A training session | A product launch | A client visit | An inspection ;; « Training will take place on the fifth ». ;; détail
+
+@P4 annonce d'aéroport
+T: Ladies and gentlemen, this is the captain speaking. We are now beginning our descent into Vancouver. The local time is two fifteen in the afternoon, and the temperature on the ground is twelve degrees Celsius. We expect a smooth landing, but please keep your seat belts fastened until the plane comes to a complete stop. Passengers connecting to flights to Tokyo should check the monitors in the terminal for gate information. Thank you for flying with Pacific Air.
+Q: Who is speaking? ;; A pilot | A flight attendant | A tour guide | A travel agent ;; « this is the captain speaking ». ;; locuteur
+Q: What are the passengers asked to do? ;; Keep their seat belts on | Fill out a form | Turn off their phones | Move to the front ;; « keep your seat belts fastened ». ;; demande
+Q: Where can passengers get information about connecting flights? ;; On the monitors | At the information desk | On a mobile application | From a flight attendant ;; « check the monitors in the terminal ». ;; détail
+
+@P4 horaires
+GRAPHIC: Horaires de la bibliothèque | Monday – Friday : 9:00 – 20:00 | Saturday : 10:00 – 16:00 | Sunday : Closed | Holidays : Closed
+T: Thank you for calling Maple City Library. Our reading rooms are open to the public according to the schedule you can see on our Web site. Please note that this week, the library will close at five o'clock on Wednesday for a staff training day. To renew your books, you may use the online system or visit us in person. Late fees will not be charged during the holiday weekend. For more information, please stay on the line, and a librarian will assist you.
+Q: Look at the graphic. When is the library open the longest? ;; On weekdays ;; On Saturday ;; On Sunday ;; On holidays ;; Du lundi au vendredi : 11 heures. ;; graphique
+Q: What is special about Wednesday this week? ;; The library will close early. | The library will be closed all day. | There will be a book sale. | A new librarian will start. ;; « close at five o'clock on Wednesday for a staff training day ». ;; détail
+Q: What does the speaker say about late fees? ;; They will not be charged during a holiday weekend. | They have increased. | They must be paid online. | They apply to new books only. ;; « Late fees will not be charged during the holiday weekend ». ;; détail
+
+@P4 intention
+T: Hi everyone, it's Naomi from the events team. I wanted to give you an update on the company picnic. Originally, we planned to hold it at Lakeside Park on Saturday, but the forecast shows heavy rain. So, we've decided to move it to the cafeteria instead, and we'll keep the same time. Lunch will be provided by Tasty Bites, and there will be games for the children. Please let me know by Wednesday if you're bringing guests. Well, I know it's not the same as being outdoors, but I think we'll still have a great time.
+Q: Why has the plan changed? ;; Bad weather is expected. | The park is closed. | Fewer people will attend. | The caterer cancelled. ;; Pluie forte prévue. ;; cause
+Q: What does the speaker mean when she says, "I know it's not the same as being outdoors"? ;; She understands that the new location is less appealing. | She prefers an indoor event. | She wants to cancel the event. | She is disappointed with the caterer. ;; Elle reconnaît que le nouveau lieu est moins agréable. ;; intention implicite
+Q: What are the listeners asked to do by Wednesday? ;; Say if they will bring guests | Pay for lunch | Choose a menu | Sign up for games ;; « let me know by Wednesday if you're bringing guests ». ;; demande
+
+@P4 informations produit
+T: Today I'd like to introduce our newest product, the ZenBook Air. It weighs less than one kilogram and has a battery that lasts up to eighteen hours. Our research shows that business travelers value portability above everything else, so we've also added a fast charging feature that provides five hours of power in just fifteen minutes. The ZenBook Air will go on sale on March first, and the first five hundred customers will receive a free carrying case. Now, are there any questions?
+Q: What type of product is being introduced? ;; A laptop computer | A carrying case | A battery charger | A mobile phone ;; « ZenBook » + battery + business travelers → ordinateur portable. ;; sujet principal
+Q: According to the speaker, what do business travelers value most? ;; Portability | Price | Design | Screen size ;; « value portability above everything else ». ;; détail
+Q: What will the first five hundred customers receive? ;; A free case | A discount | A free battery | A gift card ;; « a free carrying case ». ;; détail
+
+@P4 offre d'emploi radio
+T: This is Sandra Wu with the Business Hour. Today we're talking about a trend that's changing the workplace: remote work. According to a recent study, companies that allow employees to work from home two days a week saw a fifteen percent increase in productivity and a ten percent decrease in staff turnover. However, experts warn that managers must communicate clearly and set measurable goals. After the break, I'll be speaking with Dr. Alan Reed, an expert in workplace psychology, about how to keep teams connected.
+Q: What is the topic of the program? ;; Working from home | Salary negotiation | Office design | Company mergers ;; Le télétravail. ;; sujet principal
+Q: What benefit of the policy is mentioned? ;; Increased productivity | Reduced office costs | Higher salaries | Shorter meetings ;; +15 % de productivité. ;; détail
+Q: Who will the speaker talk to after the break? ;; A psychology expert | A company manager | A government official | A job applicant ;; « Dr. Alan Reed, an expert in workplace psychology ». ;; action future

@@ -24,3 +24,11 @@ synchronisation Supabase fusionnée carte par carte (chiffrement optionnel), sau
 
 Le contenu prêt à apprendre est dans `content/*.txt` (anglais / TOEIC, banque, assurance, finance, BUT TC).
 Format : `question ;; réponse ;; indice` ou `C: texte avec {{c1::trou}} ;; infos`. `python3 build.py` le compile dans `index.html`.
+
+## Simulateur TOEIC
+
+Onglet **TOEIC** : test complet (200 questions, audio joué une fois, 75 min de Reading), mini-test, entraînement par partie (avec corrections ou en conditions d'examen), rejeu des erreurs, historique des scores estimés, objectif et date d'examen.
+
+- Banque : `content/toeic/*.txt` (parties 1 à 7, voir l'en-tête de `build.py` pour le format). La première option de chaque question est la bonne ; l'application mélange les réponses.
+- Audio : synthèse vocale du navigateur (voix et accents de l'appareil). Sans voix anglaise, le Listening s'affiche en transcription.
+- Questions originales dans le style du TOEIC (pas de sujets officiels ETS). Les scores 5-495 par section sont des estimations.
