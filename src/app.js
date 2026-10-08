@@ -1934,13 +1934,15 @@ class SuperAnki {
         if (!s || s.kind !== 'practice' || !s.revealed) return;
         const card = this.card(s.current);
         this.snapshot();
-        if (ok) s.correct++;
+        if (ok) { card.right++; card.errors = Math.max(0, card.errors - 1); s.correct++; }
         else {
+            card.wrong++; card.errors++;
             if (!s.missed.includes(card.id)) s.missed.push(card.id);
             s.retries[card.id] = (s.retries[card.id] || 0) + 1;
             if (s.retries[card.id] <= 2) s.queue.splice(Math.min(3, s.queue.length), 0, card.id);
         }
-        s.done++;   // practice modes never touch scheduling, counters, stats or history
+        s.done++;   // only the error counters are updated: no scheduling, stats, streak or history
+        this.save();
         this.nextCard();
     }
     undo() {
@@ -2087,8 +2089,14 @@ class SuperAnki {
             else b.classList.add('dim');
         });
         s.done++;
-        if (opt.ok) { s.score++; s.correct++; }
-        else if (!s.missed.includes(card.id)) s.missed.push(card.id);
+        if (opt.ok) {
+            s.score++; s.correct++;
+            card.right++; card.errors = Math.max(0, card.errors - 1);
+        } else {
+            card.wrong++; card.errors++;
+            if (!s.missed.includes(card.id)) s.missed.push(card.id);
+        }
+        this.save();   // only the error counters change: no scheduling, stats, streak or history
         if (s.kind === 'chrono') {
             if (!opt.ok) { s.timeLeft = Math.max(0, s.timeLeft - 3); }
             this.floatText(el || btns[i], opt.ok ? '+1' : '-3 s', opt.ok ? 'var(--mature)' : 'var(--due)');
