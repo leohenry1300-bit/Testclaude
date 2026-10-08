@@ -32,3 +32,7 @@ Onglet **TOEIC** : test complet (200 questions, audio joué une fois, 75 min de 
 - Banque : `content/toeic/*.txt` (parties 1 à 7, voir l'en-tête de `build.py` pour le format). La première option de chaque question est la bonne ; l'application mélange les réponses.
 - Audio : synthèse vocale du navigateur (voix et accents de l'appareil). Sans voix anglaise, le Listening s'affiche en transcription.
 - Questions originales dans le style du TOEIC (pas de sujets officiels ETS). Les scores 5-495 par section sont des estimations.
+
+## Hors-ligne et installation (PWA)
+
+Pour installer l'app sur un téléphone, déploie ensemble ces 5 fichiers (ex. Netlify Drop) : `index.html`, `sw.js`, `manifest.webmanifest`, `icon-192.png`, `icon-512.png`. Il faut une adresse https. Ouvre-la une fois en ligne, puis « Ajouter à l'écran d'accueil » : l'app s'ouvre ensuite sans connexion. Ouvert en double-clic (`file://`), le mode hors-ligne ne s'active pas.

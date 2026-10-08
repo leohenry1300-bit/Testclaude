@@ -208,7 +208,8 @@ html = f"""<!DOCTYPE html>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="SuperAnki">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="description" content="SuperAnki Pro : cartes mémoire avec répétition espacée, quiz, écriture et chrono.">
 {read("head-icons.html").strip()}
 <title>SuperAnki Pro</title>
@@ -234,6 +235,7 @@ html = f"""<!DOCTYPE html>
 {read("toeic.js")}
 {read("sync.js")}
 {read("boot.js")}
+if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {{}}));
 </script>
 </body>
 </html>
@@ -241,3 +243,8 @@ html = f"""<!DOCTYPE html>
 
 (ROOT / "index.html").write_text(html, encoding="utf-8")
 print(f"index.html written ({len(html.encode('utf-8')) // 1024} Ko)")
+
+import hashlib
+ver = hashlib.sha1(html.encode("utf-8")).hexdigest()[:10]
+(ROOT / "sw.js").write_text((ROOT / "sw.template.js").read_text(encoding="utf-8").replace("__VERSION__", ver), encoding="utf-8")
+print("sw.js written, version", ver)
