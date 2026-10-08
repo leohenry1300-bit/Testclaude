@@ -232,6 +232,9 @@ html = f"""<!DOCTYPE html>
 {read("app.js")}
 {read("stats.js")}
 {read("features.js")}
+{read("rich.js")}
+{read("occlusion.js")}
+{read("apkg.js")}
 {read("toeic.js")}
 {read("sync.js")}
 {read("boot.js")}

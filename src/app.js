@@ -158,8 +158,8 @@ const readAsText = file => new Promise((res, rej) => { const r = new FileReader(
 /* ============================================================
    HTML sanitizer (card content is rendered as HTML)
    ============================================================ */
-const SAFE_TAGS = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'S', 'STRIKE', 'DEL', 'BR', 'P', 'DIV', 'SPAN', 'UL', 'OL', 'LI', 'IMG', 'SUB', 'SUP', 'MARK', 'CODE', 'PRE', 'BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'SMALL', 'A', 'HR', 'FONT', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TD', 'TH']);
-const DROP_TAGS = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'SVG', 'MATH', 'LINK', 'META', 'TEMPLATE', 'NOSCRIPT', 'FORM', 'INPUT', 'BUTTON', 'TEXTAREA', 'SELECT', 'VIDEO', 'AUDIO', 'HEAD', 'TITLE', 'FRAME', 'FRAMESET', 'CANVAS']);
+const SAFE_TAGS = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'S', 'STRIKE', 'DEL', 'BR', 'P', 'DIV', 'SPAN', 'UL', 'OL', 'LI', 'IMG', 'SUB', 'SUP', 'MARK', 'CODE', 'PRE', 'BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'SMALL', 'A', 'HR', 'FONT', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TD', 'TH', 'AUDIO']);
+const DROP_TAGS = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'SVG', 'MATH', 'LINK', 'META', 'TEMPLATE', 'NOSCRIPT', 'FORM', 'INPUT', 'BUTTON', 'TEXTAREA', 'SELECT', 'VIDEO', 'HEAD', 'TITLE', 'FRAME', 'FRAMESET', 'CANVAS']);
 const SAFE_STYLES = ['color', 'background-color', 'font-weight', 'font-style', 'text-decoration', 'text-decoration-line', 'text-align'];
 const TAG_RE = /<\/?[a-z][^>]*>/i;
 function escapePlain(s) {
@@ -182,19 +182,31 @@ function sanitizeHtml(html, opts = {}) {
             if (!SAFE_TAGS.has(tag)) { ch.replaceWith(...ch.childNodes); return; }
             if (tag === 'IMG') {
                 const src = ch.getAttribute('src') || '';
-                if (!/^(data:image\/[a-z+.-]+;base64,|https?:\/\/)/i.test(src)) { ch.remove(); return; }
+                if (!/^(data:image\/[a-z+.-]+;base64,|https?:\/\/|media:[a-z0-9]+$)/i.test(src)) { ch.remove(); return; }
+            }
+            if (tag === 'AUDIO') {
+                const src = ch.getAttribute('src') || '';
+                if (!/^(data:audio\/[a-z0-9.+-]+;base64,|media:[a-z0-9]+$)/i.test(src)) { ch.remove(); return; }
+                ch.setAttribute('controls', ''); ch.setAttribute('preload', 'none');
             }
             [...ch.attributes].forEach(a => {
                 const n = a.name.toLowerCase();
-                if (n === 'style') {
+                if (n === 'style' && tag === 'SPAN' && /^om( on| off| hit)?$/.test(ch.className)) {
+                    const kept = ['left', 'top', 'width', 'height'].map(p => { const v = ch.style.getPropertyValue(p); return /^[\d.]+%$/.test(v) ? `${p}:${v}` : ''; }).filter(Boolean).join(';');
+                    if (kept) ch.setAttribute('style', kept); else ch.removeAttribute('style');
+                } else if (n === 'style') {
                     const kept = SAFE_STYLES.map(p => {
                         if (!keepColors && (p === 'color' || p === 'background-color')) return '';
                         const v = ch.style.getPropertyValue(p);
                         return v && !/url\(|expression|javascript/i.test(v) ? `${p}:${v}` : '';
                     }).filter(Boolean).join(';');
                     if (kept) ch.setAttribute('style', kept); else ch.removeAttribute('style');
-                } else if (tag === 'IMG' && (n === 'src' || n === 'alt')) {
+                } else if ((tag === 'IMG' && (n === 'src' || n === 'alt')) || (tag === 'AUDIO' && (n === 'src' || n === 'controls' || n === 'preload'))) {
                     /* keep */
+                } else if (tag === 'DIV' && n === 'class' && a.value === 'occl') {
+                    /* keep (image occlusion) */
+                } else if (tag === 'SPAN' && n === 'class' && /^om( on| off| hit)?$/.test(a.value)) {
+                    /* keep (image occlusion masks) */
                 } else if (tag === 'SPAN' && n === 'class' && /^(cloze|cloze-hide)$/.test(a.value)) {
                     /* keep (cloze deletions) */
                 } else if (tag === 'A' && n === 'href') {
@@ -215,7 +227,7 @@ function sanitizeHtml(html, opts = {}) {
     walk(doc.body);
     return doc.body.innerHTML.replace(/(<br\s*\/?>\s*)+$/i, '').trim();
 }
-const isBlank = html => !stripHtml(html).trim() && !hasImage(html);
+const isBlank = html => !stripHtml(html).trim() && !hasImage(html) && !/<audio\s/i.test(html || '');
 
 /* ============================================================
    Themes & defaults
@@ -257,7 +269,7 @@ const OPT_DEFAULTS = {
 };
 const DEFAULT_SETTINGS = {
     theme: 'auto', cardSize: 'm', showIntervals: true,
-    autoSpeak: false, answerMode: 'flip', learnAhead: 20, cloudSync: true,
+    autoSpeak: false, autoAudio: false, answerMode: 'flip', learnAhead: 20, cloudSync: true,
     quizCount: 20, writeCount: 20, chronoDuration: 60,
     rolloverHour: 4, syncKey: '', settingsMod: 0, autoBackup: true, libSeen: false, goalName: '', goalDate: '', deckSort: 'recent',
     ...OPT_DEFAULTS
@@ -350,7 +362,7 @@ function normalizeCard(c) {
         lastReview: c.lastReview ? num(c.lastReview, null) : null,
         errors: Math.max(0, num(c.errors, lapses >= 2 ? 1 : 0)), wrong: num(c.wrong, 0), right: num(c.right, 0),
         suspended: !!c.suspended, flag: clamp(Math.round(num(c.flag, 0)), 0, 7), marked: !!c.marked, buriedUntil: num(c.buriedUntil, 0),
-        nid: c.nid ? String(c.nid) : '', kind: ['rev', 'cloze'].includes(c.kind) ? c.kind : 'basic', ord: Math.max(0, num(c.ord, 0)),
+        nid: c.nid ? String(c.nid) : '', kind: ['rev', 'cloze', 'occl'].includes(c.kind) ? c.kind : 'basic', ord: Math.max(0, num(c.ord, 0)),
         nf: c.nf && typeof c.nf === 'object' ? { front: sanitizeHtml(c.nf.front || ''), back: sanitizeHtml(c.nf.back || ''), text: sanitizeHtml(c.nf.text || ''), extra: sanitizeHtml(c.nf.extra || '') } : null,
         fs: c.fs && num(c.fs.s, 0) > 0 ? { s: num(c.fs.s), d: clamp(num(c.fs.d, 5), 1, 10), t: num(c.fs.t, 0) } : null,
         mod: num(c.mod, 0)
@@ -430,11 +442,11 @@ function normalizeState(raw) {
     const deleted = {};
     if (raw.deleted && typeof raw.deleted === 'object') Object.entries(raw.deleted).forEach(([k, v]) => { if (num(v, 0) > 0) deleted[k] = num(v); });
     const revlog = toArray(raw.revlog).filter(r => Array.isArray(r) && r.length >= 4 && Number.isFinite(r[0])).slice(-REVLOG_MAX);
-    return { version: 6, decks, cards, presets, stats: normalizeStats(raw.stats), settings, revlog, deleted, toeic: normalizeToeic(raw.toeic), updatedAt: num(raw.updatedAt, 0) };
+    return { version: 6, decks, cards, presets, stats: normalizeStats(raw.stats), settings, revlog, deleted, toeic: normalizeToeic(raw.toeic), media: normalizeMedia(raw.media), updatedAt: num(raw.updatedAt, 0) };
 }
 function cardSig(c) {
     return [c.deckId, c.state, c.step, c.due, c.interval, c.ease, c.reps, c.lapses, c.suspended ? 1 : 0, c.flag, c.marked ? 1 : 0, c.buriedUntil, c.errors, c.wrong, c.right,
-        c.front.length, c.back.length, c.hint.length, c.detail.length, c.tags.join(','), c.fs ? c.fs.s.toFixed(3) : '', c.lastReview, c.nid, c.kind, c.ord].join('|');
+        c.front.length, c.back.length, c.hint.length, c.detail.length, c.tags.join(','), c.fs ? c.fs.s.toFixed(3) : '', c.lastReview, c.nid, c.kind, c.ord, c.kind === 'occl' && c.nf ? mediaHash(c.nf.back + c.nf.front) : ''].join('|');
 }
 const deckSig = d => JSON.stringify([d.name, d.emoji, d.description, d.parent, d.preset, d.limits]);
 const presetSig = p => JSON.stringify([p.name, p.opts]);
@@ -675,6 +687,7 @@ class SuperAnki {
         }
         if (!data || !data.cards.length && !data.decks.length) { data = seedState(); source = 'seed'; }
         this.data = data;
+        this.gcMedia(data);
         this.applySettings();
         this.initSigs();
         this.checkStreak();
@@ -688,8 +701,8 @@ class SuperAnki {
     }
 
     serialize() {
-        const { version, decks, cards, presets, stats, settings, revlog, deleted, toeic, updatedAt } = this.data;
-        return JSON.stringify({ version, decks, cards, presets, stats, settings, revlog, deleted, toeic, updatedAt });
+        const { version, decks, cards, presets, stats, settings, revlog, deleted, toeic, media, updatedAt } = this.data;
+        return JSON.stringify({ version, decks, cards, presets, stats, settings, revlog, deleted, toeic, media, updatedAt });
     }
     /* Change tracking: per-card modification times let two devices merge instead of overwriting each other */
     initSigs() {
@@ -1549,6 +1562,10 @@ class SuperAnki {
                     ${sw('autoSpeak', 'Lecture audio automatique')}
                 </div>
                 <div class="set-row">
+                    <div class="txt"><b>Jouer les sons des cartes</b><span>Lance automatiquement l'audio enregistré sur la carte (question, puis réponse).</span></div>
+                    ${sw('autoAudio', 'Jouer les sons des cartes')}
+                </div>
+                <div class="set-row">
                     <div class="txt"><b>Le jour change à</b><span>Les révisions de la nuit comptent pour la veille, comme dans Anki (4 h par défaut).</span></div>
                     ${seg('rolloverHour', [[0, 'Minuit'], [3, '3 h'], [4, '4 h'], [6, '6 h']])}
                 </div>
@@ -1748,6 +1765,7 @@ class SuperAnki {
         }
         s.current = id; s.revealed = false; s.typed = null; s.cardStart = Date.now();
         this.renderSession();
+        this.autoPlayAudio('.fc-front');
         if (this.data.settings.autoSpeak) this.speak('front');
         this.armAutoAdvance();
     }
@@ -1857,6 +1875,7 @@ class SuperAnki {
         if (s.answer === 'type') return this.submitTyped();
         s.revealed = true;
         this.renderSession();
+        this.autoPlayAudio('.fc-back');
         if (this.data.settings.autoSpeak) this.speak('back');
         this.armAutoAdvance();
     }
@@ -1986,7 +2005,7 @@ class SuperAnki {
         const ans = c => this.cardAnswer(c);
         const correctKey = normAnswer(ans(card)) || card.id;
         const seen = new Set([correctKey]);
-        const usable = this.data.cards.filter(c => c.kind !== 'cloze' && c.id !== card.id);
+        const usable = this.data.cards.filter(c => c.kind !== 'cloze' && c.kind !== 'occl' && c.id !== card.id);
         const sameDeck = shuffle(usable.filter(c => c.deckId === card.deckId));
         const others = shuffle(usable.filter(c => c.deckId !== card.deckId)).slice(0, 40);
         const len = stripHtml(ans(card)).length;
@@ -2001,8 +2020,8 @@ class SuperAnki {
         return shuffle([{ id: card.id, ok: true }, ...wrong.map(c => ({ id: c.id, ok: false }))]);
     }
     startQuiz(deckIds, count, chrono = 0) {
-        const pool = this.poolFor(deckIds).filter(c => c.kind !== 'cloze');
-        if (this.data.cards.filter(c => c.kind !== 'cloze').length < 4) { this.toast('Il faut au moins 4 cartes pour un quiz.', 'warning'); return; }
+        const pool = this.poolFor(deckIds).filter(c => c.kind !== 'cloze' && c.kind !== 'occl');
+        if (this.data.cards.filter(c => c.kind !== 'cloze' && c.kind !== 'occl').length < 4) { this.toast('Il faut au moins 4 cartes pour un quiz.', 'warning'); return; }
         if (!pool.length) { this.toast('Aucune carte dans cette sélection.', 'warning'); return; }
         const deck = Array.isArray(deckIds) && deckIds.length === 1 ? this.deck(deckIds[0]) : null;
         const label = deckIds === 'errors' ? 'Mes erreurs' : deck ? deck.name : 'Tous les paquets';
@@ -2293,7 +2312,7 @@ class SuperAnki {
                 <span class="tb-sep"></span>
                 ${b('insertUnorderedList', 'Liste à puces', ic('list'))}${b('insertOrderedList', 'Liste numérotée', ic('listOrdered'))}
                 <span class="tb-sep"></span>
-                ${b('image', 'Ajouter une image', ic('image'))}${b('removeFormat', 'Effacer la mise en forme', ic('eraser'))}
+                ${b('image', 'Ajouter une image', ic('image'))}${b('math', 'Formule LaTeX : \\( ... \\)', '<span style="font-weight:800;font-family:Georgia,serif">∑</span>')}${b('audio', 'Joindre un fichier audio', ic('volume'))}${b('record', 'Enregistrer ma voix', ic('mic'))}${b('removeFormat', 'Effacer la mise en forme', ic('eraser'))}
                 ${cloze ? `<span class="tb-sep tb-cloze"></span><button type="button" class="tb-btn tb-cloze tb-wide" data-cmd="cloze" title="Créer un trou (Ctrl+Maj+C). Maj+clic : même numéro" aria-label="Créer un trou">[…]</button>` : ''}
             </div>
             <div class="editor-area rich" contenteditable="true" id="${id}" data-placeholder="${esc(placeholder)}" role="textbox" aria-multiline="true"></div>
@@ -2302,10 +2321,11 @@ class SuperAnki {
     openCardModal(cardId, presetDeck, prefillFront) {
         if (!this.data.decks.length) { this.toast('Crée d\'abord un paquet.', 'warning'); this.openDeckModal(); return; }
         const card = cardId ? this.card(cardId) : null;
+        if (card && card.kind === 'occl') { this.openOcclusionModal(card.id); return; }
         const inSession = !!this.session;
         const deckId = card ? card.deckId : presetDeck || (this.ui.deck !== 'all' && this.ui.deck !== 'errors' ? this.ui.deck : this.lastDeckUsed) || this.sortedDecks()[0].id;
         const nf = card ? noteFieldsOf(card) : { front: '', back: '' };
-        let type = card ? card.kind : (this.lastNoteType || 'basic');
+        let type = card ? card.kind : (this.lastNoteType && this.lastNoteType !== 'occl' ? this.lastNoteType : 'basic');
         const m = this.openModal({
             title: card ? 'Modifier la carte' : 'Nouvelle carte', size: 'wide',
             body: `
@@ -2344,7 +2364,11 @@ class SuperAnki {
             front.dataset.placeholder = cloze ? 'Ex : La capitale de la France est {{c1::Paris}}.' : 'Question ou terme... (tu peux coller une image)';
             back.dataset.placeholder = cloze ? 'Source, explication, image...' : 'Réponse...';
         };
-        if (typeSel) typeSel.addEventListener('change', () => { type = typeSel.value; relabel(); });
+        if (typeSel) typeSel.addEventListener('change', () => {
+            type = typeSel.value;
+            if (type === 'occl') { const d = $('#cf-deck', m).value; this.closeModal(m); this.openOcclusionModal(null, d); return; }
+            relabel();
+        });
         relabel();
         const save = async keepOpen => {
             const f = sanitizeHtml(front.innerHTML), bk = sanitizeHtml(back.innerHTML);
@@ -2413,6 +2437,9 @@ class SuperAnki {
             }
         }
         if (cmd === 'image') { this.pickImage(area); return; }
+        if (cmd === 'math') { this.insertMath(area); return; }
+        if (cmd === 'audio') { this.pickAudio(area); return; }
+        if (cmd === 'record') { this.recordAudio(area); return; }
         if (cmd === 'cloze') { this.clozeSelection(area, !!(ev && ev.shiftKey)); return; }
         const css = ['red', 'blue', 'highlight'].includes(cmd);
         try { document.execCommand('styleWithCSS', false, css); } catch { /* ignore */ }
@@ -2493,6 +2520,7 @@ class SuperAnki {
                     <select class="select" id="im-deck">${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${d.id === cur ? 'selected' : ''}>${esc(d.emoji)} ${esc(this.deckPath(d.id))}</option>`).join('')}<option value="__new">+ Nouveau paquet...</option></select></div>
                 <div class="field hidden" id="im-newdeck-wrap"><label class="label" for="im-newdeck">Nom du nouveau paquet</label><input class="input" id="im-newdeck" placeholder="Ex : Vocabulaire anglais"></div>
                 <div class="field"><span class="label">Fichier</span><button class="btn btn-soft btn-block" id="im-file">${ic('file')}Choisir un fichier TXT / CSV</button></div>
+                <div class="field"><span class="label">Ou un paquet Anki</span><button class="btn btn-soft btn-block" id="im-apkg">${ic('layers')}Importer un fichier .apkg</button><p class="help">Anki : Fichier › Exporter › « Paquet Anki (.apkg) », en cochant « Prendre en charge les anciennes versions d'Anki ». Les cartes arrivent comme neuves.</p></div>
                 <div class="field"><label class="label" for="im-text">... ou colle tes fiches ici</label><textarea class="textarea" id="im-text" rows="6" placeholder="Capitale de l'Italie ; Rome&#10;H2O ; L'eau"></textarea></div>
                 <label class="check hidden" id="im-usedecks-wrap" style="margin-bottom:10px"><input type="checkbox" id="im-usedecks" checked> Utiliser les paquets et tags indiqués dans le fichier</label>
                 <p class="help" id="im-preview">Aucune fiche détectée pour l'instant.</p>`,
@@ -2520,6 +2548,13 @@ class SuperAnki {
                 refresh();
                 $('#im-file', m).innerHTML = `${ic('check')}${esc(f.name)}`;
             };
+            input.click();
+        });
+        $('#im-apkg', m).addEventListener('click', () => {
+            const input = $('#hidden-file');
+            input.accept = '.apkg,.colpkg,application/zip';
+            input.value = '';
+            input.onchange = () => { const f = input.files[0]; if (f) { this.closeModal(m); this.importApkg(f); } };
             input.click();
         });
         go.addEventListener('click', () => {
@@ -2640,7 +2675,7 @@ class SuperAnki {
             this.closeModal(m);
             const deckIds = sel === 'all' ? null : sel === 'errors' ? 'errors' : [sel];
             if (mode === 'write') {
-                const pool = this.poolFor(deckIds).map(c => c.id);
+                const pool = this.poolFor(deckIds).filter(c => c.kind !== 'occl').map(c => c.id);
                 const d = deckIds && deckIds !== 'errors' ? this.deck(sel) : null;
                 this.startPractice(null, 'type', opt, `Écrire · ${sel === 'errors' ? 'Mes erreurs' : d ? d.name : 'Tous les paquets'}`, pool);
             } else if (mode === 'quiz') this.startQuiz(deckIds, opt, 0);

@@ -1414,6 +1414,23 @@ button.tq-opt:hover:not(:disabled) { border-color: var(--primary); background: v
 .ex-unit { width: 100%; }
 .tq-sec .tiny { color: inherit; }
 
+/* image occlusion, audio, recording */
+.occl { position: relative; display: inline-block; max-width: 100%; line-height: 0; }
+.occl img { display: block; max-width: 100%; max-height: 60vh; margin: 0; border-radius: var(--radius-xs); }
+.occl .om { position: absolute; background: #475569; border: 2px solid #1e293b; border-radius: 3px; box-sizing: border-box; }
+.occl .om.on { background: var(--primary); border-color: #fff; box-shadow: 0 0 0 2px var(--primary); }
+.occl .om.hit { background: transparent; border: 3px solid var(--mature); box-shadow: 0 0 0 2px rgba(255,255,255,.7); }
+.rich audio, .editor-area audio { display: block; width: min(100%, 340px); height: 40px; margin: 8px auto; }
+.occ-wrap { background: var(--surface-2); border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); padding: 8px; display: grid; place-items: center; min-height: 120px; }
+.occ-stage { position: relative; display: inline-block; max-width: 100%; touch-action: none; user-select: none; line-height: 0; cursor: crosshair; }
+.occ-stage img { display: block; max-width: 100%; max-height: 52vh; -webkit-user-drag: none; }
+.occ-stage .occ-m { position: absolute; background: color-mix(in srgb, var(--primary) 55%, transparent); border: 2px solid var(--primary); box-sizing: border-box; cursor: pointer; display: grid; place-items: center; color: #fff; font-size: .75rem; line-height: 1; }
+.occ-stage .occ-m.temp { background: color-mix(in srgb, var(--primary) 30%, transparent); border-style: dashed; }
+.occ-empty { padding: 30px; color: var(--text-faint); line-height: 1.4; }
+.rec-box { display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 2rem; padding: 18px 0; }
+.rec-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--due); animation: pulse 1s infinite; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+
 </style>
 </head>
 <body>
@@ -1674,8 +1691,8 @@ const readAsText = file => new Promise((res, rej) => { const r = new FileReader(
 /* ============================================================
    HTML sanitizer (card content is rendered as HTML)
    ============================================================ */
-const SAFE_TAGS = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'S', 'STRIKE', 'DEL', 'BR', 'P', 'DIV', 'SPAN', 'UL', 'OL', 'LI', 'IMG', 'SUB', 'SUP', 'MARK', 'CODE', 'PRE', 'BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'SMALL', 'A', 'HR', 'FONT', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TD', 'TH']);
-const DROP_TAGS = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'SVG', 'MATH', 'LINK', 'META', 'TEMPLATE', 'NOSCRIPT', 'FORM', 'INPUT', 'BUTTON', 'TEXTAREA', 'SELECT', 'VIDEO', 'AUDIO', 'HEAD', 'TITLE', 'FRAME', 'FRAMESET', 'CANVAS']);
+const SAFE_TAGS = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'S', 'STRIKE', 'DEL', 'BR', 'P', 'DIV', 'SPAN', 'UL', 'OL', 'LI', 'IMG', 'SUB', 'SUP', 'MARK', 'CODE', 'PRE', 'BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'SMALL', 'A', 'HR', 'FONT', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TD', 'TH', 'AUDIO']);
+const DROP_TAGS = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'SVG', 'MATH', 'LINK', 'META', 'TEMPLATE', 'NOSCRIPT', 'FORM', 'INPUT', 'BUTTON', 'TEXTAREA', 'SELECT', 'VIDEO', 'HEAD', 'TITLE', 'FRAME', 'FRAMESET', 'CANVAS']);
 const SAFE_STYLES = ['color', 'background-color', 'font-weight', 'font-style', 'text-decoration', 'text-decoration-line', 'text-align'];
 const TAG_RE = /<\/?[a-z][^>]*>/i;
 function escapePlain(s) {
@@ -1698,19 +1715,31 @@ function sanitizeHtml(html, opts = {}) {
             if (!SAFE_TAGS.has(tag)) { ch.replaceWith(...ch.childNodes); return; }
             if (tag === 'IMG') {
                 const src = ch.getAttribute('src') || '';
-                if (!/^(data:image\/[a-z+.-]+;base64,|https?:\/\/)/i.test(src)) { ch.remove(); return; }
+                if (!/^(data:image\/[a-z+.-]+;base64,|https?:\/\/|media:[a-z0-9]+$)/i.test(src)) { ch.remove(); return; }
+            }
+            if (tag === 'AUDIO') {
+                const src = ch.getAttribute('src') || '';
+                if (!/^(data:audio\/[a-z0-9.+-]+;base64,|media:[a-z0-9]+$)/i.test(src)) { ch.remove(); return; }
+                ch.setAttribute('controls', ''); ch.setAttribute('preload', 'none');
             }
             [...ch.attributes].forEach(a => {
                 const n = a.name.toLowerCase();
-                if (n === 'style') {
+                if (n === 'style' && tag === 'SPAN' && /^om( on| off| hit)?$/.test(ch.className)) {
+                    const kept = ['left', 'top', 'width', 'height'].map(p => { const v = ch.style.getPropertyValue(p); return /^[\d.]+%$/.test(v) ? `${p}:${v}` : ''; }).filter(Boolean).join(';');
+                    if (kept) ch.setAttribute('style', kept); else ch.removeAttribute('style');
+                } else if (n === 'style') {
                     const kept = SAFE_STYLES.map(p => {
                         if (!keepColors && (p === 'color' || p === 'background-color')) return '';
                         const v = ch.style.getPropertyValue(p);
                         return v && !/url\(|expression|javascript/i.test(v) ? `${p}:${v}` : '';
                     }).filter(Boolean).join(';');
                     if (kept) ch.setAttribute('style', kept); else ch.removeAttribute('style');
-                } else if (tag === 'IMG' && (n === 'src' || n === 'alt')) {
+                } else if ((tag === 'IMG' && (n === 'src' || n === 'alt')) || (tag === 'AUDIO' && (n === 'src' || n === 'controls' || n === 'preload'))) {
                     /* keep */
+                } else if (tag === 'DIV' && n === 'class' && a.value === 'occl') {
+                    /* keep (image occlusion) */
+                } else if (tag === 'SPAN' && n === 'class' && /^om( on| off| hit)?$/.test(a.value)) {
+                    /* keep (image occlusion masks) */
                 } else if (tag === 'SPAN' && n === 'class' && /^(cloze|cloze-hide)$/.test(a.value)) {
                     /* keep (cloze deletions) */
                 } else if (tag === 'A' && n === 'href') {
@@ -1731,7 +1760,7 @@ function sanitizeHtml(html, opts = {}) {
     walk(doc.body);
     return doc.body.innerHTML.replace(/(<br\s*\/?>\s*)+$/i, '').trim();
 }
-const isBlank = html => !stripHtml(html).trim() && !hasImage(html);
+const isBlank = html => !stripHtml(html).trim() && !hasImage(html) && !/<audio\s/i.test(html || '');
 
 /* ============================================================
    Themes & defaults
@@ -1773,7 +1802,7 @@ const OPT_DEFAULTS = {
 };
 const DEFAULT_SETTINGS = {
     theme: 'auto', cardSize: 'm', showIntervals: true,
-    autoSpeak: false, answerMode: 'flip', learnAhead: 20, cloudSync: true,
+    autoSpeak: false, autoAudio: false, answerMode: 'flip', learnAhead: 20, cloudSync: true,
     quizCount: 20, writeCount: 20, chronoDuration: 60,
     rolloverHour: 4, syncKey: '', settingsMod: 0, autoBackup: true, libSeen: false, goalName: '', goalDate: '', deckSort: 'recent',
     ...OPT_DEFAULTS
@@ -1866,7 +1895,7 @@ function normalizeCard(c) {
         lastReview: c.lastReview ? num(c.lastReview, null) : null,
         errors: Math.max(0, num(c.errors, lapses >= 2 ? 1 : 0)), wrong: num(c.wrong, 0), right: num(c.right, 0),
         suspended: !!c.suspended, flag: clamp(Math.round(num(c.flag, 0)), 0, 7), marked: !!c.marked, buriedUntil: num(c.buriedUntil, 0),
-        nid: c.nid ? String(c.nid) : '', kind: ['rev', 'cloze'].includes(c.kind) ? c.kind : 'basic', ord: Math.max(0, num(c.ord, 0)),
+        nid: c.nid ? String(c.nid) : '', kind: ['rev', 'cloze', 'occl'].includes(c.kind) ? c.kind : 'basic', ord: Math.max(0, num(c.ord, 0)),
         nf: c.nf && typeof c.nf === 'object' ? { front: sanitizeHtml(c.nf.front || ''), back: sanitizeHtml(c.nf.back || ''), text: sanitizeHtml(c.nf.text || ''), extra: sanitizeHtml(c.nf.extra || '') } : null,
         fs: c.fs && num(c.fs.s, 0) > 0 ? { s: num(c.fs.s), d: clamp(num(c.fs.d, 5), 1, 10), t: num(c.fs.t, 0) } : null,
         mod: num(c.mod, 0)
@@ -1946,11 +1975,11 @@ function normalizeState(raw) {
     const deleted = {};
     if (raw.deleted && typeof raw.deleted === 'object') Object.entries(raw.deleted).forEach(([k, v]) => { if (num(v, 0) > 0) deleted[k] = num(v); });
     const revlog = toArray(raw.revlog).filter(r => Array.isArray(r) && r.length >= 4 && Number.isFinite(r[0])).slice(-REVLOG_MAX);
-    return { version: 6, decks, cards, presets, stats: normalizeStats(raw.stats), settings, revlog, deleted, toeic: normalizeToeic(raw.toeic), updatedAt: num(raw.updatedAt, 0) };
+    return { version: 6, decks, cards, presets, stats: normalizeStats(raw.stats), settings, revlog, deleted, toeic: normalizeToeic(raw.toeic), media: normalizeMedia(raw.media), updatedAt: num(raw.updatedAt, 0) };
 }
 function cardSig(c) {
     return [c.deckId, c.state, c.step, c.due, c.interval, c.ease, c.reps, c.lapses, c.suspended ? 1 : 0, c.flag, c.marked ? 1 : 0, c.buriedUntil, c.errors, c.wrong, c.right,
-        c.front.length, c.back.length, c.hint.length, c.detail.length, c.tags.join(','), c.fs ? c.fs.s.toFixed(3) : '', c.lastReview, c.nid, c.kind, c.ord].join('|');
+        c.front.length, c.back.length, c.hint.length, c.detail.length, c.tags.join(','), c.fs ? c.fs.s.toFixed(3) : '', c.lastReview, c.nid, c.kind, c.ord, c.kind === 'occl' && c.nf ? mediaHash(c.nf.back + c.nf.front) : ''].join('|');
 }
 const deckSig = d => JSON.stringify([d.name, d.emoji, d.description, d.parent, d.preset, d.limits]);
 const presetSig = p => JSON.stringify([p.name, p.opts]);
@@ -2191,6 +2220,7 @@ class SuperAnki {
         }
         if (!data || !data.cards.length && !data.decks.length) { data = seedState(); source = 'seed'; }
         this.data = data;
+        this.gcMedia(data);
         this.applySettings();
         this.initSigs();
         this.checkStreak();
@@ -2204,8 +2234,8 @@ class SuperAnki {
     }
 
     serialize() {
-        const { version, decks, cards, presets, stats, settings, revlog, deleted, toeic, updatedAt } = this.data;
-        return JSON.stringify({ version, decks, cards, presets, stats, settings, revlog, deleted, toeic, updatedAt });
+        const { version, decks, cards, presets, stats, settings, revlog, deleted, toeic, media, updatedAt } = this.data;
+        return JSON.stringify({ version, decks, cards, presets, stats, settings, revlog, deleted, toeic, media, updatedAt });
     }
     /* Change tracking: per-card modification times let two devices merge instead of overwriting each other */
     initSigs() {
@@ -3065,6 +3095,10 @@ class SuperAnki {
                     ${sw('autoSpeak', 'Lecture audio automatique')}
                 </div>
                 <div class="set-row">
+                    <div class="txt"><b>Jouer les sons des cartes</b><span>Lance automatiquement l'audio enregistré sur la carte (question, puis réponse).</span></div>
+                    ${sw('autoAudio', 'Jouer les sons des cartes')}
+                </div>
+                <div class="set-row">
                     <div class="txt"><b>Le jour change à</b><span>Les révisions de la nuit comptent pour la veille, comme dans Anki (4 h par défaut).</span></div>
                     ${seg('rolloverHour', [[0, 'Minuit'], [3, '3 h'], [4, '4 h'], [6, '6 h']])}
                 </div>
@@ -3264,6 +3298,7 @@ class SuperAnki {
         }
         s.current = id; s.revealed = false; s.typed = null; s.cardStart = Date.now();
         this.renderSession();
+        this.autoPlayAudio('.fc-front');
         if (this.data.settings.autoSpeak) this.speak('front');
         this.armAutoAdvance();
     }
@@ -3373,6 +3408,7 @@ class SuperAnki {
         if (s.answer === 'type') return this.submitTyped();
         s.revealed = true;
         this.renderSession();
+        this.autoPlayAudio('.fc-back');
         if (this.data.settings.autoSpeak) this.speak('back');
         this.armAutoAdvance();
     }
@@ -3502,7 +3538,7 @@ class SuperAnki {
         const ans = c => this.cardAnswer(c);
         const correctKey = normAnswer(ans(card)) || card.id;
         const seen = new Set([correctKey]);
-        const usable = this.data.cards.filter(c => c.kind !== 'cloze' && c.id !== card.id);
+        const usable = this.data.cards.filter(c => c.kind !== 'cloze' && c.kind !== 'occl' && c.id !== card.id);
         const sameDeck = shuffle(usable.filter(c => c.deckId === card.deckId));
         const others = shuffle(usable.filter(c => c.deckId !== card.deckId)).slice(0, 40);
         const len = stripHtml(ans(card)).length;
@@ -3517,8 +3553,8 @@ class SuperAnki {
         return shuffle([{ id: card.id, ok: true }, ...wrong.map(c => ({ id: c.id, ok: false }))]);
     }
     startQuiz(deckIds, count, chrono = 0) {
-        const pool = this.poolFor(deckIds).filter(c => c.kind !== 'cloze');
-        if (this.data.cards.filter(c => c.kind !== 'cloze').length < 4) { this.toast('Il faut au moins 4 cartes pour un quiz.', 'warning'); return; }
+        const pool = this.poolFor(deckIds).filter(c => c.kind !== 'cloze' && c.kind !== 'occl');
+        if (this.data.cards.filter(c => c.kind !== 'cloze' && c.kind !== 'occl').length < 4) { this.toast('Il faut au moins 4 cartes pour un quiz.', 'warning'); return; }
         if (!pool.length) { this.toast('Aucune carte dans cette sélection.', 'warning'); return; }
         const deck = Array.isArray(deckIds) && deckIds.length === 1 ? this.deck(deckIds[0]) : null;
         const label = deckIds === 'errors' ? 'Mes erreurs' : deck ? deck.name : 'Tous les paquets';
@@ -3809,7 +3845,7 @@ class SuperAnki {
                 <span class="tb-sep"></span>
                 ${b('insertUnorderedList', 'Liste à puces', ic('list'))}${b('insertOrderedList', 'Liste numérotée', ic('listOrdered'))}
                 <span class="tb-sep"></span>
-                ${b('image', 'Ajouter une image', ic('image'))}${b('removeFormat', 'Effacer la mise en forme', ic('eraser'))}
+                ${b('image', 'Ajouter une image', ic('image'))}${b('math', 'Formule LaTeX : \\( ... \\)', '<span style="font-weight:800;font-family:Georgia,serif">∑</span>')}${b('audio', 'Joindre un fichier audio', ic('volume'))}${b('record', 'Enregistrer ma voix', ic('mic'))}${b('removeFormat', 'Effacer la mise en forme', ic('eraser'))}
                 ${cloze ? `<span class="tb-sep tb-cloze"></span><button type="button" class="tb-btn tb-cloze tb-wide" data-cmd="cloze" title="Créer un trou (Ctrl+Maj+C). Maj+clic : même numéro" aria-label="Créer un trou">[…]</button>` : ''}
             </div>
             <div class="editor-area rich" contenteditable="true" id="${id}" data-placeholder="${esc(placeholder)}" role="textbox" aria-multiline="true"></div>
@@ -3818,10 +3854,11 @@ class SuperAnki {
     openCardModal(cardId, presetDeck, prefillFront) {
         if (!this.data.decks.length) { this.toast('Crée d\'abord un paquet.', 'warning'); this.openDeckModal(); return; }
         const card = cardId ? this.card(cardId) : null;
+        if (card && card.kind === 'occl') { this.openOcclusionModal(card.id); return; }
         const inSession = !!this.session;
         const deckId = card ? card.deckId : presetDeck || (this.ui.deck !== 'all' && this.ui.deck !== 'errors' ? this.ui.deck : this.lastDeckUsed) || this.sortedDecks()[0].id;
         const nf = card ? noteFieldsOf(card) : { front: '', back: '' };
-        let type = card ? card.kind : (this.lastNoteType || 'basic');
+        let type = card ? card.kind : (this.lastNoteType && this.lastNoteType !== 'occl' ? this.lastNoteType : 'basic');
         const m = this.openModal({
             title: card ? 'Modifier la carte' : 'Nouvelle carte', size: 'wide',
             body: `
@@ -3860,7 +3897,11 @@ class SuperAnki {
             front.dataset.placeholder = cloze ? 'Ex : La capitale de la France est {{c1::Paris}}.' : 'Question ou terme... (tu peux coller une image)';
             back.dataset.placeholder = cloze ? 'Source, explication, image...' : 'Réponse...';
         };
-        if (typeSel) typeSel.addEventListener('change', () => { type = typeSel.value; relabel(); });
+        if (typeSel) typeSel.addEventListener('change', () => {
+            type = typeSel.value;
+            if (type === 'occl') { const d = $('#cf-deck', m).value; this.closeModal(m); this.openOcclusionModal(null, d); return; }
+            relabel();
+        });
         relabel();
         const save = async keepOpen => {
             const f = sanitizeHtml(front.innerHTML), bk = sanitizeHtml(back.innerHTML);
@@ -3929,6 +3970,9 @@ class SuperAnki {
             }
         }
         if (cmd === 'image') { this.pickImage(area); return; }
+        if (cmd === 'math') { this.insertMath(area); return; }
+        if (cmd === 'audio') { this.pickAudio(area); return; }
+        if (cmd === 'record') { this.recordAudio(area); return; }
         if (cmd === 'cloze') { this.clozeSelection(area, !!(ev && ev.shiftKey)); return; }
         const css = ['red', 'blue', 'highlight'].includes(cmd);
         try { document.execCommand('styleWithCSS', false, css); } catch { /* ignore */ }
@@ -4009,6 +4053,7 @@ class SuperAnki {
                     <select class="select" id="im-deck">${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${d.id === cur ? 'selected' : ''}>${esc(d.emoji)} ${esc(this.deckPath(d.id))}</option>`).join('')}<option value="__new">+ Nouveau paquet...</option></select></div>
                 <div class="field hidden" id="im-newdeck-wrap"><label class="label" for="im-newdeck">Nom du nouveau paquet</label><input class="input" id="im-newdeck" placeholder="Ex : Vocabulaire anglais"></div>
                 <div class="field"><span class="label">Fichier</span><button class="btn btn-soft btn-block" id="im-file">${ic('file')}Choisir un fichier TXT / CSV</button></div>
+                <div class="field"><span class="label">Ou un paquet Anki</span><button class="btn btn-soft btn-block" id="im-apkg">${ic('layers')}Importer un fichier .apkg</button><p class="help">Anki : Fichier › Exporter › « Paquet Anki (.apkg) », en cochant « Prendre en charge les anciennes versions d'Anki ». Les cartes arrivent comme neuves.</p></div>
                 <div class="field"><label class="label" for="im-text">... ou colle tes fiches ici</label><textarea class="textarea" id="im-text" rows="6" placeholder="Capitale de l'Italie ; Rome&#10;H2O ; L'eau"></textarea></div>
                 <label class="check hidden" id="im-usedecks-wrap" style="margin-bottom:10px"><input type="checkbox" id="im-usedecks" checked> Utiliser les paquets et tags indiqués dans le fichier</label>
                 <p class="help" id="im-preview">Aucune fiche détectée pour l'instant.</p>`,
@@ -4036,6 +4081,13 @@ class SuperAnki {
                 refresh();
                 $('#im-file', m).innerHTML = `${ic('check')}${esc(f.name)}`;
             };
+            input.click();
+        });
+        $('#im-apkg', m).addEventListener('click', () => {
+            const input = $('#hidden-file');
+            input.accept = '.apkg,.colpkg,application/zip';
+            input.value = '';
+            input.onchange = () => { const f = input.files[0]; if (f) { this.closeModal(m); this.importApkg(f); } };
             input.click();
         });
         go.addEventListener('click', () => {
@@ -4156,7 +4208,7 @@ class SuperAnki {
             this.closeModal(m);
             const deckIds = sel === 'all' ? null : sel === 'errors' ? 'errors' : [sel];
             if (mode === 'write') {
-                const pool = this.poolFor(deckIds).map(c => c.id);
+                const pool = this.poolFor(deckIds).filter(c => c.kind !== 'occl').map(c => c.id);
                 const d = deckIds && deckIds !== 'errors' ? this.deck(sel) : null;
                 this.startPractice(null, 'type', opt, `Écrire · ${sel === 'errors' ? 'Mes erreurs' : d ? d.name : 'Tous les paquets'}`, pool);
             } else if (mode === 'quiz') this.startQuiz(deckIds, opt, 0);
@@ -5278,7 +5330,7 @@ const FLAGS = [null,
 
 /* ---------- Note types ---------- */
 const CLOZE_RE = /\{\{c(\d+)::([\s\S]*?)(?:::([\s\S]*?))?\}\}/g;
-const NOTE_TYPES = { basic: 'Basique', rev: 'Basique + inversée (liées)', cloze: 'Texte à trous' };
+const NOTE_TYPES = { basic: 'Basique', rev: 'Basique + inversée (liées)', cloze: 'Texte à trous', occl: 'Image à masquer' };
 function clozeNumbers(text) {
     const set = new Set();
     String(text || '').replace(CLOZE_RE, (m, n) => { set.add(Number(n)); return m; });
@@ -5298,6 +5350,7 @@ function clozeAnswerHtml(c) {
 }
 /* front/back are always stored materialized, so the rest of the app never needs to know about note types */
 function materializeCard(c) {
+    if (c.kind === 'occl' && c.nf) { const o = occlusionHtml(c); c.front = o.front; c.back = o.back; return c; }
     if (c.kind === 'cloze' && c.nf) {
         c.front = sanitizeHtml(renderCloze(c.nf.text, c.ord, 'front'));
         const extra = isBlank(c.nf.extra) ? '' : `<br><br><div>${c.nf.extra}</div>`;
@@ -5511,7 +5564,7 @@ Object.assign(SuperAnki.prototype, {
             const seen = new Set();
             cards.forEach(c => {
                 const key = c.nid || c.id;
-                if (c.nf && seen.has(key)) return;
+                if (c.kind === 'occl' || (c.nf && seen.has(key))) return;
                 seen.add(key);
                 const sibs = this.noteSiblings(c), f = noteFieldsOf(c);
                 const nf = { front: f.front, back: f.back };
@@ -6095,6 +6148,540 @@ Object.assign(SuperAnki.prototype, {
         this.data.cards.forEach(c => lines.push([cell(c.front), cell(c.back), c.tags.map(t => t.replace(/\s+/g, '_')).join(' '), this.deckChain(c.deckId).map(d => d.name).join('::')].join('\t')));
         this.downloadFile(`superanki-cartes-${dayKey()}.txt`, lines.join('\n'), 'text/plain');
         this.toast(`${plural(this.data.cards.length, 'carte exportée', 'cartes exportées')} (importable dans Anki)`, 'success', ic('export'));
+    }
+});
+
+/* ============================================================
+   Rich content: shared media store (images / audio referenced as media:<id>),
+   LaTeX formulas (KaTeX, loaded on demand), audio on cards (file or microphone).
+   ============================================================ */
+const MEDIA_MAX_AUDIO = 1500 * 1024;
+function normalizeMedia(m) {
+    const out = {};
+    if (m && typeof m === 'object') Object.entries(m).forEach(([k, v]) => { if (/^[a-z0-9]+$/.test(k) && typeof v === 'string' && v.startsWith('data:')) out[k] = v; });
+    return out;
+}
+function mediaHash(str) {
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0; i < str.length; i++) { const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36) + str.length.toString(36);
+}
+const mediaMime = dataUri => (/^data:([^;,]+)/.exec(dataUri) || [])[1] || '';
+
+Object.assign(SuperAnki.prototype, {
+    /* stores a data: URI once and returns the reference to put in card html */
+    addMedia(dataUri) {
+        const id = mediaHash(dataUri);
+        if (!this.data.media) this.data.media = {};
+        this.data.media[id] = dataUri;
+        return `media:${id}`;
+    },
+    /* drops stored media no card refers to any more (at startup only, so undo never loses a file) */
+    gcMedia(data) {
+        const ids = Object.keys(data.media || {});
+        if (!ids.length) return;
+        const used = new Set();
+        const scan = s => { String(s || '').replace(/media:([a-z0-9]+)/g, (m, id) => { used.add(id); return m; }); };
+        data.cards.forEach(c => { scan(c.front); scan(c.back); scan(c.hint); scan(c.detail); if (c.nf) { scan(c.nf.front); scan(c.nf.back); scan(c.nf.text); scan(c.nf.extra); } });
+        ids.forEach(id => { if (!used.has(id)) delete data.media[id]; });
+    },
+    resolveMedia(root = document) {
+        const media = this.data && this.data.media;
+        if (!media) return;
+        root.querySelectorAll('img[src^="media:"], audio[src^="media:"]').forEach(el => {
+            const v = media[el.getAttribute('src').slice(6)];
+            if (v) el.setAttribute('src', v);
+        });
+    },
+    autoPlayAudio(sel) {
+        if (!this.data.settings.autoAudio) return;
+        const root = $('#view-session') || document;
+        const face = root.querySelector(sel);
+        if (!face) return;
+        this.resolveMedia(face);
+        document.querySelectorAll('#view-session audio').forEach(a => { try { a.pause(); } catch { /* ignore */ } });
+        const a = face.querySelector('audio');
+        if (a) { const p = a.play(); if (p && p.catch) p.catch(() => {}); }
+    },
+
+    /* ---------- LaTeX ---------- */
+    insertMath(area) {
+        document.execCommand('insertText', false, '\\(  \\)');
+        const sel = getSelection();
+        if (sel && sel.modify) for (let i = 0; i < 3; i++) sel.modify('move', 'backward', 'character');
+        this.toast('Écris ta formule entre \\( et \\) (ex : \\(\\frac{a}{b}\\)). Elle s\'affichera sur la carte.', 'success', ic('info'));
+    },
+
+    /* ---------- audio ---------- */
+    pickAudio(area) {
+        const input = $('#hidden-file');
+        input.accept = 'audio/*';
+        input.value = '';
+        input.onchange = async () => {
+            const f = input.files[0];
+            if (!f) return;
+            if (f.size > MEDIA_MAX_AUDIO) { this.toast('Fichier trop lourd (max ≈ 1,5 Mo). Raccourcis l\'extrait.', 'warning'); return; }
+            this.insertAudio(await readAsDataURL(f), area);
+        };
+        input.click();
+    },
+    insertAudio(dataUri, area) {
+        dataUri = dataUri.replace(/^data:([^;,]+)(;[^,]*?)?;base64,/, 'data:$1;base64,');
+        area.focus();
+        if (this.editorRange && area.contains(this.editorRange.startContainer)) { const sel = getSelection(); sel.removeAllRanges(); sel.addRange(this.editorRange); }
+        document.execCommand('insertHTML', false, `<audio controls src="${dataUri}"></audio><br>`);
+        this.toast('Audio ajouté', 'success', ic('volume'));
+    },
+    async recordAudio(area) {
+        if (!navigator.mediaDevices || !window.MediaRecorder) { this.toast('Enregistrement non disponible sur ce navigateur.', 'warning'); return; }
+        let stream;
+        try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { this.toast('Micro refusé ou introuvable.', 'error'); return; }
+        const type = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || '';
+        const rec = new MediaRecorder(stream, type ? { mimeType: type, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 });
+        const chunks = [];
+        rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+        let secs = 0, done = false;
+        const timer = setInterval(() => { secs++; const t = $('#rec-time'); if (t) t.textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`; if (secs >= 90) { const b = $('#rec-stop'); if (b) b.click(); } }, 1000);
+        const m = this.openModal({
+            title: 'Enregistrement', size: 'narrow',
+            body: `<div class="rec-box"><span class="rec-dot"></span><b id="rec-time">0:00</b></div><p class="help" style="text-align:center">Parle près du micro. 90 secondes maximum.</p>`,
+            foot: `<button class="btn btn-soft" data-close>Annuler</button><button class="btn btn-primary" id="rec-stop">${ic('check')}Terminer</button>`,
+            onClose: () => { clearInterval(timer); if (rec.state !== 'inactive') rec.stop(); stream.getTracks().forEach(t => t.stop()); }
+        });
+        rec.onstop = async () => {
+            if (!done) return;
+            const blob = new Blob(chunks, { type: (rec.mimeType || type || 'audio/webm').split(';')[0] });
+            if (blob.size > MEDIA_MAX_AUDIO) { this.toast('Enregistrement trop long : raccourcis-le.', 'warning'); return; }
+            this.insertAudio(await readAsDataURL(blob), area);
+        };
+        rec.start();
+        $('#rec-stop', m).addEventListener('click', () => { done = true; this.closeModal(m); });
+    }
+});
+
+/* ---------- KaTeX on demand + media resolution, applied to every card face on screen ---------- */
+const Rich = {
+    state: 0, queue: false, last: new WeakMap(),
+    load() {
+        if (this.state) return;
+        this.state = 1;
+        const css = document.createElement('link');
+        css.rel = 'stylesheet'; css.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css';
+        document.head.appendChild(css);
+        loadScript('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js', 15000)
+            .then(() => loadScript('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js', 15000))
+            .then(() => { this.state = 2; this.schedule(); })
+            .catch(() => { this.state = 3; });
+    },
+    scan() {
+        this.queue = false;
+        if (typeof app === 'undefined' || !app.data) return;
+        app.resolveMedia(document);
+        const els = [...document.querySelectorAll('.rich:not([contenteditable]), .missed-item, .tq-stem')].filter(el => /\\\(|\\\[|\$\$/.test(el.textContent) && !el.closest('[contenteditable]'));
+        if (!els.length) return;
+        if (this.state === 0) this.load();
+        if (this.state !== 2 || !window.renderMathInElement) return;
+        els.forEach(el => {
+            const t = el.textContent;
+            if (this.last.get(el) === t) return;
+            this.last.set(el, t);
+            try { window.renderMathInElement(el, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '\\(', right: '\\)', display: false }], throwOnError: false }); } catch { /* ignore */ }
+            this.last.set(el, el.textContent);
+        });
+    },
+    schedule() { if (this.queue) return; this.queue = true; requestAnimationFrame(() => this.scan()); },
+    start() { new MutationObserver(() => this.schedule()).observe(document.body, { childList: true, subtree: true }); }
+};
+Rich.start();
+
+/* ============================================================
+   Image occlusion: draw boxes over an image, one card per box.
+   Stored as a note kind 'occl': nf.front = image reference (media:<id>),
+   nf.back = JSON {m: [[x, y, w, h] in %], mode: 'all' | 'one'}, nf.extra = text shown with the answer.
+   ============================================================ */
+function occlusionData(c) {
+    let d = null;
+    try { d = JSON.parse(c.nf.back); } catch { d = null; }
+    d = d && Array.isArray(d.m) ? d : { m: [], mode: 'all' };
+    d.m = d.m.filter(r => Array.isArray(r) && r.length === 4).map(r => r.map(v => Math.round(clamp(num(v), 0, 100) * 100) / 100));
+    return d;
+}
+function occlusionHtml(c) {
+    const d = occlusionData(c), act = c.ord - 1;
+    const box = (r, cls) => `<span class="${cls}" style="left:${r[0]}%;top:${r[1]}%;width:${r[2]}%;height:${r[3]}%"></span>`;
+    const img = `<img src="${esc(c.nf.front)}" alt="">`;
+    const others = (cls) => d.mode === 'one' ? '' : d.m.map((r, i) => (i === act ? '' : box(r, cls))).join('');
+    const extra = isBlank(c.nf.extra) ? '' : `<br><div>${c.nf.extra}</div>`;
+    return {
+        front: sanitizeHtml(`<div class="occl">${img}${others('om')}${d.m[act] ? box(d.m[act], 'om on') : ''}</div>`),
+        back: sanitizeHtml(`<div class="occl">${img}${others('om')}${d.m[act] ? box(d.m[act], 'om hit') : ''}</div>${extra}`)
+    };
+}
+
+Object.assign(SuperAnki.prototype, {
+    openOcclusionModal(cardId, presetDeck) {
+        if (!this.data.decks.length) { this.toast('Crée d\'abord un paquet.', 'warning'); this.openDeckModal(); return; }
+        const card = cardId ? this.card(cardId) : null;
+        const sibs = card ? this.noteSiblings(card).sort((a, b) => a.ord - b.ord) : [];
+        const old = card ? occlusionData(card) : null;
+        let img = card ? (this.data.media[card.nf.front.slice(6)] || '') : '';
+        let imgRef = card ? card.nf.front : '';
+        let masks = old ? old.m.map(r => [...r]) : [];
+        const deckId = card ? card.deckId : presetDeck || (this.ui.deck !== 'all' && this.ui.deck !== 'errors' ? this.ui.deck : this.lastDeckUsed) || this.sortedDecks()[0].id;
+        const m = this.openModal({
+            title: card ? 'Modifier l\'image à masquer' : 'Nouvelle image à masquer', size: 'wide',
+            body: `<div class="field two-col">
+                    <div><label class="label" for="oc-deck">Paquet</label><select class="select" id="oc-deck">${this.sortedDecks().map(d => `<option value="${esc(d.id)}" ${d.id === deckId ? 'selected' : ''}>${esc(d.emoji)} ${esc(this.deckPath(d.id))}</option>`).join('')}</select></div>
+                    <div><label class="label" for="oc-mode">Mode</label><select class="select" id="oc-mode"><option value="all" ${!old || old.mode === 'all' ? 'selected' : ''}>Tout masquer, un cadre à la fois</option><option value="one" ${old && old.mode === 'one' ? 'selected' : ''}>Masquer un seul cadre à la fois</option></select></div>
+                </div>
+                <div class="field"><span class="label">Image</span><button class="btn btn-soft" id="oc-pick" type="button">${ic('image')}<span id="oc-pick-t">${img ? 'Changer l\'image' : 'Choisir une image'}</span></button>
+                    <span class="help" style="margin-left:8px">Schéma, carte, anatomie, tableau...</span></div>
+                <div class="field"><div class="occ-wrap" id="oc-wrap"><div class="occ-stage" id="oc-stage"></div></div>
+                    <p class="help" id="oc-help">Dessine des cadres sur ce que tu veux cacher (un cadre = une carte). Touche un cadre pour le supprimer.</p>
+                    <div class="row-gap" style="margin-top:8px"><button class="btn btn-soft btn-sm" id="oc-undo" type="button">${ic('undo')}Retirer le dernier</button><button class="btn btn-soft btn-sm" id="oc-clear" type="button">${ic('trash')}Tout effacer</button><span class="small muted" id="oc-count"></span></div></div>
+                <div class="field"><label class="label" for="oc-extra">Texte affiché avec la réponse (optionnel)</label><input class="input" id="oc-extra" placeholder="Ex : Source, explication..." value="${esc(card ? stripHtml(card.nf.extra) : '')}"></div>
+                <div class="field"><label class="label" for="oc-tags">Tags (séparés par des virgules)</label><input class="input" id="oc-tags" value="${esc(card ? card.tags.join(', ') : '')}"></div>`,
+            foot: `${card ? `<button class="btn btn-danger-soft" id="oc-del" style="margin-right:auto">${ic('trash')}Supprimer</button>` : ''}<button class="btn btn-soft" data-close>Annuler</button><button class="btn btn-primary" id="oc-save">${ic('check')}Enregistrer</button>`
+        });
+        const stage = $('#oc-stage', m);
+        const draw = () => {
+            stage.innerHTML = img ? `<img src="${esc(img)}" alt="" draggable="false">${masks.map((r, i) => `<span class="occ-m" data-i="${i}" style="left:${r[0]}%;top:${r[1]}%;width:${r[2]}%;height:${r[3]}%"><b>${i + 1}</b></span>`).join('')}` : '<div class="occ-empty">Choisis d\'abord une image</div>';
+            $('#oc-count', m).textContent = masks.length ? `${plural(masks.length, 'cadre')} = ${plural(masks.length, 'carte')}` : '';
+        };
+        draw();
+        $('#oc-pick', m).addEventListener('click', () => {
+            const input = $('#hidden-file');
+            input.accept = 'image/*'; input.value = '';
+            input.onchange = async () => {
+                const f = input.files[0];
+                if (!f || !f.type.startsWith('image/')) return;
+                try {
+                    img = await this.compressImage(f);
+                    imgRef = '';
+                    if (masks.length && !(await this.confirm({ title: 'Garder les cadres ?', message: 'Les cadres déjà dessinés seront gardés sur la nouvelle image.', ok: 'Garder' }))) masks = [];
+                    $('#oc-pick-t', m).textContent = 'Changer l\'image';
+                    draw();
+                } catch { this.toast('Impossible de lire cette image.', 'error'); }
+            };
+            input.click();
+        });
+        let start = null, temp = null;
+        const pt = e => { const r = stage.getBoundingClientRect(); return [clamp((e.clientX - r.left) / r.width * 100, 0, 100), clamp((e.clientY - r.top) / r.height * 100, 0, 100)]; };
+        stage.addEventListener('pointerdown', e => {
+            if (!img) return;
+            const mk = e.target.closest('.occ-m');
+            if (mk) { masks.splice(Number(mk.dataset.i), 1); draw(); return; }
+            start = pt(e);
+            temp = document.createElement('span'); temp.className = 'occ-m temp'; stage.appendChild(temp);
+            stage.setPointerCapture(e.pointerId);
+        });
+        stage.addEventListener('pointermove', e => {
+            if (!start) return;
+            const p = pt(e), x = Math.min(start[0], p[0]), y = Math.min(start[1], p[1]);
+            Object.assign(temp.style, { left: `${x}%`, top: `${y}%`, width: `${Math.abs(p[0] - start[0])}%`, height: `${Math.abs(p[1] - start[1])}%` });
+        });
+        const end = e => {
+            if (!start) return;
+            const p = pt(e), w = Math.abs(p[0] - start[0]), h = Math.abs(p[1] - start[1]);
+            if (w >= 2 && h >= 2) masks.push([Math.min(start[0], p[0]), Math.min(start[1], p[1]), w, h].map(v => Math.round(v * 100) / 100));
+            start = null; temp = null; draw();
+        };
+        stage.addEventListener('pointerup', end);
+        stage.addEventListener('pointercancel', () => { start = null; draw(); });
+        $('#oc-undo', m).addEventListener('click', () => { masks.pop(); draw(); });
+        $('#oc-clear', m).addEventListener('click', () => { masks = []; draw(); });
+        const del = $('#oc-del', m);
+        if (del) del.addEventListener('click', async () => { if (await this.opDelete(sibs.map(c => c.id), true)) this.closeModal(m); });
+        $('#oc-save', m).addEventListener('click', () => {
+            if (!img) { this.toast('Choisis une image.', 'warning'); return; }
+            if (!masks.length) { this.toast('Dessine au moins un cadre sur l\'image.', 'warning'); return; }
+            const dId = $('#oc-deck', m).value, mode = $('#oc-mode', m).value;
+            const tags = $('#oc-tags', m).value.split(',').map(t => t.trim()).filter(Boolean);
+            const extra = sanitizeHtml(esc($('#oc-extra', m).value.trim()));
+            const ref = imgRef || this.addMedia(img);
+            const nf = { front: ref, back: JSON.stringify({ m: masks, mode }), text: '', extra };
+            const now = Date.now();
+            this.lastDeckUsed = dId;
+            const made = this.change(card ? 'modification d\'image à masquer' : 'nouvelle image à masquer', sibs.map(c => c.id), () => {
+                const created = [];
+                const nid = card ? card.nid : uid('n');
+                masks.forEach((r, i) => {
+                    let c = sibs.find(x => x.ord === i + 1);
+                    if (!c) {
+                        c = { id: uid('c'), ...freshCard(), deckId: dId, hint: '', detail: '', tags, created: now + i, nid, kind: 'occl', ord: i + 1, nf: null, front: '', back: '' };
+                        this.data.cards.push(c); created.push(c.id);
+                    }
+                    Object.assign(c, { deckId: dId, tags: [...tags], nf: { ...nf }, mod: now });
+                    materializeCard(c);
+                });
+                sibs.filter(c => c.ord > masks.length).forEach(c => { const k = this.data.cards.indexOf(c); if (k >= 0) this.data.cards.splice(k, 1); });
+                return created;
+            });
+            this.closeModal(m);
+            this.toast(card ? 'Image modifiée' : `${plural(masks.length, 'carte créée', 'cartes créées')}`, 'success');
+            if (this.view === 'decks') this.renderDecks(); else if (this.view === 'dashboard') this.renderDashboard();
+        });
+    }
+});
+
+/* ============================================================
+   Anki package import (.apkg, older-versions format): zip -> SQLite -> notes, cards, media.
+   Self-contained: a small zip reader (native DecompressionStream) and a read-only SQLite reader.
+   Cards arrive as new cards (scheduling is not imported).
+   ============================================================ */
+const Zip = {
+    async inflate(bytes) {
+        const ds = new DecompressionStream('deflate-raw');
+        const stream = new Blob([bytes]).stream().pipeThrough(ds);
+        return new Uint8Array(await new Response(stream).arrayBuffer());
+    },
+    async open(buf) {
+        const dv = new DataView(buf), u8 = new Uint8Array(buf);
+        let e = buf.byteLength - 22;
+        while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+        if (e < 0) throw new Error('Ce fichier n\'est pas une archive valide');
+        const n = dv.getUint16(e + 10, true);
+        let p = dv.getUint32(e + 16, true);
+        const files = {};
+        for (let i = 0; i < n; i++) {
+            if (dv.getUint32(p, true) !== 0x02014b50) break;
+            const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nlen = dv.getUint16(p + 28, true), xlen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+            const name = new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nlen));
+            files[name] = { method, csize, off };
+            p += 46 + nlen + xlen + clen;
+        }
+        const read = async name => {
+            const f = files[name];
+            if (!f) return null;
+            const nlen = dv.getUint16(f.off + 26, true), xlen = dv.getUint16(f.off + 28, true), start = f.off + 30 + nlen + xlen;
+            const data = u8.subarray(start, start + f.csize);
+            return f.method === 0 ? data : f.method === 8 ? Zip.inflate(data) : null;
+        };
+        return { names: Object.keys(files), read };
+    }
+};
+
+/* minimal read-only SQLite (table b-trees only): enough for Anki collections */
+class MiniSqlite {
+    constructor(bytes) {
+        this.b = bytes; this.dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        if (new TextDecoder().decode(bytes.subarray(0, 15)) !== 'SQLite format 3') throw new Error('Base de données illisible');
+        const ps = this.dv.getUint16(16); this.ps = ps === 1 ? 65536 : ps;
+        this.U = this.ps - this.b[20];
+    }
+    varint(p) {
+        let v = 0n;
+        for (let i = 0; i < 9; i++) {
+            const c = this.b[p + i];
+            if (i === 8) { v = (v << 8n) | BigInt(c); return [Number(v), 9]; }
+            v = (v << 7n) | BigInt(c & 0x7f);
+            if (!(c & 0x80)) return [Number(v), i + 1];
+        }
+    }
+    payload(pos, total, localSize) {
+        if (localSize >= total) return this.b.subarray(pos, pos + total);
+        const out = new Uint8Array(total);
+        out.set(this.b.subarray(pos, pos + localSize), 0);
+        let got = localSize, next = this.dv.getUint32(pos + localSize);
+        while (got < total && next) {
+            const o = (next - 1) * this.ps, take = Math.min(this.U - 4, total - got);
+            out.set(this.b.subarray(o + 4, o + 4 + take), got);
+            got += take; next = this.dv.getUint32(o);
+        }
+        return out;
+    }
+    record(buf) {
+        const dec = new TextDecoder();
+        let [hl, n] = (() => { const v = this.varintIn(buf, 0); return v; })();
+        const types = []; let p = n;
+        while (p < hl) { const [t, k] = this.varintIn(buf, p); types.push(t); p += k; }
+        const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength), row = [];
+        p = hl;
+        for (const t of types) {
+            let v = null;
+            if (t === 0) v = null;
+            else if (t >= 1 && t <= 6) { const len = [0, 1, 2, 3, 4, 6, 8][t]; let x = 0n; for (let i = 0; i < len; i++) x = (x << 8n) | BigInt(buf[p + i]); if (buf[p] & 0x80) x -= 1n << BigInt(len * 8); v = Number(x); p += len; }
+            else if (t === 7) { v = dv.getFloat64(p); p += 8; }
+            else if (t === 8) v = 0; else if (t === 9) v = 1;
+            else if (t >= 12) { const len = t % 2 === 0 ? (t - 12) / 2 : (t - 13) / 2; const sl = buf.subarray(p, p + len); v = t % 2 === 0 ? sl : dec.decode(sl); p += len; }
+            row.push(v);
+        }
+        return row;
+    }
+    varintIn(buf, p) {
+        let v = 0n;
+        for (let i = 0; i < 9; i++) {
+            const c = buf[p + i];
+            if (i === 8) { v = (v << 8n) | BigInt(c); return [Number(v), 9]; }
+            v = (v << 7n) | BigInt(c & 0x7f);
+            if (!(c & 0x80)) return [Number(v), i + 1];
+        }
+    }
+    /* all rows of a table: [{id: rowid, c: [columns]}] */
+    rows(rootPage) {
+        const out = [];
+        const walk = pg => {
+            const base = (pg - 1) * this.ps, hdr = pg === 1 ? 100 : 0, type = this.b[base + hdr], cells = this.dv.getUint16(base + hdr + 3);
+            if (type === 0x05) {
+                const ptr = base + hdr + 12;
+                for (let i = 0; i < cells; i++) walk(this.dv.getUint32(base + this.dv.getUint16(ptr + i * 2)));
+                walk(this.dv.getUint32(base + hdr + 8));
+            } else if (type === 0x0d) {
+                const ptr = base + hdr + 8;
+                for (let i = 0; i < cells; i++) {
+                    let p = base + this.dv.getUint16(ptr + i * 2);
+                    const [plen, a] = this.varint(p); p += a;
+                    const [rowid, b2] = this.varint(p); p += b2;
+                    const X = this.U - 35;
+                    let local = plen;
+                    if (plen > X) { const M = Math.floor((this.U - 12) * 32 / 255) - 23, K = M + ((plen - M) % (this.U - 4)); local = K <= X ? K : M; }
+                    out.push({ id: rowid, c: this.record(this.payload(p, plen, local)) });
+                }
+            }
+        };
+        walk(rootPage);
+        return out;
+    }
+    table(name) {
+        const master = this.rows(1).find(r => r.c[0] === 'table' && r.c[1] === name);
+        return master ? this.rows(master.c[3]) : [];
+    }
+}
+
+const APKG_MIME = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml', bmp: 'image/bmp', mp3: 'audio/mpeg', ogg: 'audio/ogg', wav: 'audio/wav', m4a: 'audio/mp4', aac: 'audio/aac', opus: 'audio/ogg', oga: 'audio/ogg', flac: 'audio/flac', webm: 'audio/webm' };
+const bytesToB64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+
+/* Anki field template -> html (conditionals, field substitution; unknown tags dropped) */
+function apkgRender(tpl, fields, front) {
+    let out = String(tpl || '');
+    for (let i = 0; i < 4; i++) {
+        out = out.replace(/\{\{#([^}]+)\}\}([\s\S]*?)\{\{\/\1\}\}/g, (m, f, body) => (fields[f.trim()] || '').trim() ? body : '');
+        out = out.replace(/\{\{\^([^}]+)\}\}([\s\S]*?)\{\{\/\1\}\}/g, (m, f, body) => (fields[f.trim()] || '').trim() ? '' : body);
+    }
+    return out.replace(/\{\{([^}]+)\}\}/g, (m, name) => {
+        name = name.trim();
+        if (name === 'FrontSide') return front || '';
+        if (name === 'Tags' || name === 'Type' || name === 'Deck' || name === 'Subdeck' || name === 'Card') return '';
+        const f = name.includes(':') ? name.split(':').pop() : name;
+        return fields[f] || '';
+    });
+}
+
+Object.assign(SuperAnki.prototype, {
+    async importApkg(file) {
+        const busy = this.openModal({ title: 'Import du paquet Anki', size: 'narrow', body: '<p class="muted" id="apkg-msg">Lecture du fichier...</p><div class="progress"><i id="apkg-bar" style="width:5%;background:var(--primary)"></i></div>' });
+        const say = (t, pct) => { const m = $('#apkg-msg', busy), b = $('#apkg-bar', busy); if (m) m.textContent = t; if (b) b.style.width = `${pct}%`; };
+        try {
+            if (typeof DecompressionStream === 'undefined') throw new Error('Ce navigateur est trop ancien pour lire les paquets Anki.');
+            const zip = await Zip.open(await file.arrayBuffer());
+            const dbName = zip.names.includes('collection.anki21') ? 'collection.anki21' : zip.names.includes('collection.anki2') ? 'collection.anki2' : null;
+            if (!dbName) throw new Error('Aucune collection trouvée dans ce fichier.');
+            say('Lecture des cartes...', 15);
+            const dbBytes = await zip.read(dbName);
+            const db = new MiniSqlite(dbBytes);
+            const notes = db.table('notes'), cardsT = db.table('cards'), col = db.table('col')[0];
+            if (!col || !notes.length) throw new Error('Paquet vide.');
+            const looksStub = notes.length <= 2 && notes.some(n => /please update|mettez à jour|update to the latest/i.test(String(n.c[6])));
+            if (looksStub || (zip.names.includes('collection.anki21b') && dbName === 'collection.anki2' && notes.length <= 2)) {
+                throw new Error('Ce paquet est au nouveau format d\'Anki. Réexporte-le en cochant « Prendre en charge les anciennes versions d\'Anki ».');
+            }
+            const models = JSON.parse(col.c[9] || '{}'), decks = JSON.parse(col.c[10] || '{}');
+            let mediaMap = {};
+            try { const mb = await zip.read('media'); if (mb) mediaMap = JSON.parse(new TextDecoder().decode(mb)); } catch { mediaMap = {}; }
+            const mediaByName = {};
+            Object.entries(mediaMap).forEach(([k, v]) => { mediaByName[v] = k; mediaByName[(() => { try { return decodeURIComponent(v); } catch { return v; } })()] = k; });
+            const cache = new Map();
+            let skippedMedia = 0;
+            const mediaRef = async name => {
+                if (cache.has(name)) return cache.get(name);
+                let ref = null;
+                const key = mediaByName[name] ?? mediaByName[(() => { try { return decodeURIComponent(name); } catch { return name; } })()];
+                if (key !== undefined) {
+                    const bytes = await zip.read(String(key));
+                    const ext = (name.split('.').pop() || '').toLowerCase(), mime = APKG_MIME[ext];
+                    if (bytes && mime) {
+                        if (mime.startsWith('audio/')) { if (bytes.length <= MEDIA_MAX_AUDIO * 2) ref = this.addMedia(`data:${mime};base64,${bytesToB64(bytes)}`); }
+                        else if (bytes.length > 250 * 1024 && mime !== 'image/svg+xml') {
+                            try { ref = this.addMedia(await this.compressImage(new File([bytes], name, { type: mime }))); } catch { ref = null; }
+                        } else if (mime !== 'image/svg+xml') ref = this.addMedia(`data:${mime};base64,${bytesToB64(bytes)}`);
+                    }
+                }
+                if (!ref) skippedMedia++;
+                cache.set(name, ref);
+                return ref;
+            };
+            const fixMedia = async html => {
+                const names = new Set();
+                html.replace(/<img[^>]+src=["']([^"']+)["']/gi, (m, n) => { names.add(n); return m; });
+                html.replace(/\[sound:([^\]]+)\]/g, (m, n) => { names.add(n); return m; });
+                for (const n of names) {
+                    if (/^(data:|https?:)/i.test(n)) continue;
+                    const ref = await mediaRef(n);
+                    const esc2 = n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    if (/\.(mp3|ogg|wav|m4a|aac|opus|oga|flac|webm)$/i.test(n)) html = html.replace(new RegExp(`\\[sound:${esc2}\\]`, 'g'), ref ? `<audio controls src="${ref}"></audio>` : '');
+                    else html = html.replace(new RegExp(`(<img[^>]+src=["'])${esc2}(["'])`, 'gi'), ref ? `$1${ref}$2` : '$1x:$2');
+                }
+                return html.replace(/\[sound:[^\]]*\]/g, '');
+            };
+            const cardsByNote = new Map();
+            cardsT.forEach(r => { const nid = r.c[1]; (cardsByNote.get(nid) || cardsByNote.set(nid, []).get(nid)).push({ did: r.c[2], ord: r.c[3] }); });
+            const deckName = did => (decks[did] && decks[did].name) || 'Importé';
+            const now = Date.now(), made = [], deckIds = new Set();
+            const deckFor = path => {
+                let parent = null, found = null;
+                String(path).split('::').map(x => x.trim()).filter(Boolean).forEach(name => {
+                    found = this.data.decks.find(d => d.name === name && (d.parent || null) === parent);
+                    if (!found) { found = { id: uid('d'), name, emoji: '📥', description: '', created: now, parent, opts: null, mod: 0, preset: null, limits: null }; this.data.decks.push(found); }
+                    parent = found.id;
+                });
+                return found ? found.id : null;
+            };
+            let count = 0, done = 0;
+            const plan = [];
+            for (const note of notes) {
+                const model = models[note.c[2]], cs = cardsByNote.get(note.id);
+                if (!model || !cs) continue;
+                const vals = String(note.c[6]).split('\x1f'), fields = {};
+                model.flds.forEach((f, i) => { fields[f.name] = vals[i] || ''; });
+                plan.push({ note, model, cs, vals, fields });
+            }
+            if (!plan.length) throw new Error('Aucune carte lisible dans ce paquet.');
+            const created = [];
+            for (const it of plan) {
+                if (done % 20 === 0) { say(`Conversion des cartes (${done}/${plan.length})...`, 20 + Math.round(done / plan.length * 75)); await new Promise(r => setTimeout(r, 0)); }
+                done++;
+                const tags = String(it.note.c[5]).split(/\s+/).filter(t => t && !/^(leech|marked)$/i.test(t)).map(t => t.replace(/::/g, '/'));
+                const toHtml = async s => sanitizeHtml(await fixMedia(s));
+                if (it.model.type === 1) {
+                    const text = await toHtml(it.vals[0] || ''), extra = await toHtml(it.vals[1] || '');
+                    const nums = clozeNumbers(text);
+                    if (!nums.length) continue;
+                    const did = deckFor(deckName(it.cs[0].did)), nid = uid('n');
+                    nums.forEach((n, i) => { const c = { id: uid('c'), ...freshCard(), deckId: did, hint: '', detail: '', tags: [...tags], created: now + count++, nid, kind: 'cloze', ord: n, nf: { front: '', back: '', text, extra }, front: '', back: '' }; materializeCard(c); created.push(c); });
+                } else {
+                    for (const cd of it.cs) {
+                        const t = it.model.tmpls.find(x => x.ord === cd.ord) || it.model.tmpls[0];
+                        const q = apkgRender(t.qfmt, it.fields, ''), aRaw = apkgRender(t.afmt, it.fields, q);
+                        const a = aRaw.split(/<hr id=["']?answer["']?\s*\/?>/i).pop();
+                        const front = await toHtml(q), back = await toHtml(a);
+                        if (isBlank(front)) continue;
+                        created.push({ id: uid('c'), ...freshCard(), deckId: deckFor(deckName(cd.did)), front, back, hint: '', detail: '', tags: [...tags], created: now + count++, nid: '', kind: 'basic', ord: 0, nf: null });
+                    }
+                }
+            }
+            if (!created.length) throw new Error('Aucune carte n\'a pu être convertie.');
+            this.change('import .apkg', [], () => { created.forEach(c => { deckIds.add(c.deckId); this.data.cards.push(c); }); return created.map(c => c.id); }, { decks: true });
+            this.closeModal(busy);
+            this.ui.deck = [...deckIds][0]; this.ui.filter = 'all';
+            this.go('decks');
+            this.toast(`${plural(created.length, 'carte importée', 'cartes importées')} dans ${plural(deckIds.size, 'paquet')}${skippedMedia ? ` · ${plural(skippedMedia, 'média ignoré', 'médias ignorés')} (format ou taille)` : ''}`, 'success', null, null);
+        } catch (e) {
+            console.error(e);
+            this.closeModal(busy);
+            this.toast(e.message || 'Import impossible', 'error');
+        }
     }
 });
 
@@ -7357,7 +7944,7 @@ function mergeStates(L, R) {
     const toeic = mergeToeic(L.toeic || normalizeToeic(), R.toeic || normalizeToeic());
     if (toeic.attempts.length > (L.toeic ? L.toeic.attempts.length : 0)) localChanged = true;
     if (toeic.attempts.length > (R.toeic ? R.toeic.attempts.length : 0)) remoteChanged = true;
-    const data = normalizeState({ version: 6, decks, cards, presets, stats, settings, revlog, deleted: tomb, toeic, updatedAt: Math.max(L.updatedAt || 0, R.updatedAt || 0) });
+    const data = normalizeState({ version: 6, decks, cards, presets, stats, settings, revlog, deleted: tomb, toeic, media: { ...(R.media || {}), ...(L.media || {}) }, updatedAt: Math.max(L.updatedAt || 0, R.updatedAt || 0) });
     return { data, localChanged, remoteChanged };
 }
 

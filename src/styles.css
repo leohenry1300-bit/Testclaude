@@ -1394,3 +1394,20 @@ button.tq-opt:hover:not(:disabled) { border-color: var(--primary); background: v
 .tq-doc { overflow-wrap: anywhere; }
 .ex-unit { width: 100%; }
 .tq-sec .tiny { color: inherit; }
+
+/* image occlusion, audio, recording */
+.occl { position: relative; display: inline-block; max-width: 100%; line-height: 0; }
+.occl img { display: block; max-width: 100%; max-height: 60vh; margin: 0; border-radius: var(--radius-xs); }
+.occl .om { position: absolute; background: #475569; border: 2px solid #1e293b; border-radius: 3px; box-sizing: border-box; }
+.occl .om.on { background: var(--primary); border-color: #fff; box-shadow: 0 0 0 2px var(--primary); }
+.occl .om.hit { background: transparent; border: 3px solid var(--mature); box-shadow: 0 0 0 2px rgba(255,255,255,.7); }
+.rich audio, .editor-area audio { display: block; width: min(100%, 340px); height: 40px; margin: 8px auto; }
+.occ-wrap { background: var(--surface-2); border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); padding: 8px; display: grid; place-items: center; min-height: 120px; }
+.occ-stage { position: relative; display: inline-block; max-width: 100%; touch-action: none; user-select: none; line-height: 0; cursor: crosshair; }
+.occ-stage img { display: block; max-width: 100%; max-height: 52vh; -webkit-user-drag: none; }
+.occ-stage .occ-m { position: absolute; background: color-mix(in srgb, var(--primary) 55%, transparent); border: 2px solid var(--primary); box-sizing: border-box; cursor: pointer; display: grid; place-items: center; color: #fff; font-size: .75rem; line-height: 1; }
+.occ-stage .occ-m.temp { background: color-mix(in srgb, var(--primary) 30%, transparent); border-style: dashed; }
+.occ-empty { padding: 30px; color: var(--text-faint); line-height: 1.4; }
+.rec-box { display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 2rem; padding: 18px 0; }
+.rec-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--due); animation: pulse 1s infinite; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }

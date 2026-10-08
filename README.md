@@ -36,3 +36,11 @@ Onglet **TOEIC** : test complet (200 questions, audio joué une fois, 75 min de 
 ## Hors-ligne et installation (PWA)
 
 Pour installer l'app sur un téléphone, déploie ensemble ces 5 fichiers (ex. Netlify Drop) : `index.html`, `sw.js`, `manifest.webmanifest`, `icon-192.png`, `icon-512.png`. Il faut une adresse https. Ouvre-la une fois en ligne, puis « Ajouter à l'écran d'accueil » : l'app s'ouvre ensuite sans connexion. Ouvert en double-clic (`file://`), le mode hors-ligne ne s'active pas.
+
+## Contenu riche : audio, LaTeX, images à masquer, import .apkg
+
+- **Audio** : dans l'éditeur, boutons « fichier audio » et « micro » (≈ 1,5 Mo max par extrait). Option Paramètres › « Jouer les sons des cartes ».
+- **LaTeX** : écris `\( x^2 \)` (ligne) ou `\[ ... \]` (bloc). KaTeX est chargé depuis internet à la première formule, puis gardé en cache. Le signe `$` n'est volontairement pas utilisé (montants en euros).
+- **Image à masquer** : nouveau type de carte ; on dessine des cadres sur une image, un cadre = une carte.
+- **Import .apkg** : Importer › « Importer un fichier .apkg ». Il faut l'export Anki « avec prise en charge des anciennes versions ». Les cartes arrivent comme neuves ; images et sons sont repris.
+- Les images et sons importés sont stockés une seule fois (`data.media`) et synchronisés.

@@ -25,7 +25,7 @@ const FLAGS = [null,
 
 /* ---------- Note types ---------- */
 const CLOZE_RE = /\{\{c(\d+)::([\s\S]*?)(?:::([\s\S]*?))?\}\}/g;
-const NOTE_TYPES = { basic: 'Basique', rev: 'Basique + inversée (liées)', cloze: 'Texte à trous' };
+const NOTE_TYPES = { basic: 'Basique', rev: 'Basique + inversée (liées)', cloze: 'Texte à trous', occl: 'Image à masquer' };
 function clozeNumbers(text) {
     const set = new Set();
     String(text || '').replace(CLOZE_RE, (m, n) => { set.add(Number(n)); return m; });
@@ -45,6 +45,7 @@ function clozeAnswerHtml(c) {
 }
 /* front/back are always stored materialized, so the rest of the app never needs to know about note types */
 function materializeCard(c) {
+    if (c.kind === 'occl' && c.nf) { const o = occlusionHtml(c); c.front = o.front; c.back = o.back; return c; }
     if (c.kind === 'cloze' && c.nf) {
         c.front = sanitizeHtml(renderCloze(c.nf.text, c.ord, 'front'));
         const extra = isBlank(c.nf.extra) ? '' : `<br><br><div>${c.nf.extra}</div>`;
@@ -258,7 +259,7 @@ Object.assign(SuperAnki.prototype, {
             const seen = new Set();
             cards.forEach(c => {
                 const key = c.nid || c.id;
-                if (c.nf && seen.has(key)) return;
+                if (c.kind === 'occl' || (c.nf && seen.has(key))) return;
                 seen.add(key);
                 const sibs = this.noteSiblings(c), f = noteFieldsOf(c);
                 const nf = { front: f.front, back: f.back };
