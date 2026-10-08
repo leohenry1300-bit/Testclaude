@@ -1934,18 +1934,13 @@ class SuperAnki {
         if (!s || s.kind !== 'practice' || !s.revealed) return;
         const card = this.card(s.current);
         this.snapshot();
-        if (ok) { card.right++; card.errors = Math.max(0, card.errors - 1); s.correct++; }
+        if (ok) s.correct++;
         else {
-            card.wrong++; card.errors++;
             if (!s.missed.includes(card.id)) s.missed.push(card.id);
             s.retries[card.id] = (s.retries[card.id] || 0) + 1;
             if (s.retries[card.id] <= 2) s.queue.splice(Math.min(3, s.queue.length), 0, card.id);
         }
-        s.done++;
-        const secs = this.elapsedSec();
-        this.recordReview(null, secs);
-        this.logReview(card, ok ? 3 : 1, 3, card.interval, secs * 1000);
-        this.save();
+        s.done++;   // practice modes never touch scheduling, counters, stats or history
         this.nextCard();
     }
     undo() {
@@ -2092,17 +2087,8 @@ class SuperAnki {
             else b.classList.add('dim');
         });
         s.done++;
-        if (opt.ok) {
-            s.score++; s.correct++;
-            card.right++; card.errors = Math.max(0, card.errors - 1);
-        } else {
-            card.wrong++; card.errors++;
-            if (!s.missed.includes(card.id)) s.missed.push(card.id);
-        }
-        const secs = clamp((Date.now() - s.cardStart) / 1000, 1, 60);
-        this.recordReview(null, secs);
-        this.logReview(card, opt.ok ? 3 : 1, 3, card.interval, secs * 1000);
-        this.save();
+        if (opt.ok) { s.score++; s.correct++; }
+        else if (!s.missed.includes(card.id)) s.missed.push(card.id);
         if (s.kind === 'chrono') {
             if (!opt.ok) { s.timeLeft = Math.max(0, s.timeLeft - 3); }
             this.floatText(el || btns[i], opt.ok ? '+1' : '-3 s', opt.ok ? 'var(--mature)' : 'var(--due)');
